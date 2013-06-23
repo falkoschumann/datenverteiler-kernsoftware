@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <option name="DEFAULT_COMPILER" value="Javac" />
+    <resourceExtensions />
+    <wildcardResourcePatterns>
+      <entry name="!?*.java" />
+      <entry name="!?*.form" />
+      <entry name="!?*.class" />
+      <entry name="!?*.groovy" />
+      <entry name="!?*.scala" />
+      <entry name="!?*.flex" />
+      <entry name="!?*.kt" />
+      <entry name="!?*.clj" />
+    </wildcardResourcePatterns>
+    <annotationProcessing>
+      <profile default="true" name="Default" enabled="false">
+        <processorPath useClasspath="true" />
+      </profile>
+      <profile default="false" name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="true" />
+        <module name="de.bsvrz.dav.daf" />
+        <module name="de.bsvrz.sys.funclib.application" />
+        <module name="de.bsvrz.sys.funclib.asyncReceiver" />
+        <module name="de.bsvrz.sys.funclib.commandLineArgs" />
+        <module name="de.bsvrz.sys.funclib.communicationStreams" />
+        <module name="de.bsvrz.sys.funclib.concurrent" />
+        <module name="de.bsvrz.sys.funclib.configObjectAcquisition" />
+        <module name="de.bsvrz.sys.funclib.consoleProcessFrame" />
+        <module name="de.bsvrz.sys.funclib.crypt" />
+        <module name="de.bsvrz.sys.funclib.dataIdentificationSettings" />
+        <module name="de.bsvrz.sys.funclib.dataSerializer" />
+        <module name="de.bsvrz.sys.funclib.debug" />
+        <module name="de.bsvrz.sys.funclib.filelock" />
+        <module name="de.bsvrz.sys.funclib.hexdump" />
+        <module name="de.bsvrz.sys.funclib.operatingMessage" />
+        <module name="de.bsvrz.sys.funclib.timeout" />
+        <module name="de.bsvrz.sys.funclib.xmlSupport" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel target="1.6">
+      <module name="de.bsvrz.dav.daf" target="1.6" />
+      <module name="de.bsvrz.sys.funclib.application" target="1.6" />
+      <module name="de.bsvrz.sys.funclib.asyncReceiver" target="1.6" />
+      <module name="de.bsvrz.sys.funclib.commandLineArgs" target="1.6" />
+      <module name="de.bsvrz.sys.funclib.communicationStreams" target="1.6" />
+      <module name="de.bsvrz.sys.funclib.concurrent" target="1.6" />
+      <module name="de.bsvrz.sys.funclib.configObjectAcquisition" target="1.6" />
+      <module name="de.bsvrz.sys.funclib.consoleProcessFrame" target="1.6" />
+      <module name="de.bsvrz.sys.funclib.crypt" target="1.6" />
+      <module name="de.bsvrz.sys.funclib.dataIdentificationSettings" target="1.6" />
+      <module name="de.bsvrz.sys.funclib.dataSerializer" target="1.6" />
+      <module name="de.bsvrz.sys.funclib.debug" target="1.6" />
+      <module name="de.bsvrz.sys.funclib.filelock" target="1.6" />
+      <module name="de.bsvrz.sys.funclib.hexdump" target="1.6" />
+      <module name="de.bsvrz.sys.funclib.operatingMessage" target="1.6" />
+      <module name="de.bsvrz.sys.funclib.timeout" target="1.6" />
+      <module name="de.bsvrz.sys.funclib.xmlSupport" target="1.6" />
+      <module name="kernsoftware" target="1.6" />
+    </bytecodeTargetLevel>
+  </component>
+</project>
+

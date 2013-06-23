@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/de.bsvrz.dav.daf/de.bsvrz.dav.daf.iml" filepath="$PROJECT_DIR$/de.bsvrz.dav.daf/de.bsvrz.dav.daf.iml" />
+      <module fileurl="file://$PROJECT_DIR$/de.bsvrz.sys.funclib.application/de.bsvrz.sys.funclib.application.iml" filepath="$PROJECT_DIR$/de.bsvrz.sys.funclib.application/de.bsvrz.sys.funclib.application.iml" />
+      <module fileurl="file://$PROJECT_DIR$/de.bsvrz.sys.funclib.asyncReceiver/de.bsvrz.sys.funclib.asyncReceiver.iml" filepath="$PROJECT_DIR$/de.bsvrz.sys.funclib.asyncReceiver/de.bsvrz.sys.funclib.asyncReceiver.iml" />
+      <module fileurl="file://$PROJECT_DIR$/de.bsvrz.sys.funclib.commandLineArgs/de.bsvrz.sys.funclib.commandLineArgs.iml" filepath="$PROJECT_DIR$/de.bsvrz.sys.funclib.commandLineArgs/de.bsvrz.sys.funclib.commandLineArgs.iml" />
+      <module fileurl="file://$PROJECT_DIR$/de.bsvrz.sys.funclib.communicationStreams/de.bsvrz.sys.funclib.communicationStreams.iml" filepath="$PROJECT_DIR$/de.bsvrz.sys.funclib.communicationStreams/de.bsvrz.sys.funclib.communicationStreams.iml" />
+      <module fileurl="file://$PROJECT_DIR$/de.bsvrz.sys.funclib.concurrent/de.bsvrz.sys.funclib.concurrent.iml" filepath="$PROJECT_DIR$/de.bsvrz.sys.funclib.concurrent/de.bsvrz.sys.funclib.concurrent.iml" />
+      <module fileurl="file://$PROJECT_DIR$/de.bsvrz.sys.funclib.configObjectAcquisition/de.bsvrz.sys.funclib.configObjectAcquisition.iml" filepath="$PROJECT_DIR$/de.bsvrz.sys.funclib.configObjectAcquisition/de.bsvrz.sys.funclib.configObjectAcquisition.iml" />
+      <module fileurl="file://$PROJECT_DIR$/de.bsvrz.sys.funclib.consoleProcessFrame/de.bsvrz.sys.funclib.consoleProcessFrame.iml" filepath="$PROJECT_DIR$/de.bsvrz.sys.funclib.consoleProcessFrame/de.bsvrz.sys.funclib.consoleProcessFrame.iml" />
+      <module fileurl="file://$PROJECT_DIR$/de.bsvrz.sys.funclib.crypt/de.bsvrz.sys.funclib.crypt.iml" filepath="$PROJECT_DIR$/de.bsvrz.sys.funclib.crypt/de.bsvrz.sys.funclib.crypt.iml" />
+      <module fileurl="file://$PROJECT_DIR$/de.bsvrz.sys.funclib.dataIdentificationSettings/de.bsvrz.sys.funclib.dataIdentificationSettings.iml" filepath="$PROJECT_DIR$/de.bsvrz.sys.funclib.dataIdentificationSettings/de.bsvrz.sys.funclib.dataIdentificationSettings.iml" />
+      <module fileurl="file://$PROJECT_DIR$/de.bsvrz.sys.funclib.dataSerializer/de.bsvrz.sys.funclib.dataSerializer.iml" filepath="$PROJECT_DIR$/de.bsvrz.sys.funclib.dataSerializer/de.bsvrz.sys.funclib.dataSerializer.iml" />
+      <module fileurl="file://$PROJECT_DIR$/de.bsvrz.sys.funclib.debug/de.bsvrz.sys.funclib.debug.iml" filepath="$PROJECT_DIR$/de.bsvrz.sys.funclib.debug/de.bsvrz.sys.funclib.debug.iml" />
+      <module fileurl="file://$PROJECT_DIR$/de.bsvrz.sys.funclib.filelock/de.bsvrz.sys.funclib.filelock.iml" filepath="$PROJECT_DIR$/de.bsvrz.sys.funclib.filelock/de.bsvrz.sys.funclib.filelock.iml" />
+      <module fileurl="file://$PROJECT_DIR$/de.bsvrz.sys.funclib.hexdump/de.bsvrz.sys.funclib.hexdump.iml" filepath="$PROJECT_DIR$/de.bsvrz.sys.funclib.hexdump/de.bsvrz.sys.funclib.hexdump.iml" />
+      <module fileurl="file://$PROJECT_DIR$/de.bsvrz.sys.funclib.operatingMessage/de.bsvrz.sys.funclib.operatingMessage.iml" filepath="$PROJECT_DIR$/de.bsvrz.sys.funclib.operatingMessage/de.bsvrz.sys.funclib.operatingMessage.iml" />
+      <module fileurl="file://$PROJECT_DIR$/de.bsvrz.sys.funclib.timeout/de.bsvrz.sys.funclib.timeout.iml" filepath="$PROJECT_DIR$/de.bsvrz.sys.funclib.timeout/de.bsvrz.sys.funclib.timeout.iml" />
+      <module fileurl="file://$PROJECT_DIR$/de.bsvrz.sys.funclib.xmlSupport/de.bsvrz.sys.funclib.xmlSupport.iml" filepath="$PROJECT_DIR$/de.bsvrz.sys.funclib.xmlSupport/de.bsvrz.sys.funclib.xmlSupport.iml" />
+      <module fileurl="file://$PROJECT_DIR$/kernsoftware.iml" filepath="$PROJECT_DIR$/kernsoftware.iml" />
+    </modules>
+  </component>
+</project>
+
