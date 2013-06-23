@@ -16,6 +16,14 @@
         <relativePath>..</relativePath>
     </parent>
 
+    <name>Funktionsbibliothek Communication Streams</name>
+    <licenses>
+        <license>
+            <name>GNU Lesser General Public License (LGPL), Version 2.1</name>
+            <url>LICENSE.txt</url>
+        </license>
+    </licenses>
+
     <dependencies>
         <dependency>
             <groupId>de.bsvrz.sys.funclib</groupId>

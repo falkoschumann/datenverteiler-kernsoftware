@@ -9,6 +9,14 @@
     <version>3.5.0</version>
     <packaging>jar</packaging>
 
+    <name>Funktionsbibliothek Hexdump</name>
+    <licenses>
+        <license>
+            <name>GNU Lesser General Public License (LGPL), Version 2.1</name>
+            <url>LICENSE.txt</url>
+        </license>
+    </licenses>
+
     <parent>
         <groupId>kernsoftware</groupId>
         <artifactId>kernsoftware</artifactId>
