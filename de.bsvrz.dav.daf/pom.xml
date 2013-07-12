@@ -64,7 +64,7 @@
                 <configuration>
                     <compilerArguments>
                         <sourcepath>
-                            ${project.basedir}/../de.bsvrz.sys.funclib.communicationStreams/src/main/java;${project.basedir}/../de.bsvrz.sys.funclib.dataSerializer/src/main/java
+                            ${project.basedir}/../de.bsvrz.sys.funclib.communicationStreams/src/main/java${path.separator}${project.basedir}/../de.bsvrz.sys.funclib.dataSerializer/src/main/java
                         </sourcepath>
                     </compilerArguments>
                 </configuration>
