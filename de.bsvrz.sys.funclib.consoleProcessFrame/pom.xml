@@ -7,13 +7,14 @@
     <groupId>de.bsvrz.sys.funclib</groupId>
     <artifactId>de.bsvrz.sys.funclib.consoleProcessFrame</artifactId>
     <packaging>jar</packaging>
+    <version>3.5.0</version>
 
     <name>Funktionsbibliothek Console Process Frame</name>
 
     <parent>
         <groupId>kernsoftware</groupId>
         <artifactId>kernsoftware</artifactId>
-        <version>3.5.0</version>
+        <version>3.5.5</version>
         <relativePath>..</relativePath>
     </parent>
 

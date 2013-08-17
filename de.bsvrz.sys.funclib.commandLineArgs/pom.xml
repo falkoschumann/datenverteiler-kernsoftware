@@ -7,13 +7,14 @@
     <groupId>de.bsvrz.sys.funclib</groupId>
     <artifactId>de.bsvrz.sys.funclib.commandLineArgs</artifactId>
     <packaging>jar</packaging>
+    <version>3.5.0</version>
 
     <name>Funktionsbibliothek Command Line Args</name>
 
     <parent>
         <groupId>kernsoftware</groupId>
         <artifactId>kernsoftware</artifactId>
-        <version>3.5.0</version>
+        <version>3.5.5</version>
         <relativePath>..</relativePath>
     </parent>
 

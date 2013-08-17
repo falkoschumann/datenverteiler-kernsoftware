@@ -24,12 +24,35 @@ package de.bsvrz.dav.daf.main.impl;
 
 import de.bsvrz.dav.daf.communication.dataRepresentation.data.byteArray.ByteArrayData;
 import de.bsvrz.dav.daf.communication.dataRepresentation.datavalue.SendDataObject;
-import de.bsvrz.dav.daf.communication.lowLevel.telegrams.*;
+import de.bsvrz.dav.daf.communication.lowLevel.telegrams.BaseSubscriptionInfo;
+import de.bsvrz.dav.daf.communication.lowLevel.telegrams.ReceiveSubscriptionInfo;
+import de.bsvrz.dav.daf.communication.lowLevel.telegrams.RequestSenderDataTelegram;
+import de.bsvrz.dav.daf.communication.lowLevel.telegrams.SendSubscriptionInfo;
 import de.bsvrz.dav.daf.communication.protocol.ClientHighLevelCommunication;
-import de.bsvrz.dav.daf.main.*;
-import de.bsvrz.dav.daf.main.config.*;
+import de.bsvrz.dav.daf.main.ClientDavParameters;
+import de.bsvrz.dav.daf.main.ClientReceiverInterface;
+import de.bsvrz.dav.daf.main.ClientSenderInterface;
+import de.bsvrz.dav.daf.main.Data;
+import de.bsvrz.dav.daf.main.DataDescription;
+import de.bsvrz.dav.daf.main.DataNotSubscribedException;
+import de.bsvrz.dav.daf.main.InitialisationNotCompleteException;
+import de.bsvrz.dav.daf.main.OneSubscriptionPerSendData;
+import de.bsvrz.dav.daf.main.ReceiveOptions;
+import de.bsvrz.dav.daf.main.ReceiverRole;
+import de.bsvrz.dav.daf.main.ResultData;
+import de.bsvrz.dav.daf.main.SendSubscriptionNotConfirmed;
+import de.bsvrz.dav.daf.main.SenderRole;
+import de.bsvrz.dav.daf.main.config.Aspect;
+import de.bsvrz.dav.daf.main.config.AttributeGroup;
+import de.bsvrz.dav.daf.main.config.AttributeGroupUsage;
+import de.bsvrz.dav.daf.main.config.ConfigurationTaskException;
+import de.bsvrz.dav.daf.main.config.DataModel;
+import de.bsvrz.dav.daf.main.config.SystemObject;
 import de.bsvrz.dav.daf.main.impl.config.AttributeGroupUsageIdentifications;
-import de.bsvrz.dav.daf.main.impl.subscription.*;
+import de.bsvrz.dav.daf.main.impl.subscription.CollectingReceiver;
+import de.bsvrz.dav.daf.main.impl.subscription.CollectingReceiverManager;
+import de.bsvrz.dav.daf.main.impl.subscription.ReceiverSubscription;
+import de.bsvrz.dav.daf.main.impl.subscription.SenderSubscription;
 import de.bsvrz.sys.funclib.debug.Debug;
 
 import java.util.*;
@@ -51,7 +74,7 @@ import java.util.*;
  * angemeldeten Empfänger weiter.
  *
  * @author Kappich Systemberatung
- * @version $Revision: 9135 $
+ * @version $Revision: 10161 $
  */
 public class SubscriptionManager {
 
@@ -871,7 +894,7 @@ public class SubscriptionManager {
 					warning = "Ungültige Anmeldung";
 				}
 				if(state == RequestSenderDataTelegram.STOP_SENDING_NO_RIGHTS) {
-					warning = "Ungültige Anmeldung";
+					warning = "Ungültige Anmeldung (keine Rechte)";
 				}
 				if(client != null) {
 					SystemObject object = (SystemObject)dataModel.getObject(info.getObjectID());
