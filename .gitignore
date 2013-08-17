@@ -1,6 +1,14 @@
-# Maven
+# Maven #
 target/
 
-# IntelliJ IDEA
-.idea/workspace.xml
-.idea/tasks.xml
+# IDEs #
+.classpath
+.project
+.settings/
+*.iml
+.idea/
+
+# OS #
+.DS_Store
+Thumbs.db
+
