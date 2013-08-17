@@ -13,7 +13,7 @@
     <parent>
         <groupId>kernsoftware</groupId>
         <artifactId>kernsoftware</artifactId>
-        <version>3.5.0</version>
+        <version>3.5.5</version>
         <relativePath>..</relativePath>
     </parent>
 

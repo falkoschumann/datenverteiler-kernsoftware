@@ -7,13 +7,14 @@
     <groupId>de.bsvrz.sys.funclib</groupId>
     <artifactId>de.bsvrz.sys.funclib.operatingMessage</artifactId>
     <packaging>jar</packaging>
+    <version>3.5.0</version>
 
     <name>Funktionsbibliothek Operating Message</name>
 
     <parent>
         <groupId>kernsoftware</groupId>
         <artifactId>kernsoftware</artifactId>
-        <version>3.5.0</version>
+        <version>3.5.5</version>
         <relativePath>..</relativePath>
     </parent>
 
@@ -21,7 +22,7 @@
         <dependency>
             <groupId>de.bsvrz.dav</groupId>
             <artifactId>de.bsvrz.dav.daf</artifactId>
-            <version>3.5.0</version>
+            <version>3.5.5</version>
         </dependency>
         <dependency>
             <groupId>de.bsvrz.sys.funclib</groupId>
