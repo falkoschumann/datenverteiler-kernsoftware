@@ -29,6 +29,24 @@
         <developerConnection>scm:git:https://github.com/falkoschumann/datenverteiler-kernsoftware.git</developerConnection>
     </scm>
 
+    <distributionManagement>
+        <repository>
+            <id>muspellheim.repository</id>
+            <name>Muspellheim Repository</name>
+            <url>ftp://projekte.muspellheim.de/repository/</url>
+        </repository>
+        <snapshotRepository>
+            <id>muspellheim.snapshots</id>
+            <name>Muspellheim Snapshot Repository</name>
+            <url>ftp://projekte.muspellheim.de/snapshots/</url>
+        </snapshotRepository>
+        <site>
+            <id>muspellheim.site</id>
+            <name>Projektseite Kernsoftware</name>
+            <url>ftp://projekte.muspellheim.de/datenverteiler/kernsoftware/</url>
+        </site>
+    </distributionManagement>
+
     <issueManagement>
         <system>GitHub</system>
         <url>https://github.com/falkoschumann/datenverteiler-kernsoftware/issues</url>
@@ -102,8 +120,27 @@
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <version>2.7</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.apache.maven.wagon</groupId>
+                        <artifactId>wagon-ftp</artifactId>
+                        <version>2.2</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-site-plugin</artifactId>
                 <version>3.2</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.apache.maven.wagon</groupId>
+                        <artifactId>wagon-ftp</artifactId>
+                        <version>2.2</version>
+                    </dependency>
+                </dependencies>
             </plugin>
         </plugins>
     </build>
