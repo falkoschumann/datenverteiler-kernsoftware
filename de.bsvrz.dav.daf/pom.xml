@@ -6,6 +6,7 @@
 
     <groupId>de.bsvrz.dav</groupId>
     <artifactId>de.bsvrz.dav.daf</artifactId>
+    <version>3.5.5</version>
     <packaging>jar</packaging>
 
     <name>Datenverteiler-Applikationsfunktionen</name>
