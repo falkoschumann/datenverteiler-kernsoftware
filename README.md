@@ -2,17 +2,25 @@ Kernsoftware
 ============
 
 Die Kernsoftware des Datenverteilers in Form eines Maven-Projekts. Der Zweck
-dieses Projekts ist es, die Softwareinheiten der Kernsoftware als Maven-
-Artefakte zur Verfügung zu stellen und so als Maven-Abhängigkeit nutzbar zu
-machen.
+dieses Projekts ist es, die Softwareinheiten der Kernsoftware als
+Maven-Artefakte zur Verfügung zu stellen und so als Maven-Abhängigkeit nutzbar
+zu machen.
 
 Das Projekt beinhaltet die Softwareeinheiten, die vom NERZ e.V. als Paket
 *Kernsoftware* zum Download bereit gestellt werden.
 
-*master* Branch
----------------
+Der *master* Branch
+-------------------
 
 Der *master* Branch enthält die Kernsoftware in Version 3.5.0 vom 15.04.2012.
+
+
+Der *develop* Branch
+--------------------
+
+Der *develop* Branch umfasst gegenüber dem *master* Branch folgende Änderungen:
+
+- *de.bsvrz.dav.daf* wurde auf Version 3.5.5 vom 13.15.2012 aktualisiert.
 
 
 ---
