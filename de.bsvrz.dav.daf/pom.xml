@@ -10,6 +10,13 @@
     <packaging>jar</packaging>
 
     <name>Datenverteiler-Applikationsfunktionen</name>
+    <url>https://github.com/falkoschumann/datenverteiler-kernsoftware</url>
+
+    <scm>
+        <url>https://github.com/falkoschumann/datenverteiler-kernsoftware</url>
+        <connection>scm:git:https://github.com/falkoschumann/datenverteiler-kernsoftware.git</connection>
+        <developerConnection>scm:git:https://github.com/falkoschumann/datenverteiler-kernsoftware.git</developerConnection>
+    </scm>
 
     <parent>
         <groupId>kernsoftware</groupId>
