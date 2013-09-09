@@ -25,8 +25,11 @@
 
     <scm>
         <url>https://github.com/falkoschumann/datenverteiler-kernsoftware</url>
-        <connection>scm:git:https://github.com/falkoschumann/datenverteiler-kernsoftware.git</connection>
-        <developerConnection>scm:git:https://github.com/falkoschumann/datenverteiler-kernsoftware.git</developerConnection>
+        <connection>scm:git:https://github.com/falkoschumann/datenverteiler-kernsoftware.git
+        </connection>
+        <developerConnection>
+            scm:git:https://github.com/falkoschumann/datenverteiler-kernsoftware.git
+        </developerConnection>
     </scm>
 
     <distributionManagement>
@@ -41,9 +44,9 @@
             <url>ftp://projekte.muspellheim.de/snapshots/</url>
         </snapshotRepository>
         <site>
-            <id>muspellheim.site</id>
-            <name>Projektseite Kernsoftware</name>
-            <url>ftp://projekte.muspellheim.de/datenverteiler/kernsoftware/</url>
+            <id>github</id>
+            <name>GitHub Pages</name>
+            <url>site/${project.version}</url>
         </site>
     </distributionManagement>
 
@@ -76,6 +79,7 @@
         <project.build.sourceEncoding>ISO-8859-1</project.build.sourceEncoding>
         <project.reporting.outputEncoding>ISO-8859-1</project.reporting.outputEncoding>
         <source.version>1.6</source.version>
+        <github.global.server>github</github.global.server>
     </properties>
 
     <build>
@@ -134,13 +138,27 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-site-plugin</artifactId>
                 <version>3.2</version>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.apache.maven.wagon</groupId>
-                        <artifactId>wagon-ftp</artifactId>
-                        <version>2.2</version>
-                    </dependency>
-                </dependencies>
+                <configuration>
+                    <skipDeploy>true</skipDeploy>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>com.github.github</groupId>
+                <artifactId>site-maven-plugin</artifactId>
+                <version>0.8</version>
+                <configuration>
+                    <message>Projektseite für ${project.name} in Version ${project.version} erstellt.</message>
+                    <path>${project.distributionManagement.site.url}</path>
+                    <merge>true</merge>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>site</goal>
+                        </goals>
+                        <phase>site-deploy</phase>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
@@ -159,11 +177,6 @@
                 <configuration>
                     <aggregate>true</aggregate>
                 </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jxr-plugin</artifactId>
-                <version>2.3</version>
             </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
