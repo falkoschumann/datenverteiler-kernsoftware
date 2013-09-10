@@ -10,7 +10,7 @@ Das Projekt beinhaltet die SWEs, die vom NERZ e.V. als Paket *Kernsoftware* zum
 Download bereit gestellt werden.
 
 Die Projektdokumentation befindet sich unter
-http://projekte.muspellheim.de/datenverteiler/kernsoftware/
+http://falkoschumann.github.io/datenverteiler-kernsoftware/
 
 Das Maven Repository http://projekte.muspellheim.de/repository/ enthält alle
 mit diesem Projekt erzeugten Artefakte der Kernsofware: Binary JARs, Source JARs
@@ -45,5 +45,6 @@ aggregierte Report aktiviert und im Unterprojekt wieder deaktiviert.
 
 ---
 
-Für mehr Informationen zur bundeseinheitlichen Software für
-Verkehrsrechnerzentralen (BSVRZ) siehe http://www.nerz-ev.de.
+Dieses Projekt ist nicht Teil des NERZ e.V. Die offizielle Software sowie
+weitere Informationen zur bundeseinheitlichen Software für
+Verkehrsrechnerzentralen (BSVRZ) finden Sie unter http://www.nerz-ev.de.

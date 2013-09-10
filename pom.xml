@@ -41,9 +41,9 @@
             <url>ftp://projekte.muspellheim.de/snapshots/</url>
         </snapshotRepository>
         <site>
-            <id>muspellheim.site</id>
-            <name>Projektseite Kernsoftware</name>
-            <url>ftp://projekte.muspellheim.de/datenverteiler/kernsoftware/</url>
+            <id>github.pages</id>
+            <name>GitHub Pages</name>
+            <url>scm:git:https://github.com/falkoschumann/datenverteiler-kernsoftware.git</url>
         </site>
     </distributionManagement>
 
@@ -122,27 +122,20 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-deploy-plugin</artifactId>
                 <version>2.7</version>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.apache.maven.wagon</groupId>
-                        <artifactId>wagon-ftp</artifactId>
-                        <version>2.2</version>
-                    </dependency>
-                </dependencies>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-site-plugin</artifactId>
                 <version>3.2</version>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.apache.maven.wagon</groupId>
-                        <artifactId>wagon-ftp</artifactId>
-                        <version>2.2</version>
-                    </dependency>
-                </dependencies>
             </plugin>
         </plugins>
+        <extensions>
+            <extension>
+                <groupId>org.apache.maven.wagon</groupId>
+                <artifactId>wagon-ftp</artifactId>
+                <version>2.2</version>
+            </extension>
+        </extensions>
     </build>
 
     <reporting>
@@ -159,11 +152,6 @@
                 <configuration>
                     <aggregate>true</aggregate>
                 </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jxr-plugin</artifactId>
-                <version>2.3</version>
             </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
