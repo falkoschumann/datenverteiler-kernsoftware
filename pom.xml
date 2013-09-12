@@ -54,6 +54,14 @@
 
     <modules>
         <module>de.bsvrz.dav.daf</module>
+        <module>de.bsvrz.dav.dav</module>
+        <module>de.bsvrz.kex.kexdav</module>
+        <module>de.bsvrz.kex.tls.osi2osi3</module>
+        <module>de.bsvrz.pat.datgen</module>
+        <module>de.bsvrz.pat.onlprot</module>
+        <module>de.bsvrz.pat.sysbed</module>
+        <module>de.bsvrz.pat.sysprot</module>
+        <module>de.bsvrz.puk.config</module>
         <module>de.bsvrz.sys.funclib.application</module>
         <module>de.bsvrz.sys.funclib.asyncReceiver</module>
         <module>de.bsvrz.sys.funclib.commandLineArgs</module>
@@ -67,6 +75,7 @@
         <module>de.bsvrz.sys.funclib.debug</module>
         <module>de.bsvrz.sys.funclib.filelock</module>
         <module>de.bsvrz.sys.funclib.hexdump</module>
+        <module>de.bsvrz.sys.funclib.losb</module>
         <module>de.bsvrz.sys.funclib.operatingMessage</module>
         <module>de.bsvrz.sys.funclib.timeout</module>
         <module>de.bsvrz.sys.funclib.xmlSupport</module>
