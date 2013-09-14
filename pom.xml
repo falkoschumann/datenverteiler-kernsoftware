@@ -79,6 +79,13 @@
         <module>de.bsvrz.sys.funclib.operatingMessage</module>
         <module>de.bsvrz.sys.funclib.timeout</module>
         <module>de.bsvrz.sys.funclib.xmlSupport</module>
+        <module>de.kappich.pat.configBrowser</module>
+        <module>de.kappich.pat.gnd</module>
+        <module>de.kappich.puk.param</module>
+        <module>de.kappich.samples.operatingMessage</module>
+        <module>de.kappich.sys.funclib.profile</module>
+        <module>de.kappich.tools.sleep</module>
+        <module>de.kappich.vew.bmvew</module>
     </modules>
 
     <properties>
