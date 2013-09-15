@@ -8,8 +8,14 @@
     <artifactId>de.bsvrz.sys.funclib.configObjectAcquisition</artifactId>
     <packaging>jar</packaging>
 
-    <name>Funktionsbibliothek Config Object Acquisition</name>
-    <url>https://github.com/falkoschumann/datenverteiler-kernsoftware</url>
+    <name>Sys Funktionsbibliothek Config Object Acquisition</name>
+
+    <licenses>
+        <license>
+            <name>GNU Lesser General Public License (LGPL), Version 2.1</name>
+            <url>LICENSE.txt</url>
+        </license>
+    </licenses>
 
     <scm>
         <url>https://github.com/falkoschumann/datenverteiler-kernsoftware</url>

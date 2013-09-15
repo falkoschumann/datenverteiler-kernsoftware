@@ -10,16 +10,20 @@
     <packaging>pom</packaging>
 
     <name>Kernsoftware</name>
-    <url>https://github.com/falkoschumann/datenverteiler-kernsoftware</url>
-
+    <url>http://falkoschumann.github.io/datenverteiler-kernsoftware</url>
     <organization>
         <name>NERZ e.V.</name>
         <url>http://www.nerz-ev.de</url>
     </organization>
+
     <licenses>
         <license>
+            <name>GNU General Public License (GPL), Version 2.0</name>
+            <url>GPL-2.0.txt</url>
+        </license>
+        <license>
             <name>GNU Lesser General Public License (LGPL), Version 2.1</name>
-            <url>LICENSE.txt</url>
+            <url>LGPL-2.1.txt</url>
         </license>
     </licenses>
 
@@ -54,6 +58,14 @@
 
     <modules>
         <module>de.bsvrz.dav.daf</module>
+        <module>de.bsvrz.dav.dav</module>
+        <module>de.bsvrz.kex.kexdav</module>
+        <module>de.bsvrz.kex.tls.osi2osi3</module>
+        <module>de.bsvrz.pat.datgen</module>
+        <module>de.bsvrz.pat.onlprot</module>
+        <module>de.bsvrz.pat.sysbed</module>
+        <module>de.bsvrz.pat.sysprot</module>
+        <module>de.bsvrz.puk.config</module>
         <module>de.bsvrz.sys.funclib.application</module>
         <module>de.bsvrz.sys.funclib.asyncReceiver</module>
         <module>de.bsvrz.sys.funclib.commandLineArgs</module>
@@ -67,9 +79,17 @@
         <module>de.bsvrz.sys.funclib.debug</module>
         <module>de.bsvrz.sys.funclib.filelock</module>
         <module>de.bsvrz.sys.funclib.hexdump</module>
+        <module>de.bsvrz.sys.funclib.losb</module>
         <module>de.bsvrz.sys.funclib.operatingMessage</module>
         <module>de.bsvrz.sys.funclib.timeout</module>
         <module>de.bsvrz.sys.funclib.xmlSupport</module>
+        <module>de.kappich.pat.configBrowser</module>
+        <module>de.kappich.pat.gnd</module>
+        <module>de.kappich.puk.param</module>
+        <module>de.kappich.samples.operatingMessage</module>
+        <module>de.kappich.sys.funclib.profile</module>
+        <module>de.kappich.tools.sleep</module>
+        <module>de.kappich.vew.bmvew</module>
     </modules>
 
     <properties>
@@ -190,6 +210,14 @@
                             </tagClass>
                         </tagClasses>
                     </tagListOptions>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <version>2.10</version>
+                <configuration>
+                    <configLocation>src/main/config/checkstyle.xml</configLocation>
                 </configuration>
             </plugin>
         </plugins>

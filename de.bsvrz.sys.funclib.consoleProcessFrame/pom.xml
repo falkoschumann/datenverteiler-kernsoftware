@@ -8,8 +8,14 @@
     <artifactId>de.bsvrz.sys.funclib.consoleProcessFrame</artifactId>
     <packaging>jar</packaging>
 
-    <name>Funktionsbibliothek Console Process Frame</name>
-    <url>https://github.com/falkoschumann/datenverteiler-kernsoftware</url>
+    <name>Sys Funktionsbibliothek Console Process Frame</name>
+
+    <licenses>
+        <license>
+            <name>GNU Lesser General Public License (LGPL), Version 2.1</name>
+            <url>LICENSE.txt</url>
+        </license>
+    </licenses>
 
     <scm>
         <url>https://github.com/falkoschumann/datenverteiler-kernsoftware</url>

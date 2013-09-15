@@ -1,0 +1,440 @@
+/*
+ * Copyright 2010 by Kappich Systemberatung Aachen
+ * 
+ * This file is part of de.bsvrz.dav.dav.
+ * 
+ * de.bsvrz.dav.dav is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * de.bsvrz.dav.dav is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with de.bsvrz.dav.dav; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ */
+
+package de.bsvrz.dav.dav.util.accessControl;
+
+import de.bsvrz.dav.daf.main.ClientDavInterface;
+import de.bsvrz.dav.daf.main.DataState;
+import de.bsvrz.dav.daf.main.config.SystemObject;
+import de.bsvrz.dav.daf.util.HashBagMap;
+import de.bsvrz.sys.funclib.debug.Debug;
+import de.bsvrz.sys.funclib.operatingMessage.MessageGrade;
+import de.bsvrz.sys.funclib.operatingMessage.MessageSender;
+import de.bsvrz.sys.funclib.operatingMessage.MessageState;
+import de.bsvrz.sys.funclib.operatingMessage.MessageType;
+
+import java.util.*;
+
+/**
+ * Klasse, die im Datenmodell Abfragen nach Benutzerberechtigungen erlaubt.
+ *
+ * @author Kappich Systemberatung
+ * @version $Revision: 0000 $
+ */
+public final class AccessControlManager implements RegionManager {
+
+	/** Debug */
+	private static final Debug _debug = Debug.getLogger();
+
+	/**
+	 * Interval zwischen 2 Betriebsmeldungen wegen fehlenden Parametern. Außerdem die Zeit, die mindestens vergangen sein muss, bis eie fehlender
+	 * Parameterdatensatz gemeldet wird. Bei der Anpassung der Zeit muss möglicherweise der Wortlaut der Betriebsmeldung geändert werden.
+	 */
+	public static final int MessageSenderInterval = 60 * 1000;
+
+	/** Map, die BenutzerIds den Benutzerobjekten zuordnet */
+	private final HashMap<Long, UserInfoInternal> _userInfoHashMap = new HashMap<Long, UserInfoInternal>();
+
+	/** Map, die Berechtigungsklassen den kapselnden AccessControlUnit-Klassen zuordnet */
+	private final HashMap<SystemObject, AccessControlUnit> _authenticationClassHashMap = new HashMap<SystemObject, AccessControlUnit>();
+
+	/** Map, die Rollen den kapselnden Role-Klassen zuordnet */
+	private final HashMap<SystemObject, Role> _roleHashMap = new HashMap<SystemObject, Role>();
+
+	/** Map, die Regionen den kapselnden Region-Klassen zuordnet */
+	private final HashMap<SystemObject, Region> _regionHashMap = new HashMap<SystemObject, Region>();
+
+	/** Datenverteilerverbindung */
+	private final ClientDavInterface _connection;
+
+	/** Ob das neue Datenmodell (siehe {@link de.bsvrz.dav.dav.util.accessControl.ExtendedUserInfo}) benutzt wird */
+	private final boolean _isUsingNewDataModel;
+
+	/** Callback, der Aufgerufen wird, wenn sich die Rechte eines Benutzers ändern */
+	private UserRightsChangeHandler _userRightsChangeHandler;
+
+	/** Ob implizite Benutzerverwaltung durchgeführt wird, oder Benutzer mit addUser erstellt werden müssen */
+	private boolean _useImplicitUserManagement;
+
+	private final Object _updateLock = new Object();
+
+	private HashBagMap<DataState, DataLoader> _oldObjectsWithMissingParameters;
+
+	/**
+	 * Erstellt eine neue Instanz des AccessControlManagers mit impliziter Benutzerverwaltung
+	 *
+	 * @param connection              Verbindung zum Datenverteiler
+	 * @param userRightsChangeHandler Klasse, die über Änderungen an den Benutzerrechten informiert werden soll. Das ist im allgemeinen der {@link
+	 *                                de.bsvrz.dav.dav.main.ConnectionsManager}, der bei sich ändernden Rechten eventuell ungültig gewordene Anmeldungen
+	 *                                deaktiviert, kann aber für Testfälle und andere Anwendungen auch ein anderes (möglicherweise deutlich kleineres) Objekt
+	 *                                sein.
+	 * @param useNewDataModel         Sollen die neuen Zugriffsrechte benutzt werden?
+	 */
+	public AccessControlManager(
+			final ClientDavInterface connection, final UserRightsChangeHandler userRightsChangeHandler, final boolean useNewDataModel) {
+		this(connection, userRightsChangeHandler, true, useNewDataModel);
+	}
+
+	/**
+	 * Erstellt eine neue Instanz des AccessControlManagers
+	 *
+	 * @param connection                Verbindung zum Datenverteiler
+	 * @param userRightsChangeHandler   Klasse, die über Änderungen an den Benutzerrechten informiert werden soll. Das ist im allgemeinen der {@link
+	 *                                  de.bsvrz.dav.dav.main.ConnectionsManager}, der bei sich ändernden Rechten eventuell ungültig gewordene Anmeldungen
+	 *                                  deaktiviert, kann aber für Testfälle und andere Anwendungen auch ein anderes (möglicherweise deutlich kleineres) Objekt
+	 *                                  sein.
+	 * @param useImplicitUserManagement Wenn false, werden nur Benutzer berücksichtigt, die mit addUser und removeUser in diese Klasse eingefügt werden.<br> Wenn
+	 *                                  true sind addUser und removeUser ohne Funktion und getUser ermittelt beliebige Benutzer, solange diese existieren.
+	 * @param useNewDataModel           Sollen die neuen Zugriffsrechte benutzt werden?
+	 */
+	public AccessControlManager(
+			final ClientDavInterface connection,
+			final UserRightsChangeHandler userRightsChangeHandler,
+			final boolean useImplicitUserManagement,
+			final boolean useNewDataModel) {
+		_connection = connection;
+		_userRightsChangeHandler = userRightsChangeHandler;
+		_useImplicitUserManagement = useImplicitUserManagement;
+		if(useNewDataModel && _connection.getDataModel().getObject("atl.aktivitätObjekteNeu") == null) {
+			_debug.error(
+					"Das neue Datenmodell der Zugriffsrechte-Prüfung sollte verwendet werden, wurde aber nicht gefunden. Stattdessen wird das alte Datenmodell benutzt."
+			);
+			_isUsingNewDataModel = false;
+		}
+		else {
+			_isUsingNewDataModel = useNewDataModel;
+		}
+		if(_isUsingNewDataModel) {
+			createParameterTimer();
+		}
+	}
+
+	private void createParameterTimer() {
+		final Timer timer = new Timer("Warnung über fehlende Parameter", true);
+		timer.schedule(
+				new TimerTask() {
+					@Override
+					public void run() {
+						sendMessagesAboutMissingParameters();
+					}
+				}, MessageSenderInterval, MessageSenderInterval
+		);
+	}
+
+	private void sendMessagesAboutMissingParameters() {
+		final HashBagMap<DataState, DataLoader> objectsWithMissingParameters = new HashBagMap<DataState, DataLoader>();
+		final Collection<UserInfoInternal> values = _userInfoHashMap.values();
+		final List<ExtendedUserInfo> users = new ArrayList<ExtendedUserInfo>(values.size());
+		for(final UserInfoInternal value : values) {
+			users.add((ExtendedUserInfo)value);
+		}
+		objectsWithMissingParameters.addAll(getObjectsWithMissingParameters(users));
+		objectsWithMissingParameters.addAll(getObjectsWithMissingParameters(_authenticationClassHashMap.values()));
+		objectsWithMissingParameters.addAll(getObjectsWithMissingParameters(_regionHashMap.values()));
+		objectsWithMissingParameters.addAll(getObjectsWithMissingParameters(_roleHashMap.values()));
+		final MessageSender sender = MessageSender.getInstance();
+		final MessageState state;
+		final String message;
+		if(_oldObjectsWithMissingParameters == null || _oldObjectsWithMissingParameters.size() == 0) {
+			if(objectsWithMissingParameters.size() == 0) return;
+			state = MessageState.NEW_MESSAGE;
+			message = "Der Rechteprüfung fehlen Parameterdaten:\n" + formatMap(objectsWithMissingParameters);
+		}
+		else {
+			if(objectsWithMissingParameters.size() == 0) {
+				state = MessageState.GOOD_MESSAGE;
+				message = "Alle derzeit berücksichtigten Objekte besitzen jetzt Parameter.";
+			}
+			else {
+				state = MessageState.REPEAT_MESSAGE;
+				message = "Der Rechteprüfung fehlen Parameterdaten:\n" + formatMap(
+						objectsWithMissingParameters
+				);
+			}
+		}
+
+		sender.sendMessage("Zugriffsrechte", MessageType.SYSTEM_DOMAIN, "Rechteprüfung", MessageGrade.WARNING, state, message);
+		_debug.warning(message);
+		_oldObjectsWithMissingParameters = objectsWithMissingParameters;
+	}
+
+	private static String formatMap(final HashBagMap<DataState, DataLoader> objectsWithMissingParameters) {
+		final StringBuilder builder = new StringBuilder();
+		for(final Map.Entry<DataState, Collection<DataLoader>> entry : objectsWithMissingParameters.entrySet()) {
+			if(entry.getValue().size() == 0) continue;
+			if(entry.getKey() == null) {
+				builder.append("Kein Datensatz");
+			}
+			else {
+				builder.append(entry.getKey().toString());
+			}
+			builder.append(" (");
+			builder.append(entry.getValue().size());
+			if(entry.getValue().size() == 1) {
+				builder.append(" Objekt):\n");
+			}
+			else {
+				builder.append(" Objekte):\n");
+			}
+			for(final DataLoader loader : entry.getValue()) {
+				builder.append("\t").append(loader.getSystemObject().getPidOrNameOrId()).append("\n");
+			}
+		}
+		return builder.toString();
+	}
+
+	private static HashBagMap<DataState, DataLoader> getObjectsWithMissingParameters(final Collection<? extends DataLoader> values) {
+		final HashBagMap<DataState, DataLoader> result = new HashBagMap<DataState, DataLoader>();
+		for(final DataLoader value : values) {
+			if(value.getDataState() != DataState.DATA && value.getNoDataTime() > MessageSenderInterval) {
+				result.add(value.getDataState(), value);
+			}
+		}
+		return result;
+	}
+
+	@Override
+	public synchronized String toString() {
+		return "AccessControlManager{" + "_useImplicitUserManagement=" + _useImplicitUserManagement + ", _isUsingNewDataModel=" + _isUsingNewDataModel + '}';
+	}
+
+	/**
+	 * Fügt eine Benutzerinformation zu der Benutzertabelle hinzu, wenn der Datenverteiler die Benutzerrechte prüfen soll. Existiert der Benutzer bereits, wird
+	 * lediglich die interne Referenz inkrementiert.
+	 *
+	 * @param userId BenutzerID
+	 */
+	public final synchronized void addUser(final long userId) {
+		if(_useImplicitUserManagement) return;
+		addUserInternal(userId);
+	}
+
+	private void addUserInternal(final long userId) {
+		UserInfoInternal userInfo = _userInfoHashMap.get(userId);
+		if(userInfo == null) {
+			userInfo = createUserInfo(userId);
+			_userInfoHashMap.put(userId, userInfo);
+		}
+		else {
+			userInfo.incrementReference();
+		}
+	}
+
+	/**
+	 * Erstellt je nach Datenmodell-Version ein neues BenutzerInfo-Objekt das Abfragen auf die Berechtigungen eines Benutzers ermöglicht.
+	 *
+	 * @param userID benutzer-ID
+	 *
+	 * @return Das Benutzer-Info-Objekt
+	 */
+	@SuppressWarnings({"deprecation"})
+	private UserInfoInternal createUserInfo(final long userID) {
+		if(isUsingNewDataModel()) {
+			return new ExtendedUserInfo(userID, _connection, this);
+		}
+		else {
+			return new OldUserInfo(userID, _connection, _userRightsChangeHandler, this);
+		}
+	}
+
+	/**
+	 * Fragt ab, ob das neue Datenmodell benutzt wird. Das neue Datenmodell enthält eine neue Struktur der Region und Rollen-Objekten und ermöglicht Beschränkungen
+	 * bei der Erstellung von dynamischen Objekten.
+	 *
+	 * @return True wenn das neue Modell benutzt wird, sonst false
+	 */
+	public boolean isUsingNewDataModel() {
+		return _isUsingNewDataModel;
+	}
+
+	/**
+	 * Wird aufgerufen, wenn eine Rekursion in den Systemobjekten gefunden wurde. Dabei wird eine _Debug-Meldung ausgegeben und das Elternelement angewiesen die
+	 * Referenz auf das Kindobjekt zu deaktivieren.
+	 *
+	 * @param node   Der Knoten, der sich selbst referenziert
+	 * @param parent Der Knoten, der den problematischen Knoten referenziert
+	 * @param trace  Komplette Hierarchie vom Benutzer zum problematischen Objekt.
+	 */
+	protected void notifyInfiniteRecursion(final DataLoader node, final DataLoader parent, final List<DataLoader> trace) {
+		String msg = "Ungültige Rekursion in den Systemobjekten. Die problematische Vererbung wird deaktiviert bis das Problem behoben wird.\n"
+		             + "Objekt referenziert sich selbst: " + node + "\n" + "Vererbungskette: " + trace;
+		MessageSender.getInstance().sendMessage("Zugriffsrechte", MessageType.SYSTEM_DOMAIN, "Rechteprüfung", MessageGrade.WARNING, MessageState.MESSAGE, msg);
+		_debug.warning(msg);
+		parent.deactivateInvalidChild(node);
+	}
+
+	/**
+	 * Gibt die AuthenticationClass-Klasse zurück die zu dem angeforderten Systemobjekt gehört.
+	 *
+	 * @param systemObject Systemobjekt, das eine Berechtigungsklasse repräsentiert
+	 *
+	 * @return AuthenticationClass-Klasse die Abfragen auf eine Berechtigungsklasse ermöglicht
+	 */
+	AccessControlUnit getAuthenticationClass(final SystemObject systemObject) {
+		synchronized(_authenticationClassHashMap) {
+			AccessControlUnit authenticationClass = _authenticationClassHashMap.get(systemObject);
+			if(null != authenticationClass) {
+				return authenticationClass;
+			}
+			authenticationClass = new AccessControlUnit(systemObject, _connection, this);
+			_authenticationClassHashMap.put(systemObject, authenticationClass);
+			return authenticationClass;
+		}
+	}
+
+	/**
+	 * Gibt die Region-Klasse zurück die zu dem angeforderten Systemobjekt gehört.
+	 *
+	 * @param systemObject Systemobjekt, das eine Region repräsentiert
+	 *
+	 * @return Region-Klasse die Abfragen auf eine Region ermöglicht
+	 */
+	public Region getRegion(final SystemObject systemObject) {
+		synchronized(_regionHashMap) {
+			Region region = _regionHashMap.get(systemObject);
+			if(null != region) {
+				return region;
+			}
+			region = new Region(systemObject, _connection, this);
+			_regionHashMap.put(systemObject, region);
+			return region;
+		}
+	}
+
+	/**
+	 * Gibt die Role-Klasse zurück die zu dem angeforderten Systemobjekt gehört.
+	 *
+	 * @param systemObject Systemobjekt, das eine Rolle repräsentiert
+	 *
+	 * @return Role-Klasse die Abfragen auf eine Rolle ermöglicht
+	 */
+	Role getRole(final SystemObject systemObject) {
+		synchronized(_roleHashMap) {
+			Role role = _roleHashMap.get(systemObject);
+			if(null != role) {
+				return role;
+			}
+			role = new Role(systemObject, _connection, this);
+			_roleHashMap.put(systemObject, role);
+			return role;
+		}
+	}
+
+	/**
+	 * Gibt das gespeicherte BenutzerObjekt mit der angegebenen ID zurück
+	 *
+	 * @param userId Angegebene BenutzerId
+	 *
+	 * @return Das geforderte UserInfo-Objekt
+	 */
+	public synchronized UserInfo getUser(final long userId) {
+		final UserInfoInternal userInfo = _userInfoHashMap.get(userId);
+		if(_useImplicitUserManagement && userInfo == null) {
+			addUserInternal(userId);
+			return _userInfoHashMap.get(userId);
+		}
+		return userInfo;
+	}
+
+	/**
+	 * Prüft ob ein Objekt wie eine Rolle oder eine Region von einem Objekt wie einem Benutzer oder einer Berechtigungsklasse referenziert wird.
+	 *
+	 * @param parent        Mögliches Vaterobjekt
+	 * @param possibleChild Möglichen Kindobjekt
+	 *
+	 * @return True wenn das possibleChild ein Kind von parent ist.
+	 */
+	private boolean isChildOf(final DataLoader parent, final DataLoader possibleChild) {
+		final List<DataLoader> children = enumerateChildren(parent);
+		return children.contains(possibleChild);
+	}
+
+	/**
+	 * Löscht einen Benutzer aus der Benutzertabelle, wenn der Datenverteiler die Benutzerrechte prüfen soll. Wenn die interne Referenz eines Benutzers 0 ist, dann
+	 * wird die Benutzerinformation aus der Tabelle entfernt.
+	 *
+	 * @param userId BenutzerID
+	 */
+	public final synchronized void removeUser(final long userId) {
+		if(_useImplicitUserManagement) return;
+		final UserInfoInternal user = _userInfoHashMap.get(userId);
+		if(user != null) {
+			user.decrementReference();
+			if(user.canBeSafelyDeleted()) {
+				user.stopDataListener();
+				_userInfoHashMap.remove(userId);
+			}
+		}
+	}
+
+	/**
+	 * Wird aufgerufen un dem AccessControlManager zu informieren, dass ein verwaltetes Objekt sich geändert hat. Der AccessControlManager wird daraufhin nach
+	 * Benutzer-Objekten suchen, die dieses Objekt verwenden und an den {@link de.bsvrz.dav.dav.main.AuthentificationManager} eine Benachrichtigung senden, dass
+	 * sich die Rechte des Benutzers geändert haben und eventuelle vorhandene Anmeldungen entfernt werden müssen.
+	 *
+	 * @param object Objekt das sich geändert hat
+	 */
+	public synchronized void objectChanged(final DataLoader object) {
+		for(final UserInfoInternal userInfo : _userInfoHashMap.values()) {
+			if(userInfo instanceof DataLoader) {
+				final DataLoader userAsDataLoader = (DataLoader)userInfo;
+				if(isChildOf(userAsDataLoader, object)) {
+					_userRightsChangeHandler.handleUserRightsChanged(userInfo.getUserId());
+				}
+			}
+		}
+	}
+
+	/**
+	 * Wird aufgerufen un dem AccessControlManager zu informieren, dass ein Benutzer sich geändert hat. Der AccessControlManager wird daraufhin die referenzierten
+	 * Kindobjekte (Rollen, Regionen etc.) auf Rekursion überprüfen und an den {@link de.bsvrz.dav.dav.main.AuthentificationManager} eine Benachrichtigung senden,
+	 * dass sich die Rechte des Benutzers geändert haben und eventuelle vorhandene Anmeldungen entfernt werden müssen.
+	 *
+	 * @param userInfo Benutzerobjekt, das sich geändert hat
+	 */
+	synchronized void userChanged(final UserInfoInternal userInfo) {
+		if(userInfo instanceof DataLoader) {
+			final DataLoader userAsDataLoader = (DataLoader)userInfo;
+			enumerateChildren(userAsDataLoader); // Prüft auf Rekursion
+			_userRightsChangeHandler.handleUserRightsChanged(userInfo.getUserId()); // Nachricht an ConnectionsManager
+		}
+	}
+
+	/**
+	 * Gibt alle Kindelemente eines Objekts zurück
+	 *
+	 * @param node Objekt das nach Kindelementen gefragt wird
+	 *
+	 * @return Liste mit Kindelementen
+	 */
+	private List<DataLoader> enumerateChildren(final DataLoader node) {
+		return new ChildrenTreeEnumerator(this, node).enumerateChildren();
+	}
+
+	/**
+	 * Um immer einen konsistenten Zustand zu haben, darf immer nur ein DataLoader gleichzeitig pro AccessControlManager geupdatet werden. Dazu wird auf dieses
+	 * dummy-Objekt synchronisiert
+	 *
+	 * @return Objekt auf das Synchronisiert werden soll
+	 */
+	public Object getUpdateLock() {
+		return _updateLock;
+	}
+}
