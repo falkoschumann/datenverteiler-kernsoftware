@@ -20,14 +20,21 @@
 
 package de.bsvrz.dav.dav.util.accessControl;
 
-import de.bsvrz.dav.daf.main.*;
+import de.bsvrz.dav.daf.main.ClientDavInterface;
+import de.bsvrz.dav.daf.main.ClientReceiverInterface;
+import de.bsvrz.dav.daf.main.Data;
+import de.bsvrz.dav.daf.main.DataDescription;
+import de.bsvrz.dav.daf.main.DataState;
+import de.bsvrz.dav.daf.main.ReceiveOptions;
+import de.bsvrz.dav.daf.main.ReceiverRole;
+import de.bsvrz.dav.daf.main.ResultData;
 import de.bsvrz.dav.daf.main.config.Aspect;
 import de.bsvrz.dav.daf.main.config.AttributeGroup;
 import de.bsvrz.dav.daf.main.config.DataModel;
 import de.bsvrz.dav.daf.main.config.SystemObject;
 import de.bsvrz.sys.funclib.debug.Debug;
 
-import java.util.Collection;
+import java.util.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -74,7 +81,7 @@ public abstract class DataLoader {
 	private final Object _updateNotifier = new Object();
 
 	/** Wie lange auf Daten gewartet wird (in ms) */
-	private static final int TIMEOUT = 1000 * 5;
+	private static final int TIMEOUT = 1000 * 15;
 
 	private final ReadWriteLock _readWriteLock = new ReentrantReadWriteLock();
 

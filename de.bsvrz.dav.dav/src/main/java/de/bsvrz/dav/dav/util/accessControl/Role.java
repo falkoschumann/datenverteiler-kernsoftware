@@ -63,7 +63,7 @@ class Role extends DataLoader {
 	/**
 	 * Erstellt eine neue Rolle
 	 *
-	 * @param systemObject         Systemobjekt, das die Daten dieser Rolle enthält (vom Typ typ.zugriffsRolle)
+	 * @param systemObject         Systemobjekt, das die Daten dieser Rolle enthält
 	 * @param connection           Verbindung zum Datenverteiler
 	 * @param accessControlManager Klasse, die Berechtigungsobjekte verwaltet
 	 */

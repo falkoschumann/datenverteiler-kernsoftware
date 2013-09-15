@@ -36,7 +36,7 @@ import static de.bsvrz.dav.dav.main.ServerDavParameters.UserRightsChecking.NewDa
  * de.bsvrz.dav.dav.util.accessControl.AccessControlManager} in den {@link de.bsvrz.dav.dav.main.ConnectionsManager} ein.
  *
  * @author Kappich Systemberatung
- * @version $Revision: 9330 $
+ * @version $Revision: 10793 $
  */
 public class AuthentificationManager {
 
@@ -104,8 +104,8 @@ public class AuthentificationManager {
 			if(action == UserAction.SENDER) {
 				return true;
 			}
-			debugDenial("Applikation darf Konfigurationsanfragen nicht als Sender anmelden", userId, info, action);
-			return false;
+//			debugDenial("Applikation darf Konfigurationsanfragen nicht als Sender anmelden", userId, info, action);
+//			return false;
 		}
 
 		// Applikation darf Konfigurationsantworten als Senke anmelden
@@ -113,8 +113,8 @@ public class AuthentificationManager {
 			if(action == UserAction.DRAIN) {
 				return true;
 			}
-			debugDenial("Applikation darf Konfigurationsantworten nicht als Senke anmelden", userId, info, action);
-			return false;
+//			debugDenial("Applikation darf Konfigurationsantworten nicht als Senke anmelden", userId, info, action);
+//			return false;
 		}
 
 		// Andere Anmeldungen

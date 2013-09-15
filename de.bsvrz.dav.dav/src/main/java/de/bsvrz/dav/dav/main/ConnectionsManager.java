@@ -101,7 +101,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * vorhanden ist, wird sie aus der Konfiguration ausgelesen.
  *
  * @author Kappich Systemberatung
- * @version $Revision: 10112 $
+ * @version $Revision: 10161 $
  */
 public class ConnectionsManager implements ConnectionsManagerInterface, DistributionInterface, UserRightsChangeHandler {
 
@@ -223,6 +223,10 @@ public class ConnectionsManager implements ConnectionsManagerInterface, Distribu
 	private volatile DavTransactionManager _davTransactionManager = null;
 
 	private DavDavRequester _davRequestManager;
+
+	private boolean _waitForParamDone = false;
+
+	private Object _waitForParamLock = new Object();
 
 	/** Dieser Konstruktor wird für Tests benötigt. */
 	public ConnectionsManager() {
@@ -623,35 +627,40 @@ public class ConnectionsManager implements ConnectionsManagerInterface, Distribu
 	 * @throws InterruptedException
 	 */
 	private void waitForParamReady(final String paramAppIncarnationName) throws InterruptedException {
-		DataModel config = selfClientDavConnection.getDataModel();
-		AttributeGroup atg = config.getAttributeGroup("atg.applikationsFertigmeldung");
-		Aspect aspect = config.getAspect("asp.standard");
-		if(atg == null || aspect==null) {
-			_debug.warning("Datenmodell für Applikationsfertigmeldungen nicht verfügbar. Es wird nicht auf die Parametrierung gewartet");
-			return;
-		}
-		DataDescription readyMessageDataDescription = new DataDescription(atg, aspect);
-		if(paramAppIncarnationName == null) {
-			_debug.info("Warte auf Applikationsfertigmeldung der Parametrierung mit beliebigem Inkarnationsnamen.");
-		}
-		else {
-			_debug.info("Warte auf Applikationsfertigmeldung der Parametrierung mit Inkarnationsnamen " + paramAppIncarnationName);
-		}
-		while(true) {
-			SystemObjectType paramAppType = config.getType("typ.parametrierungsApplikation");
-			List<SystemObject> paramApps = paramAppType.getElements();
-			for(SystemObject paramApp : paramApps) {
-				ResultData result = selfClientDavConnection.getData(paramApp, readyMessageDataDescription, 30000);
-				Data data = result.getData();
-				if(data != null) {
-					if(data.getTextValue("InitialisierungFertig").getValueText().equals("Ja")) {
-						if(paramAppIncarnationName == null || data.getTextValue("Inkarnationsname").getValueText().equals(paramAppIncarnationName))
-						_debug.info("Parametrierung ist fertig");
-						return;
+		synchronized(_waitForParamLock) {
+			if(_waitForParamDone) return;
+			DataModel config = selfClientDavConnection.getDataModel();
+			AttributeGroup atg = config.getAttributeGroup("atg.applikationsFertigmeldung");
+			Aspect aspect = config.getAspect("asp.standard");
+			if(atg == null || aspect==null) {
+				_debug.warning("Datenmodell für Applikationsfertigmeldungen nicht verfügbar. Es wird nicht auf die Parametrierung gewartet");
+				_waitForParamDone = true;
+				return;
+			}
+			DataDescription readyMessageDataDescription = new DataDescription(atg, aspect);
+			if(paramAppIncarnationName == null) {
+				_debug.info("Warte auf Applikationsfertigmeldung der Parametrierung mit beliebigem Inkarnationsnamen.");
+			}
+			else {
+				_debug.info("Warte auf Applikationsfertigmeldung der Parametrierung mit Inkarnationsnamen " + paramAppIncarnationName);
+			}
+			while(true) {
+				SystemObjectType paramAppType = config.getType("typ.parametrierungsApplikation");
+				List<SystemObject> paramApps = paramAppType.getElements();
+				for(SystemObject paramApp : paramApps) {
+					ResultData result = selfClientDavConnection.getData(paramApp, readyMessageDataDescription, 30000);
+					Data data = result.getData();
+					if(data != null) {
+						if(data.getTextValue("InitialisierungFertig").getValueText().equals("Ja")) {
+							if(paramAppIncarnationName == null || data.getTextValue("Inkarnationsname").getValueText().equals(paramAppIncarnationName))
+								_debug.info("Parametrierung ist fertig");
+							_waitForParamDone = true;
+							return;
+						}
 					}
 				}
+				Thread.sleep(1000);
 			}
-			Thread.sleep(1000);
 		}
 	}
 
@@ -1109,6 +1118,7 @@ public class ConnectionsManager implements ConnectionsManagerInterface, Distribu
 				}
 			}
 		}
+
 		// Ask the configuration
 		if(dataModel != null) {
 			ConfigurationManager configurationManager = ((DafDataModel)dataModel).getConfigurationManager();
@@ -1136,6 +1146,14 @@ public class ConnectionsManager implements ConnectionsManagerInterface, Distribu
 				);
 
 				if(userId > -1) {
+					// Warten auf die Fertigmeldung der Parametrierung
+					try {
+						if(_serverDavParameters.getWaitForParamApp()) waitForParamReady(_serverDavParameters.getParamAppIncarnationName());
+					}
+					catch(InterruptedException e) {
+						_debug.info("Warten auf Parametrierung wurde unterbrochen", e);
+						return -1L;
+					}
 					authentificationManager.addUser(userId);
 				}
 				return userId;

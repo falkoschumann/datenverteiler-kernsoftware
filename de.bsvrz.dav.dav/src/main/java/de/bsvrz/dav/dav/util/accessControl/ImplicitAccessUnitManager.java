@@ -64,7 +64,7 @@ class ImplicitAccessUnitManager {
 						true,   // Sender
 						false,  // Empfänger
 						false,  // Quelle
-						false   // Senke
+						true   // Senke
 				)
 		);
 		// Basis Antworten (aus kb.objekteZugriffsrechteBasis)
@@ -82,8 +82,8 @@ class ImplicitAccessUnitManager {
 								// Aspekte
 								"asp.antwort"
 						),
-						false,   // Sender
-						true,    // Empfänger
+						true,   // Sender
+						true,    // Empfänger 
 						false,   // Quelle
 						true     // Senke
 				)

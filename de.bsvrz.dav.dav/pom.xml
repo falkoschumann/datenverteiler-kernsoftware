@@ -6,6 +6,7 @@
 
     <groupId>de.bsvrz.dav</groupId>
     <artifactId>de.bsvrz.dav.dav</artifactId>
+    <version>3.5.5</version>
     <packaging>jar</packaging>
 
     <name>DaV Datenverteiler</name>

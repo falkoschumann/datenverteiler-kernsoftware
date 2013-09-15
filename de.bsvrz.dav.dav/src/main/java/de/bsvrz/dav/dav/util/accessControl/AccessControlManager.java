@@ -31,6 +31,7 @@ import de.bsvrz.sys.funclib.operatingMessage.MessageState;
 import de.bsvrz.sys.funclib.operatingMessage.MessageType;
 
 import java.util.*;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * Klasse, die im Datenmodell Abfragen nach Benutzerberechtigungen erlaubt.
@@ -44,7 +45,7 @@ public final class AccessControlManager implements RegionManager {
 	private static final Debug _debug = Debug.getLogger();
 
 	/**
-	 * Interval zwischen 2 Betriebsmeldungen wegen fehlenden Parametern. Außerdem die Zeit, die mindestens vergangen sein muss, bis eie fehlender
+	 * Interval zwischen 2 Betriebsmeldungen wegen fehlenden Parametern. Außerdem die Zeit, die mindestens vergangen sein muss, bis ein fehlender
 	 * Parameterdatensatz gemeldet wird. Bei der Anpassung der Zeit muss möglicherweise der Wortlaut der Betriebsmeldung geändert werden.
 	 */
 	public static final int MessageSenderInterval = 60 * 1000;
@@ -67,13 +68,15 @@ public final class AccessControlManager implements RegionManager {
 	/** Ob das neue Datenmodell (siehe {@link de.bsvrz.dav.dav.util.accessControl.ExtendedUserInfo}) benutzt wird */
 	private final boolean _isUsingNewDataModel;
 
-	/** Callback, der Aufgerufen wird, wenn sich die Rechte eines Benutzers ändern */
-	private UserRightsChangeHandler _userRightsChangeHandler;
+	/** Callback, der aufgerufen wird, wenn sich die Rechte eines Benutzers ändern */
+	private final UserRightsChangeHandler _userRightsChangeHandler;
 
 	/** Ob implizite Benutzerverwaltung durchgeführt wird, oder Benutzer mit addUser erstellt werden müssen */
-	private boolean _useImplicitUserManagement;
+	private final boolean _useImplicitUserManagement;
 
 	private final Object _updateLock = new Object();
+
+	private final ReentrantReadWriteLock _userMapLock = new ReentrantReadWriteLock();
 
 	private HashBagMap<DataState, DataLoader> _oldObjectsWithMissingParameters;
 
@@ -211,7 +214,7 @@ public final class AccessControlManager implements RegionManager {
 	}
 
 	@Override
-	public synchronized String toString() {
+	public String toString() {
 		return "AccessControlManager{" + "_useImplicitUserManagement=" + _useImplicitUserManagement + ", _isUsingNewDataModel=" + _isUsingNewDataModel + '}';
 	}
 
@@ -221,19 +224,26 @@ public final class AccessControlManager implements RegionManager {
 	 *
 	 * @param userId BenutzerID
 	 */
-	public final synchronized void addUser(final long userId) {
+	public final void addUser(final long userId) {
 		if(_useImplicitUserManagement) return;
 		addUserInternal(userId);
 	}
 
-	private void addUserInternal(final long userId) {
-		UserInfoInternal userInfo = _userInfoHashMap.get(userId);
-		if(userInfo == null) {
-			userInfo = createUserInfo(userId);
-			_userInfoHashMap.put(userId, userInfo);
+	private UserInfo addUserInternal(final long userId) {
+		_userMapLock.writeLock().lock();
+		try{
+			UserInfoInternal userInfo = _userInfoHashMap.get(userId);
+			if(userInfo == null) {
+				userInfo = createUserInfo(userId);
+				_userInfoHashMap.put(userId, userInfo);
+			}
+			else {
+				userInfo.incrementReference();
+			}
+			return userInfo;
 		}
-		else {
-			userInfo.incrementReference();
+		finally {
+			_userMapLock.writeLock().unlock();
 		}
 	}
 
@@ -344,17 +354,25 @@ public final class AccessControlManager implements RegionManager {
 	 *
 	 * @return Das geforderte UserInfo-Objekt
 	 */
-	public synchronized UserInfo getUser(final long userId) {
-		final UserInfoInternal userInfo = _userInfoHashMap.get(userId);
+	public UserInfo getUser(final long userId) {
+		UserInfoInternal userInfo;
+		_userMapLock.readLock().lock();
+		try {
+			userInfo = _userInfoHashMap.get(userId);
+		}
+		finally {
+			_userMapLock.readLock().unlock();
+		}
 		if(_useImplicitUserManagement && userInfo == null) {
-			addUserInternal(userId);
-			return _userInfoHashMap.get(userId);
+			// addUserInternal verwendet _userMapLock.writeLock(). Daher muss das readLock hier freigegeben worden sein,
+			return addUserInternal(userId);
 		}
 		return userInfo;
 	}
 
 	/**
-	 * Prüft ob ein Objekt wie eine Rolle oder eine Region von einem Objekt wie einem Benutzer oder einer Berechtigungsklasse referenziert wird.
+	 * Prüft ob ein Objekt wie eine Rolle oder eine Region von einem übergeordnetem Objekt wie einem Benutzer
+	 * oder einer Berechtigungsklasse referenziert wird.
 	 *
 	 * @param parent        Mögliches Vaterobjekt
 	 * @param possibleChild Möglichen Kindobjekt
@@ -372,15 +390,21 @@ public final class AccessControlManager implements RegionManager {
 	 *
 	 * @param userId BenutzerID
 	 */
-	public final synchronized void removeUser(final long userId) {
+	public final void removeUser(final long userId) {
 		if(_useImplicitUserManagement) return;
-		final UserInfoInternal user = _userInfoHashMap.get(userId);
-		if(user != null) {
-			user.decrementReference();
-			if(user.canBeSafelyDeleted()) {
-				user.stopDataListener();
-				_userInfoHashMap.remove(userId);
+		_userMapLock.writeLock().lock();
+		try {
+			final UserInfoInternal user = _userInfoHashMap.get(userId);
+			if(user != null) {
+				user.decrementReference();
+				if(user.canBeSafelyDeleted()) {
+					user.stopDataListener();
+					_userInfoHashMap.remove(userId);
+				}
 			}
+		}
+		finally {
+			_userMapLock.writeLock().unlock();
 		}
 	}
 
@@ -391,15 +415,37 @@ public final class AccessControlManager implements RegionManager {
 	 *
 	 * @param object Objekt das sich geändert hat
 	 */
-	public synchronized void objectChanged(final DataLoader object) {
-		for(final UserInfoInternal userInfo : _userInfoHashMap.values()) {
-			if(userInfo instanceof DataLoader) {
-				final DataLoader userAsDataLoader = (DataLoader)userInfo;
-				if(isChildOf(userAsDataLoader, object)) {
-					_userRightsChangeHandler.handleUserRightsChanged(userInfo.getUserId());
+	public void objectChanged(final DataLoader object) {
+		final List<Long> affectedUserIds = new ArrayList<Long>();
+		_userMapLock.readLock().lock();
+		try {
+			for(final UserInfoInternal userInfo : _userInfoHashMap.values()) {
+				if(userInfo instanceof DataLoader) {
+					final DataLoader userAsDataLoader = (DataLoader) userInfo;
+					if(isChildOf(userAsDataLoader, object)) {
+						affectedUserIds.add(userInfo.getUserId());
+					}
 				}
 			}
 		}
+		finally {
+			_userMapLock.readLock().unlock();
+		}
+
+		// Im Falle das _userRightsChangeHandler der ConnectionsManager ist, synchronisiert dieser auf sich selber.
+		// Daher darf der folgende Code nicht im _userMapLock stehen, sonst wäre das als verschachteltes Locking sehr
+		// DeadLock-anfällig.
+
+		// Der Fall dass zwischenzeitlich die aktuellen Benutzer geändert worden sind, ist irrelevant
+		// da der Parameterdatenempfang asynchron stattfindet und daher sowieso keine festen Aussagen bzgl.
+		// der Reihenfolge der kritischen Aufrufe von addUser()/getUser()/removeUser() etc. und objectChanged() gemacht werden können.
+		// Benutzer, die während der Auführung dieser Zeilen angelegt werden besitzen bereits die neuen Parameterdaten
+		// und sind daher unkritisch. Benutzer die währenddessen gelöscht werden sind sowieso unerheblich,
+		// da diese sowieso gezwungen sind alle Anmeldungen zu entfernen und eine Aktualisierung wg. geänderter Rechte sinnlos wäre
+		for(Long affectedUserId : affectedUserIds) {
+			_userRightsChangeHandler.handleUserRightsChanged(affectedUserId);
+		}
+
 	}
 
 	/**
@@ -409,7 +455,7 @@ public final class AccessControlManager implements RegionManager {
 	 *
 	 * @param userInfo Benutzerobjekt, das sich geändert hat
 	 */
-	synchronized void userChanged(final UserInfoInternal userInfo) {
+	void userChanged(final UserInfoInternal userInfo) {
 		if(userInfo instanceof DataLoader) {
 			final DataLoader userAsDataLoader = (DataLoader)userInfo;
 			enumerateChildren(userAsDataLoader); // Prüft auf Rekursion

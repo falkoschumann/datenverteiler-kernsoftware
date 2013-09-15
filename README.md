@@ -28,7 +28,8 @@ Der *develop* Branch
 
 Der *develop* Branch umfasst gegenüber dem *master* Branch folgende Änderungen:
 
-- *de.bsvrz.dav.daf* wurde auf Version 3.5.5 vom 13.15.2012 aktualisiert.
+- *DaV Datenverteiler-Applikationsfunktionen* (de.bsvrz.dav.daf) wurde auf Version 3.5.5 vom 13.12.2012 aktualisiert.
+- *DaV Datenverteiler* (de.bsvrz.dav.dav) wurde auf Version 3.5.5 vom 13.12.2012 aktualisiert.
 
 
 Hinweise zur Maven-Konfiguration

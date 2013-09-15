@@ -99,7 +99,7 @@ public class Region extends DataLoader implements ObjectCollectionParent {
 	/**
 	 * Erstellt eine neue Region
 	 *
-	 * @param systemObject         Systemobjekt, das die Daten dieser Rolle enthält (vom Typ typ.zugriffsRolle)
+	 * @param systemObject         Systemobjekt, das die Daten dieser Region enthält
 	 * @param connection           Verbindung zum Datenverteiler
 	 * @param accessControlManager Klasse, die Berechtigungsobjekte verwaltet
 	 */
