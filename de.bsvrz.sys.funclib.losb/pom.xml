@@ -8,8 +8,14 @@
     <artifactId>de.bsvrz.sys.funclib.losb</artifactId>
     <packaging>jar</packaging>
 
-    <name>Funktionsbibliothek Los B</name>
-    <url>https://github.com/falkoschumann/datenverteiler-kernsoftware</url>
+    <name>Sys Funktionsbibliothek Los B</name>
+
+    <licenses>
+        <license>
+            <name>GNU General Public License (GPL), Version 2.0</name>
+            <url>LICENSE.txt</url>
+        </license>
+    </licenses>
 
     <scm>
         <url>https://github.com/falkoschumann/datenverteiler-kernsoftware</url>

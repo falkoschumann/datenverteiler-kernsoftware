@@ -8,8 +8,18 @@
     <artifactId>de.kappich.sys.funclib.profile</artifactId>
     <packaging>jar</packaging>
 
-    <name>Profile</name>
-    <url>https://github.com/falkoschumann/datenverteiler-kernsoftware</url>
+    <name>Kappich Profile</name>
+    <organization>
+        <name>Kappich Systemberatung</name>
+        <url>http://www.kappich.de</url>
+    </organization>
+
+    <licenses>
+        <license>
+            <name>GNU General Public License (GPL), Version 2.0</name>
+            <url>LICENSE.txt</url>
+        </license>
+    </licenses>
 
     <scm>
         <url>https://github.com/falkoschumann/datenverteiler-kernsoftware</url>

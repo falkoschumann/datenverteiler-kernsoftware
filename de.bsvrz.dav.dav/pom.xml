@@ -8,8 +8,14 @@
     <artifactId>de.bsvrz.dav.dav</artifactId>
     <packaging>jar</packaging>
 
-    <name>Datenverteiler</name>
-    <url>https://github.com/falkoschumann/datenverteiler-kernsoftware</url>
+    <name>DaV Datenverteiler</name>
+
+    <licenses>
+        <license>
+            <name>GNU General Public License (GPL), Version 2.0</name>
+            <url>LICENSE.txt</url>
+        </license>
+    </licenses>
 
     <scm>
         <url>https://github.com/falkoschumann/datenverteiler-kernsoftware</url>

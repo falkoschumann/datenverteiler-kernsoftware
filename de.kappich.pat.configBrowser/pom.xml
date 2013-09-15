@@ -8,8 +8,18 @@
     <artifactId>de.kappich.pat.configBrowser</artifactId>
     <packaging>jar</packaging>
 
-    <name>Config Browser</name>
-    <url>https://github.com/falkoschumann/datenverteiler-kernsoftware</url>
+    <name>Kappich KonfigurationsBrowser</name>
+    <organization>
+        <name>Kappich Systemberatung</name>
+        <url>http://www.kappich.de</url>
+    </organization>
+
+    <licenses>
+        <license>
+            <name>GNU General Public License (GPL), Version 2.0</name>
+            <url>LICENSE.txt</url>
+        </license>
+    </licenses>
 
     <scm>
         <url>https://github.com/falkoschumann/datenverteiler-kernsoftware</url>

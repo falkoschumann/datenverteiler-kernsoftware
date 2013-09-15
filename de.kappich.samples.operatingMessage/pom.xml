@@ -8,8 +8,18 @@
     <artifactId>de.kappich.samples.operatingMessage</artifactId>
     <packaging>jar</packaging>
 
-    <name>Beispiel Betriebsmeldungsverwaltung</name>
-    <url>https://github.com/falkoschumann/datenverteiler-kernsoftware</url>
+    <name>Kappich Beispiel Betriebsmeldungsverwaltung</name>
+    <organization>
+        <name>Kappich Systemberatung</name>
+        <url>http://www.kappich.de</url>
+    </organization>
+
+    <licenses>
+        <license>
+            <name>GNU General Public License (GPL), Version 2.0</name>
+            <url>LICENSE.txt</url>
+        </license>
+    </licenses>
 
     <scm>
         <url>https://github.com/falkoschumann/datenverteiler-kernsoftware</url>

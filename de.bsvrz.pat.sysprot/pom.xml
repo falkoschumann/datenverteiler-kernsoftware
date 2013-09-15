@@ -8,8 +8,14 @@
     <artifactId>de.bsvrz.pat.sysprot</artifactId>
     <packaging>jar</packaging>
 
-    <name>System-Protokollierer</name>
-    <url>https://github.com/falkoschumann/datenverteiler-kernsoftware</url>
+    <name>PAT System-Protokollierer</name>
+
+    <licenses>
+        <license>
+            <name>GNU General Public License (GPL), Version 2.0</name>
+            <url>LICENSE.txt</url>
+        </license>
+    </licenses>
 
     <scm>
         <url>https://github.com/falkoschumann/datenverteiler-kernsoftware</url>

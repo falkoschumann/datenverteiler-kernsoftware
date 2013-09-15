@@ -9,7 +9,13 @@
     <packaging>jar</packaging>
 
     <name>KEx DaV</name>
-    <url>https://github.com/falkoschumann/datenverteiler-kernsoftware</url>
+
+    <licenses>
+        <license>
+            <name>GNU General Public License (GPL), Version 2.0</name>
+            <url>LICENSE.txt</url>
+        </license>
+    </licenses>
 
     <scm>
         <url>https://github.com/falkoschumann/datenverteiler-kernsoftware</url>
