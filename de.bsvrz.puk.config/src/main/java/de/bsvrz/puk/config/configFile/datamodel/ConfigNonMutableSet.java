@@ -41,7 +41,7 @@ import java.util.*;
  * Implementierung des Interfaces {@link de.bsvrz.dav.daf.main.config.NonMutableSet} für nicht veränderbare Mengen auf Seiten der Konfiguration.
  *
  * @author Stephan Homeyer (sth), Kappich Systemberatung
- * @version $Revision: 8542 $ / $Date: 2011-01-05 14:40:38 +0100 (Wed, 05 Jan 2011) $ / ($Author: jh $)
+ * @version $Revision: 8542 $ / $Date: 2011-01-05 14:40:38 +0100 (Mi, 05 Jan 2011) $ / ($Author: jh $)
  */
 public class ConfigNonMutableSet extends ConfigObjectSet implements NonMutableSet {
 

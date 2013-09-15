@@ -52,7 +52,7 @@ import java.util.zip.InflaterInputStream;
  * Diese Klasse stellt eine Konfigurationsbereichsdatei dar und speichert alle Objekte des Bereichs mit Historie.
  *
  * @author Achim Wullenkord (AW), Kappich Systemberatung
- * @version $Revision: 9664 $ / $Date: 2011-11-07 09:34:21 +0100 (Mon, 07 Nov 2011) $ / ($Author: jh $)
+ * @version $Revision: 9664 $ / $Date: 2011-11-07 09:34:21 +0100 (Mo, 07 Nov 2011) $ / ($Author: jh $)
  */
 public class ConfigAreaFile implements ConfigurationAreaFile {
 

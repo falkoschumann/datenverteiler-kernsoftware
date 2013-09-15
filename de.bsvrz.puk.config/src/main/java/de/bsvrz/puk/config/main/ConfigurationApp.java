@@ -769,7 +769,7 @@ public class ConfigurationApp {
 			}
 			catch(Exception ex) {
 				// falls das Speichern nicht gelingt wird nur eine Warnung ausgegeben, evtl. gelingt es beim nächsten Mal
-				_debug.warning("Zwischenspeicher für Fremdobjekte konnte nicht gespeichert werden", ex.getMessage());
+				_debug.warning("Zwischenspeicher für Fremdobjekte konnte nicht gespeichert werden", ex);
 			}
 			try {
 				((ConfigDataModel)_dataModel).save();

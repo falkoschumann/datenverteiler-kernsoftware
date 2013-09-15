@@ -44,7 +44,7 @@ import java.util.*;
  * Implementierung des Interfaces für Integer-Attribut-Typen.
  *
  * @author Stephan Homeyer (sth), Kappich Systemberatung
- * @version $Revision: 8550 $ / $Date: 2011-01-06 10:48:12 +0100 (Thu, 06 Jan 2011) $ / ($Author: jh $)
+ * @version $Revision: 8550 $ / $Date: 2011-01-06 10:48:12 +0100 (Do, 06 Jan 2011) $ / ($Author: jh $)
  */
 public class ConfigIntegerAttributeType extends ConfigAttributeType implements IntegerAttributeType {
 

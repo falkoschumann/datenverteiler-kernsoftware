@@ -90,7 +90,7 @@ import java.util.*;
  * Anfrage verschicken, wird dies ebenfalls durch dieses Objekt realisiert.
  *
  * @author Kappich Systemberatung
- * @version $Revision: 9229 $
+ * @version $Revision: 10674 $
  */
 public class ConfigurationQueryManager {
 
@@ -1025,7 +1025,14 @@ public class ConfigurationQueryManager {
 							else if(queryType.equals("DatensatzAnfrage")) {
 								long attributeGroupUsageId = deserializer.readLong();
 								AttributeGroupUsage attributeGroupUsage = (AttributeGroupUsage)_localConfiguration.getObject(attributeGroupUsageId);
-								_debug.finer("attributeGroupUsage.getPidOrId()", attributeGroupUsage.getPidOrId());
+								if(attributeGroupUsage==null) {
+									_debug.warning(
+											"Datensatzanfrage mit unbekannter Attributgruppenverwendung ID: " + attributeGroupUsageId + " von " + _querySender
+									);
+								}
+								else {
+									_debug.finer("attributeGroupUsage.getPidOrId()", attributeGroupUsage.getPidOrId());
+								}
 								int numberOfObjects = deserializer.readInt();
 								serializer.writeInt(numberOfObjects);
 								final ByteArrayOutputStream dataOutputStream = new ByteArrayOutputStream();
@@ -1052,7 +1059,7 @@ public class ConfigurationQueryManager {
 //									}
 
 
-									Data configData = (object == null ? null : object.getConfigurationData(attributeGroupUsage));
+									Data configData = ((object == null || attributeGroupUsage == null) ? null : object.getConfigurationData(attributeGroupUsage));
 									if(configData == null) {
 										serializer.writeInt(0);
 									}
@@ -1276,11 +1283,7 @@ public class ConfigurationQueryManager {
 						}
 						catch(Exception e) {
 							// Es ist zu einem Fehler gekommen
-							e.printStackTrace();
-							final String errorMessage = "Fehler beim Erzeugen der Antwort: " + e;
-							serializer.writeString(errorMessage);
-							messageType = "FehlerAntwort";
-							_debug.warning("Bearbeitung von einer Konfigurationsanfrage fehlgeschlagen", e);
+							messageType = generateErrorReply(serializer, e);
 						}
 
 						if(sendData) {
@@ -1541,11 +1544,7 @@ public class ConfigurationQueryManager {
 						}
 						catch(Exception e) {
 							// Es ist zu einem Fehler gekommen
-							e.printStackTrace();
-							final String errorMessage = "Fehler beim Erzeugen der Antwort: " + e;
-							serializer.writeString(errorMessage);
-							messageType = "FehlerAntwort";
-							_debug.warning("Bearbeitung von einer Konfigurationsanfrage fehlgeschlagen", e);
+							messageType = generateErrorReply(serializer, e);
 						}
 						// Antwort auf die Anfrage verschicken
 						_senderReplyWriteTasks.sendData(messageType, byteArrayStream.toByteArray(), queryIndex);
@@ -1613,11 +1612,7 @@ public class ConfigurationQueryManager {
 						}
 						catch(Exception e) {
 							// Es ist zu einem Fehler gekommen
-							e.printStackTrace();
-							final String errorMessage = "Fehler beim Erzeugen der Antwort: " + e;
-							serializer.writeString(errorMessage);
-							messageType = "FehlerAntwort";
-							_debug.warning("Bearbeitung von einer Konfigurationsanfrage fehlgeschlagen", e);
+							messageType = generateErrorReply(serializer, e);
 						}
 						// Antwort auf die Anfrage verschicken
 						_senderReplyUserAdministrationTask.sendData(messageType, byteArrayStream.toByteArray(), queryIndex);
@@ -1784,11 +1779,7 @@ public class ConfigurationQueryManager {
 						}
 						catch(Exception e) {
 							// Es ist zu einem Fehler gekommen
-							e.printStackTrace();
-							final String errorMessage = "Fehler beim Erzeugen der Antwort: " + e;
-							serializer.writeString(errorMessage);
-							messageType = "FehlerAntwort";
-							_debug.warning("Bearbeitung von einer Konfigurationsanfrage fehlgeschlagen", e);
+							messageType = generateErrorReply(serializer, e);
 						}
 						// Antwort auf die Anfrage verschicken
 						_senderReplyAreaTasks.sendData(messageType, byteArrayStream.toByteArray(), queryIndex);
@@ -1841,6 +1832,21 @@ public class ConfigurationQueryManager {
 					_debug.error("Fehler beim Versenden einer Antwort", e);
 				}
 			}// while(true)
+		}
+
+		private String generateErrorReply(final Serializer serializer, final Exception exception) throws IOException {
+			final String messageType;
+			exception.printStackTrace();
+			StackTraceElement[] stacktrace = exception.getStackTrace();
+			StringBuilder stacktraceTextBuilder = new StringBuilder();
+			for(int i = 0; i < stacktrace.length && i < 5; ++i) stacktraceTextBuilder.append(stacktrace[i]).append(",\n");
+			String stacktraceText = stacktraceTextBuilder.toString();
+
+			final String errorMessage = "Fehler beim Erzeugen der Antwort: " + exception + ", stack: " +stacktraceText;
+			serializer.writeString(errorMessage);
+			messageType = "FehlerAntwort";
+			_debug.warning("Bearbeitung von einer Konfigurationsanfrage fehlgeschlagen", exception);
+			return messageType;
 		}
 
 		/**
