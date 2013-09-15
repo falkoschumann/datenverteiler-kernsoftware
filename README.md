@@ -31,6 +31,7 @@ Der *develop* Branch umfasst gegenüber dem *master* Branch folgende Änderungen:
 - *DaV Datenverteiler-Applikationsfunktionen* (de.bsvrz.dav.daf) wurde auf Version 3.5.5 vom 13.12.2012 aktualisiert.
 - *DaV Datenverteiler* (de.bsvrz.dav.dav) wurde auf Version 3.5.5 vom 13.12.2012 aktualisiert.
 - *PuK Konfiguration* (de.bsvrz.puk.config) wurde auf Version 3.5.4 vom 08.11.2012 aktualisiert.
+- *Kappich Parametrierung* (de.kappich.puk.param) wurde auf Version 3.5.1 vom 30.04.2012 aktualisiert.
 
 
 Hinweise zur Maven-Konfiguration

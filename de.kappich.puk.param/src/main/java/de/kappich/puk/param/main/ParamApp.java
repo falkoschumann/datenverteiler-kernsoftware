@@ -40,6 +40,7 @@ import de.bsvrz.dav.daf.main.config.DataModel;
 import de.bsvrz.dav.daf.main.config.SystemObject;
 import de.bsvrz.sys.funclib.commandLineArgs.ArgumentList;
 import de.bsvrz.sys.funclib.dataIdentificationSettings.DataIdentification;
+import de.bsvrz.sys.funclib.dataIdentificationSettings.EndOfSettingsListener;
 import de.bsvrz.sys.funclib.dataIdentificationSettings.SettingsManager;
 import de.bsvrz.sys.funclib.debug.Debug;
 
@@ -92,7 +93,7 @@ import java.util.*;
  * <p/>
  *
  * @author Kappich Systemberatung
- * @version $Revision: 9144 $
+ * @version $Revision: 10161 $
  */
 public class ParamApp implements ClientSenderInterface, ClientReceiverInterface {
 
@@ -153,6 +154,9 @@ public class ParamApp implements ClientSenderInterface, ClientReceiverInterface 
 	 */
 	private static Debug _debug;
 
+	/** <code>true</code>, wenn die Applikationsfertigmeldung noch nicht gesendet wurde. */
+	private boolean _applicationReadyMessageNotSent = true;
+
 	/**
 	 * Konstruiert ein ParamApp Objekt. Bei der Konstruktion werden folgende
 	 * Schritte durchgeführt: <ul> <li>Anmeldung auf den Parametersatz
@@ -202,6 +206,15 @@ public class ParamApp implements ClientSenderInterface, ClientReceiverInterface 
 			// ... und SettingsManager zur Verwaltung dieses Parametersatzes instanzieren.
 			SettingsManager settingsManager = new SettingsManager(_connection, parameterIdentification);
 			settingsManager.addUpdateListener(new ParameterObserver(this, _connection, paramApp, _paramObjects, _persistanceHandlerManager));
+			// Applikationsfertigmeldung initial einmal senden, nachdem alle Parameter publiziert wurden
+			settingsManager.addEndOfSettingsListener(new EndOfSettingsListener() {
+				public void inform() {
+					if(_applicationReadyMessageNotSent) {
+						_connection.sendApplicationReadyMessage();
+						_applicationReadyMessageNotSent = false;
+					}
+				}
+			});
 			settingsManager.start();
 
 			// Parametersatz zum Senden anmelden (Parametrierung verwaltet auch ihre eigenen Paramter)
@@ -212,6 +225,16 @@ public class ParamApp implements ClientSenderInterface, ClientReceiverInterface 
 
 			// Persistenten Parametersatz versenden (und damit schaukelt sich die Parameterierung dann hoch...)
 			ResultData[] results = ((PersistanceHandler) _paramObjects.get(parameterIdentification)).getPersistanceData();
+			// Wenn noch kein Datensatz mit den von der Parametrierung zu verwaltenden Parametern existiert, dann einen erzeugen
+			if(results.length == 0) {
+				ResultData initialParamParamResult = new ResultData(
+						parameterIdentification.getObject(),
+						parameterIdentification.getDataDescription(),
+						System.currentTimeMillis(),
+						_connection.createData(parameterIdentification.getDataDescription().getAttributeGroup())
+				);
+				results= new ResultData[]{initialParamParamResult};
+			}
 			for(final ResultData resultData : results) {
 				if(resultData.getData().isDefined()) {
 					_connection.sendData(resultData);
@@ -409,6 +432,8 @@ public class ParamApp implements ClientSenderInterface, ClientReceiverInterface 
 			Thread.sleep(pause);
 
 			_connection = new ClientDavConnection(clientDavParameters);
+			// Applikationsfertigmeldung soll erst nach dem Publizieren aller Parameter gesendet werden.
+			_connection.enableExplicitApplicationReadyMessage();
 			_connection.connect();
 			_connection.login();
 

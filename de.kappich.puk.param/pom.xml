@@ -6,6 +6,7 @@
 
     <groupId>de.kappich</groupId>
     <artifactId>de.kappich.puk.param</artifactId>
+    <version>3.5.1</version>
     <packaging>jar</packaging>
 
     <name>Kappich Parametrierung</name>
