@@ -1,4 +1,4 @@
-Kernsoftware
+Kernsoftware [![Build Status](https://travis-ci.org/falkoschumann/datenverteiler-kernsoftware.png)](https://travis-ci.org/falkoschumann/datenverteiler-kernsoftware)
 ============
 
 Die Kernsoftware des Datenverteilers in Form eines Maven-Projekts. Der Zweck
