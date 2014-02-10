@@ -35,14 +35,14 @@
 
     <distributionManagement>
         <repository>
-            <id>muspellheim.repository</id>
-            <name>Muspellheim Repository</name>
-            <url>ftp://projekte.muspellheim.de/repository/</url>
+            <id>repository</id>
+            <name>Repository</name>
+            <url>http://falkoschumann.github.io/maven-repository/releases/</url>
         </repository>
         <snapshotRepository>
-            <id>muspellheim.snapshots</id>
-            <name>Muspellheim Snapshot Repository</name>
-            <url>ftp://projekte.muspellheim.de/snapshots/</url>
+            <id>snapshots</id>
+            <name>Snapshot Repository</name>
+            <url>http://falkoschumann.github.io/maven-repository/snapshots/</url>
         </snapshotRepository>
         <site>
             <id>github.pages</id>
