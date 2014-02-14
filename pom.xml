@@ -35,14 +35,14 @@
 
     <distributionManagement>
         <repository>
-            <id>muspellheim.repository</id>
-            <name>Muspellheim Repository</name>
-            <url>ftp://projekte.muspellheim.de/repository/</url>
+            <id>repository</id>
+            <name>Repository</name>
+            <url>http://falkoschumann.github.io/maven-repository/releases/</url>
         </repository>
         <snapshotRepository>
-            <id>muspellheim.snapshots</id>
-            <name>Muspellheim Snapshot Repository</name>
-            <url>ftp://projekte.muspellheim.de/snapshots/</url>
+            <id>snapshots</id>
+            <name>Snapshot Repository</name>
+            <url>http://falkoschumann.github.io/maven-repository/snapshots/</url>
         </snapshotRepository>
         <site>
             <id>github.pages</id>
@@ -55,6 +55,11 @@
         <system>GitHub</system>
         <url>https://github.com/falkoschumann/datenverteiler-kernsoftware/issues</url>
     </issueManagement>
+
+    <ciManagement>
+        <system>Travis-CI</system>
+        <url>https://travis-ci.org/falkoschumann/datenverteiler-kernsoftware</url>
+    </ciManagement>
 
     <modules>
         <module>de.bsvrz.dav.daf</module>
@@ -103,7 +108,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.0</version>
+                <version>3.1</version>
                 <configuration>
                     <source>${source.version}</source>
                     <target>${source.version}</target>
@@ -127,7 +132,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.9</version>
+                <version>2.9.1</version>
                 <executions>
                     <execution>
                         <id>attach-javadoc</id>
@@ -146,7 +151,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-site-plugin</artifactId>
-                <version>3.2</version>
+                <version>3.3</version>
             </plugin>
         </plugins>
         <extensions>
@@ -163,12 +168,12 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-project-info-reports-plugin</artifactId>
-                <version>2.6</version>
+                <version>2.7</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.9</version>
+                <version>2.9.1</version>
                 <configuration>
                     <aggregate>true</aggregate>
                 </configuration>
@@ -215,7 +220,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
-                <version>2.10</version>
+                <version>2.11</version>
                 <configuration>
                     <configLocation>src/main/config/checkstyle.xml</configLocation>
                 </configuration>
