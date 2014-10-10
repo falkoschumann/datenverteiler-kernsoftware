@@ -24,7 +24,7 @@ import de.bsvrz.dav.daf.main.config.SystemObject;
 
 /**
  * @author Kappich Systemberatung
- * @version $Revision: 9005 $
+ * @version $Revision: 11481 $
  */
 public interface RegionManager {
 
@@ -39,7 +39,7 @@ public interface RegionManager {
 
 	/**
 	 * Wird aufgerufen un dem AccessControlManager zu informieren, dass ein verwaltetes Objekt sich geändert hat. Der AccessControlManager wird daraufhin nach
-	 * Benutzer-Objekten suchen, die dieses Objekt verwenden und an den {@link de.bsvrz.dav.dav.main.AuthentificationManager} eine Benachrichtigung senden, dass
+	 * Benutzer-Objekten suchen, die dieses Objekt verwenden und an den {@link de.bsvrz.dav.dav.main.HighLevelSubscriptionsManager} eine Benachrichtigung senden, dass
 	 * sich die Rechte des Benutzers geändert haben und eventuelle vorhandene Anmeldungen entfernt werden müssen.
 	 *
 	 * @param object Objekt das sich geändert hat

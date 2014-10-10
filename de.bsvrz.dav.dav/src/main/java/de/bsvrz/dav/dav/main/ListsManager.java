@@ -49,14 +49,14 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * Datenverteiler verwaltet für jeden von ihm erreichbaren Datenverteiler eine Anmeldungsliste.
  *
  * @author Kappich Systemberatung
- * @version $Revision: 8100 $
+ * @version $Revision: 11561 $
  */
 public class ListsManager implements ListsManagerInterface {
 
 	private static final Debug _debug = Debug.getLogger();
 
 	/** Eigene Datenverteiler-Id */
-	private long _localTransmitterId;
+	private final long _localTransmitterId;
 
 	/** Map mit den Anmeldelisten der bekannten Datenverteiler.*/
 	private final Map<Long, TransmitterSubscriptionInfos> _subscriptionInfos = Collections.synchronizedMap(new HashMap<Long, TransmitterSubscriptionInfos>());
@@ -67,13 +67,13 @@ public class ListsManager implements ListsManagerInterface {
 
 	private static final long DELAYED_SUBSCRIPTION_TIME_LIMIT = 60000; // 1 min
 
-	private ConnectionsManagerInterface _connectionsManager;
+	private final HighLevelConnectionsManagerInterface _connectionsManager;
 
-	private ArrayList _delayedSubscriptionList;
+	private final ArrayList<DelayedSubscriptionHandle> _delayedSubscriptionList;
 
-	private Object _delayedSubscriptionSync = new Integer(0);
+	private final Object _delayedSubscriptionSync = new Object();
 
-	private DelayedSubscriptionThread _delayedSubscriptionThread;
+	private final DelayedSubscriptionThread _delayedSubscriptionThread;
 
 	private BestWayManagerInterface _bestWayManager = null;
 
@@ -87,7 +87,7 @@ public class ListsManager implements ListsManagerInterface {
 	 *
 	 * @param connectionsManager Verbindungsverwaltung
 	 */
-	ListsManager(ConnectionsManagerInterface connectionsManager) {
+	public ListsManager(final HighLevelConnectionsManagerInterface connectionsManager) {
 		_connectionsManager = connectionsManager;
 
 		_localTransmitterId = _connectionsManager.getTransmitterId();
@@ -98,7 +98,7 @@ public class ListsManager implements ListsManagerInterface {
 		_localTransmitterSubscriptionInfos._delivererId = _localTransmitterId;
 		_subscriptionInfos.put(_localTransmitterId, _localTransmitterSubscriptionInfos);
 
-		_delayedSubscriptionList = new ArrayList();
+		_delayedSubscriptionList = new ArrayList<DelayedSubscriptionHandle>();
 
 		_delayedSubscriptionThread = new DelayedSubscriptionThread();
 		_delayedSubscriptionThread.start();
@@ -130,43 +130,43 @@ public class ListsManager implements ListsManagerInterface {
 	}
 
 
-	public final void addEntry(long delivererId, long transmitterId) {
-//		System.out.println("addEntry _localTransmitterId = " + _localTransmitterId + ", delivererId = " + delivererId + ", transmitterId = " + transmitterId);
+	@Override
+	public final void addEntry(final long delivererId, final long transmitterId) {
+		// System.out.println("addEntry _localTransmitterId = " + _localTransmitterId + ", delivererId = " + delivererId + ", transmitterId = " + transmitterId);
 		if(transmitterId == -1) {
 			throw new IllegalArgumentException("Argument ist ungültig");
 		}
-		Long keyTransmitterId = new Long(transmitterId);
 		TransmitterSubscriptionInfos entry;
 		synchronized(_subscriptionInfos) {
-			entry = (TransmitterSubscriptionInfos)_subscriptionInfos.get(keyTransmitterId);
+			entry = (TransmitterSubscriptionInfos)_subscriptionInfos.get(transmitterId);
 			if(entry == null) {
 				entry = new TransmitterSubscriptionInfos(transmitterId);
-				_subscriptionInfos.put(keyTransmitterId, entry);
+				_subscriptionInfos.put(transmitterId, entry);
 			}
 		}
 		synchronized(entry) {
 			final List<Long> subscribers = entry._subscribers;
 			if(delivererId == -1) {
 				// Datenverteiler ist nicht mehr erreichbar
-				long _ids[] = {entry._transmitterId};
+				final long[] _ids = {entry._transmitterId};
 				cleanPendingDelayedSubscriptions(_ids);
 				if(entry._delivererId != -1) {
 					// Kündigung des Abos beim Lieferant der Anmeldelisten des nicht mehr erreichbaren Datenverteiler
-					T_T_HighLevelCommunicationInterface connection = _connectionsManager.getTransmitterConnection(entry._delivererId);
+					final T_T_HighLevelCommunicationInterface connection = _connectionsManager.getTransmitterConnectionFromId(entry._delivererId);
 					if(connection != null) {
-						TransmitterListsUnsubscription transmitterListsUnsubscription = new TransmitterListsUnsubscription(_ids);
-//						System.out.println("Sende: " + _localTransmitterId + ", " + transmitterListsUnsubscription);
+						final TransmitterListsUnsubscription transmitterListsUnsubscription = new TransmitterListsUnsubscription(_ids);
+						// System.out.println("Sende: " + _localTransmitterId + ", " + transmitterListsUnsubscription);
 						connection.sendTelegram(transmitterListsUnsubscription);
 					}
 				}
 				entry._delivererId = -1;
-				TransmitterListsDeliveryUnsubscription transmitterListsDeliveryUnsubscription = new TransmitterListsDeliveryUnsubscription(_ids);
-				for(Long subscriber : subscribers) {
+				final TransmitterListsDeliveryUnsubscription transmitterListsDeliveryUnsubscription = new TransmitterListsDeliveryUnsubscription(_ids);
+				for(final Long subscriber : subscribers) {
 					// Kündigung der Abos bei Abnehmern der Anmeldelisten des nicht mehr erreichbaren Datenverteiler
 					if(subscriber != null) {
-						T_T_HighLevelCommunicationInterface connection = _connectionsManager.getTransmitterConnection(subscriber.longValue());
+						final T_T_HighLevelCommunicationInterface connection = _connectionsManager.getTransmitterConnectionFromId(subscriber);
 						if(connection != null) {
-//							System.out.println("Sende: " + _localTransmitterId + ", " + transmitterListsDeliveryUnsubscription);
+							// System.out.println("Sende: " + _localTransmitterId + ", " + transmitterListsDeliveryUnsubscription);
 							connection.sendTelegram(transmitterListsDeliveryUnsubscription);
 						}
 					}
@@ -177,73 +177,72 @@ public class ListsManager implements ListsManagerInterface {
 			}
 			else if((delivererId != _localTransmitterId) && (delivererId != entry._delivererId)) {
 				// Datenverteiler ist über einen anderen Nachbarn erreichbar
-				long _ids[] = {entry._transmitterId};
+				final long[] _ids = {entry._transmitterId};
 				cleanPendingDelayedSubscriptions(_ids);
 				if(entry._delivererId != -1) {
 					// Kündigung des Abos beim bisherigen Lieferant der Anmeldelisten des über einen neuen Nachbarn erreichbaren Datenverteilers
-					T_T_HighLevelCommunicationInterface connection = _connectionsManager.getTransmitterConnection(entry._delivererId);
+					final T_T_HighLevelCommunicationInterface connection = _connectionsManager.getTransmitterConnectionFromId(entry._delivererId);
 					if(connection != null) {
-						TransmitterListsUnsubscription transmitterListsUnsubscription = new TransmitterListsUnsubscription(_ids);
-//						System.out.println("Sende: " + _localTransmitterId + ", " + transmitterListsUnsubscription);
+						final TransmitterListsUnsubscription transmitterListsUnsubscription = new TransmitterListsUnsubscription(_ids);
+						// System.out.println("Sende: " + _localTransmitterId + ", " + transmitterListsUnsubscription);
 						connection.sendTelegram(transmitterListsUnsubscription);
 					}
 				}
-				Long abo = new Long(delivererId);
-				TransmitterListsDeliveryUnsubscription transmitterListsDeliveryUnsubscription = new TransmitterListsDeliveryUnsubscription(_ids);
-				if(subscribers.remove(abo)) {
+				final TransmitterListsDeliveryUnsubscription transmitterListsDeliveryUnsubscription = new TransmitterListsDeliveryUnsubscription(_ids);
+				if(subscribers.remove(delivererId)) {
 					// Falls der neue Lieferant bisher als Abnehmer angemeldet war, dann wird diesem die Kündigung gesendet
-					T_T_HighLevelCommunicationInterface connection = _connectionsManager.getTransmitterConnection(delivererId);
+					final T_T_HighLevelCommunicationInterface connection = _connectionsManager.getTransmitterConnectionFromId(delivererId);
 					if(connection != null) {
-//						System.out.println("Sende: " + _localTransmitterId + ", " + transmitterListsDeliveryUnsubscription);
+						// System.out.println("Sende: " + _localTransmitterId + ", " + transmitterListsDeliveryUnsubscription);
 						connection.sendTelegram(transmitterListsDeliveryUnsubscription);
 					}
 				}
 				entry._delivererId = delivererId;
 
 				// Anmeldung beim neuen Lieferant
-				T_T_HighLevelCommunicationInterface highLevelCommunication = _connectionsManager.getTransmitterConnection(delivererId);
+				final T_T_HighLevelCommunicationInterface highLevelCommunication = _connectionsManager.getTransmitterConnectionFromId(delivererId);
 				if(highLevelCommunication != null) {
-					TransmitterListsSubscription transmitterListsSubscription = new TransmitterListsSubscription(_ids);
-//					System.out.println("Sende: " + _localTransmitterId + ", " + transmitterListsSubscription);
+					final TransmitterListsSubscription transmitterListsSubscription = new TransmitterListsSubscription(_ids);
+					// System.out.println("Sende: " + _localTransmitterId + ", " + transmitterListsSubscription);
 					highLevelCommunication.sendTelegram(transmitterListsSubscription);
 				}
 			}
 		}
 	}
 
-	public final void handleWaysChanges(long changedTransmitterIds[]) {
+	@Override
+	public final void handleWaysChanges(final long[] changedTransmitterIds) {
 
 		if(changedTransmitterIds == null) {
 			throw new IllegalArgumentException("Argument ist ungültig");
 		}
-		Hashtable unsubscriptionTable = new Hashtable();
-		Hashtable deliveryUnsubscriptionTable = new Hashtable();
-		Hashtable subscriptionTable = new Hashtable();
+		final Hashtable<Long, ArrayList<Long>> unsubscriptionTable = new Hashtable<Long, ArrayList<Long>>();
+		final Hashtable<Long, ArrayList<Long>> deliveryUnsubscriptionTable = new Hashtable<Long, ArrayList<Long>>();
+		final Hashtable<Long, ArrayList<Long>> subscriptionTable = new Hashtable<Long, ArrayList<Long>>();
 
-		for(long changedTransmitterId : changedTransmitterIds) {
-			Long changedTransmitter = new Long(changedTransmitterId);
+		for(final long changedTransmitterId : changedTransmitterIds) {
 			TransmitterSubscriptionInfos entry;
 			synchronized(_subscriptionInfos) {
-				entry = (TransmitterSubscriptionInfos)_subscriptionInfos.get(changedTransmitter);
+				entry = (TransmitterSubscriptionInfos)_subscriptionInfos.get(changedTransmitterId);
 				if(entry == null) {
 					entry = new TransmitterSubscriptionInfos(changedTransmitterId);
-					_subscriptionInfos.put(changedTransmitter, entry);
+					_subscriptionInfos.put(changedTransmitterId, entry);
 				}
 			}
 			synchronized(entry) {
-				long delivererId = _bestWayManager.getBestWay(changedTransmitterId);
+				final long delivererId = _bestWayManager.getBestWay(changedTransmitterId);
 				final List<Long> subscribers = entry._subscribers;
 				if(delivererId == -1) {
 					if(entry._delivererId != -1) {
-						Long _key = new Long(entry._delivererId);
-						ArrayList _list = (ArrayList)unsubscriptionTable.get(_key);
+						final Long _key = entry._delivererId;
+						ArrayList<Long> _list = unsubscriptionTable.get(_key);
 						if(_list == null) {
-							_list = new ArrayList();
+							_list = new ArrayList<Long>();
 							unsubscriptionTable.put(_key, _list);
-							_list.add(new Long(entry._transmitterId));
+							_list.add(entry._transmitterId);
 						}
 						else {
-							Long value = new Long(entry._transmitterId);
+							final Long value = entry._transmitterId;
 							if(!_list.contains(value)) {
 								_list.add(value);
 							}
@@ -251,16 +250,16 @@ public class ListsManager implements ListsManagerInterface {
 					}
 					entry._delivererId = -1;
 
-					for(Long subscriber : subscribers) {
+					for(final Long subscriber : subscribers) {
 						if(subscriber != null) {
-							ArrayList _list = (ArrayList)deliveryUnsubscriptionTable.get(subscriber);
+							ArrayList<Long> _list = deliveryUnsubscriptionTable.get(subscriber);
 							if(_list == null) {
-								_list = new ArrayList();
+								_list = new ArrayList<Long>();
 								deliveryUnsubscriptionTable.put(subscriber, _list);
-								_list.add(new Long(entry._transmitterId));
+								_list.add(entry._transmitterId);
 							}
 							else {
-								Long value = new Long(entry._transmitterId);
+								final Long value = entry._transmitterId;
 								if(!_list.contains(value)) {
 									_list.add(value);
 								}
@@ -275,31 +274,30 @@ public class ListsManager implements ListsManagerInterface {
 				}
 				else if((delivererId != _localTransmitterId) && (delivererId != entry._delivererId)) {
 					if(entry._delivererId != -1) {
-						Long _key = new Long(entry._delivererId);
-						ArrayList _list = (ArrayList)unsubscriptionTable.get(_key);
+						final Long _key = entry._delivererId;
+						ArrayList<Long> _list = unsubscriptionTable.get(_key);
 						if(_list == null) {
-							_list = new ArrayList();
+							_list = new ArrayList<Long>();
 							unsubscriptionTable.put(_key, _list);
-							_list.add(new Long(entry._transmitterId));
+							_list.add(entry._transmitterId);
 						}
 						else {
-							Long value = new Long(entry._transmitterId);
+							final Long value = entry._transmitterId;
 							if(!_list.contains(value)) {
 								_list.add(value);
 							}
 						}
 					}
 
-					Long abo = new Long(delivererId);
-					if(subscribers.remove(abo)) {
-						ArrayList _list = (ArrayList)deliveryUnsubscriptionTable.get(abo);
+					if(subscribers.remove(delivererId)) {
+						ArrayList<Long> _list = deliveryUnsubscriptionTable.get(delivererId);
 						if(_list == null) {
-							_list = new ArrayList();
-							deliveryUnsubscriptionTable.put(abo, _list);
-							_list.add(new Long(entry._transmitterId));
+							_list = new ArrayList<Long>();
+							deliveryUnsubscriptionTable.put(delivererId, _list);
+							_list.add(entry._transmitterId);
 						}
 						else {
-							Long value = new Long(entry._transmitterId);
+							final Long value = entry._transmitterId;
 							if(!_list.contains(value)) {
 								_list.add(value);
 							}
@@ -307,15 +305,14 @@ public class ListsManager implements ListsManagerInterface {
 					}
 					entry._delivererId = delivererId;
 
-					Long _key = new Long(delivererId);
-					ArrayList _list = (ArrayList)subscriptionTable.get(_key);
+					ArrayList<Long> _list = subscriptionTable.get(delivererId);
 					if(_list == null) {
-						_list = new ArrayList();
-						subscriptionTable.put(_key, _list);
-						_list.add(new Long(entry._transmitterId));
+						_list = new ArrayList<Long>();
+						subscriptionTable.put(delivererId, _list);
+						_list.add(entry._transmitterId);
 					}
 					else {
-						Long value = new Long(entry._transmitterId);
+						final Long value = entry._transmitterId;
 						if(!_list.contains(value)) {
 							_list.add(value);
 						}
@@ -324,21 +321,21 @@ public class ListsManager implements ListsManagerInterface {
 			}
 		}
 		if(unsubscriptionTable.size() > 0) {
-			Enumeration enumeration = unsubscriptionTable.keys();
+			final Enumeration<Long> enumeration = unsubscriptionTable.keys();
 			if(enumeration != null) {
 				while(enumeration.hasMoreElements()) {
-					Long way = (Long)enumeration.nextElement();
-					ArrayList list = (ArrayList)unsubscriptionTable.get(way);
+					final Long way = enumeration.nextElement();
+					final ArrayList<Long> list = unsubscriptionTable.get(way);
 					if(list != null) {
-						int length = list.size();
+						final int length = list.size();
 						if(length > 0) {
-							long _ids[] = new long[length];
+							final long[] _ids = new long[length];
 							for(int i = 0; i < length; ++i) {
-								_ids[i] = ((Long)list.get(i)).longValue();
+								_ids[i] = list.get(i);
 							}
-							T_T_HighLevelCommunicationInterface connection = _connectionsManager.getTransmitterConnection(way.longValue());
+							final T_T_HighLevelCommunicationInterface connection = _connectionsManager.getTransmitterConnectionFromId(way);
 							if(connection != null) {
-								TransmitterListsUnsubscription transmitterListsUnsubscription = new TransmitterListsUnsubscription(_ids);
+								final TransmitterListsUnsubscription transmitterListsUnsubscription = new TransmitterListsUnsubscription(_ids);
 //								System.out.println("Sende: " + _localTransmitterId + ", " + transmitterListsUnsubscription);
 								connection.sendTelegram(transmitterListsUnsubscription);
 							}
@@ -348,21 +345,21 @@ public class ListsManager implements ListsManagerInterface {
 			}
 		}
 		if(deliveryUnsubscriptionTable.size() > 0) {
-			Enumeration enumeration = deliveryUnsubscriptionTable.keys();
+			final Enumeration<Long> enumeration = deliveryUnsubscriptionTable.keys();
 			if(enumeration != null) {
 				while(enumeration.hasMoreElements()) {
-					Long way = (Long)enumeration.nextElement();
-					ArrayList list = (ArrayList)deliveryUnsubscriptionTable.get(way);
+					final Long way = enumeration.nextElement();
+					final ArrayList<Long> list = deliveryUnsubscriptionTable.get(way);
 					if(list != null) {
-						int length = list.size();
+						final int length = list.size();
 						if(length > 0) {
-							long _ids[] = new long[length];
+							final long[] _ids = new long[length];
 							for(int i = 0; i < length; ++i) {
-								_ids[i] = ((Long)list.get(i)).longValue();
+								_ids[i] = list.get(i);
 							}
-							T_T_HighLevelCommunicationInterface connection = _connectionsManager.getTransmitterConnection(way.longValue());
+							final T_T_HighLevelCommunicationInterface connection = _connectionsManager.getTransmitterConnectionFromId(way);
 							if(connection != null) {
-								TransmitterListsDeliveryUnsubscription transmitterListsDeliveryUnsubscription = new TransmitterListsDeliveryUnsubscription(_ids);
+								final TransmitterListsDeliveryUnsubscription transmitterListsDeliveryUnsubscription = new TransmitterListsDeliveryUnsubscription(_ids);
 //								System.out.println("Sende: " + _localTransmitterId + ", " + transmitterListsDeliveryUnsubscription);
 								connection.sendTelegram(transmitterListsDeliveryUnsubscription);
 							}
@@ -372,22 +369,22 @@ public class ListsManager implements ListsManagerInterface {
 			}
 		}
 		if(subscriptionTable.size() > 0) {
-			Enumeration enumeration = subscriptionTable.keys();
+			final Enumeration<Long> enumeration = subscriptionTable.keys();
 			if(enumeration != null) {
 				while(enumeration.hasMoreElements()) {
-					Long way = (Long)enumeration.nextElement();
-					ArrayList list = (ArrayList)subscriptionTable.get(way);
+					final Long way = enumeration.nextElement();
+					final ArrayList<Long> list = subscriptionTable.get(way);
 					if(list != null) {
-						int length = list.size();
+						final int length = list.size();
 						if(length > 0) {
-							long _ids[] = new long[length];
+							final long[] _ids = new long[length];
 							for(int i = 0; i < length; ++i) {
-								_ids[i] = ((Long)list.get(i)).longValue();
+								_ids[i] = list.get(i);
 							}
 							cleanPendingDelayedSubscriptions(_ids);
-							T_T_HighLevelCommunicationInterface connection = _connectionsManager.getTransmitterConnection(way.longValue());
+							final T_T_HighLevelCommunicationInterface connection = _connectionsManager.getTransmitterConnectionFromId(way);
 							if(connection != null) {
-								TransmitterListsSubscription transmitterListsSubscription = new TransmitterListsSubscription(_ids);
+								final TransmitterListsSubscription transmitterListsSubscription = new TransmitterListsSubscription(_ids);
 //								System.out.println("Sende: " + _localTransmitterId + ", " + transmitterListsSubscription);
 								connection.sendTelegram(transmitterListsSubscription);
 							}
@@ -411,7 +408,7 @@ public class ListsManager implements ListsManagerInterface {
 	 * @param ids           long Array mit den IDs enthält die Liste der DAVs
 	 */
 
-	final void subscribe(long transmitterId, long ids[]) {
+	final void subscribe(final long transmitterId, final long[] ids) {
 		
 
 		if(ids == null) {
@@ -421,29 +418,28 @@ public class ListsManager implements ListsManagerInterface {
 			throw new IllegalArgumentException("Argument ist inkonsistent");
 		}
 
-		ArrayList transmitterListsDeliveryUnsubscriptionIds = new ArrayList();
-		Long abo = new Long(transmitterId);
+		final ArrayList<Long> transmitterListsDeliveryUnsubscriptionIds = new ArrayList<Long>();
 		for(int i = ids.length - 1; i > -1; --i) {
-			Long key = new Long(ids[i]);
-			TransmitterSubscriptionInfos entry = (TransmitterSubscriptionInfos)_subscriptionInfos.get(key);
+			final Long key = ids[i];
+			final TransmitterSubscriptionInfos entry = (TransmitterSubscriptionInfos)_subscriptionInfos.get(key);
 			if(entry != null) {
 				synchronized(entry) {
 					if(entry._delivererId == transmitterId) {
-						transmitterListsDeliveryUnsubscriptionIds.add(new Long(ids[i]));
+						transmitterListsDeliveryUnsubscriptionIds.add(ids[i]);
 						continue;
 					}
 
 					boolean notFound = true;
 					for(int j = entry._subscribers.size() - 1; j > -1; --j) {
-						if(abo.equals(entry._subscribers.get(j))) {
+						if(transmitterId == entry._subscribers.get(j)) {
 							notFound = false;
 							break;
 						}
 					}
-					if(!entry._subscribers.contains(abo)) {
-						entry._subscribers.add(abo);
+					if(!entry._subscribers.contains(transmitterId)) {
+						entry._subscribers.add(transmitterId);
 						if(entry._delivererId != -1) {
-							T_T_HighLevelCommunicationInterface connection = _connectionsManager.getTransmitterConnection(transmitterId);
+							final T_T_HighLevelCommunicationInterface connection = _connectionsManager.getTransmitterConnectionFromId(transmitterId);
 							if(connection != null) {
 								sendTransmitterUpdates(
 										connection, entry._transmitterId, new ArrayList<Long>(entry._objectIdSet), new ArrayList<Long>(entry._atgUsageSet)
@@ -454,14 +450,14 @@ public class ListsManager implements ListsManagerInterface {
 				}
 			}
 		}
-		int size = transmitterListsDeliveryUnsubscriptionIds.size();
+		final int size = transmitterListsDeliveryUnsubscriptionIds.size();
 		if(size > 0) {
-			long idsToUnsubscribe[] = new long[size];
+			final long[] idsToUnsubscribe = new long[size];
 			for(int i = 0; i < size; ++i) {
-				idsToUnsubscribe[i] = ((Long)transmitterListsDeliveryUnsubscriptionIds.get(i)).longValue();
+				idsToUnsubscribe[i] = transmitterListsDeliveryUnsubscriptionIds.get(i);
 			}
-			TransmitterListsDeliveryUnsubscription transmitterListsDeliveryUnsubscription = new TransmitterListsDeliveryUnsubscription(idsToUnsubscribe);
-			T_T_HighLevelCommunicationInterface connection = _connectionsManager.getTransmitterConnection(transmitterId);
+			final TransmitterListsDeliveryUnsubscription transmitterListsDeliveryUnsubscription = new TransmitterListsDeliveryUnsubscription(idsToUnsubscribe);
+			final T_T_HighLevelCommunicationInterface connection = _connectionsManager.getTransmitterConnectionFromId(transmitterId);
 			if(connection != null) {
 //				System.out.println("Sende: " + _localTransmitterId + ", " + transmitterListsDeliveryUnsubscription);
 				connection.sendTelegram(transmitterListsDeliveryUnsubscription);
@@ -479,19 +475,18 @@ public class ListsManager implements ListsManagerInterface {
 	 * @param transmitterId ID des DAV
 	 * @param ids           long Array mit den IDs, enthält die Liste der DAVs
 	 */
-	final void unsubscribe(long transmitterId, long ids[]) {
+	final void unsubscribe(final long transmitterId, final long[] ids) {
 		if(ids == null) {
 			throw new IllegalArgumentException("Argument ist null");
 		}
 		if((transmitterId == -1) || (transmitterId == _connectionsManager.getTransmitterId())) {
 			throw new IllegalArgumentException("Argument ist inkonsistent");
 		}
-		Long abo = new Long(transmitterId);
 		for(int i = ids.length - 1; i > -1; --i) {
-			Long key = new Long(ids[i]);
-			TransmitterSubscriptionInfos entry = (TransmitterSubscriptionInfos)_subscriptionInfos.get(key);
+			final Long key = ids[i];
+			final TransmitterSubscriptionInfos entry = (TransmitterSubscriptionInfos)_subscriptionInfos.get(key);
 			if(entry != null) {
-				entry._subscribers.remove(abo);
+				entry._subscribers.remove(transmitterId);
 			}
 		}
 	}
@@ -507,38 +502,37 @@ public class ListsManager implements ListsManagerInterface {
 	 * @param transmitterId ID des DAV
 	 * @param ids           long Array mit den IDs, enthält die Liste der DAVs
 	 */
-	final void unsubscribeDeliverer(long transmitterId, long ids[]) {
+	final void unsubscribeDeliverer(final long transmitterId, final long[] ids) {
 		if(ids == null) {
 			throw new IllegalArgumentException("Argument ist null");
 		}
 		if((transmitterId == -1) || (transmitterId == _connectionsManager.getTransmitterId())) {
 			throw new IllegalArgumentException("Argument ist inkonsistent");
 		}
-		Hashtable tmp = new Hashtable();
+		final Hashtable<Long, ArrayList<Long>> tmp = new Hashtable<Long, ArrayList<Long>>();
 		for(int i = ids.length - 1; i > -1; --i) {
-			Long key = new Long(ids[i]);
-			TransmitterSubscriptionInfos entry = (TransmitterSubscriptionInfos)_subscriptionInfos.get(key);
+			final Long key = ids[i];
+			final TransmitterSubscriptionInfos entry = (TransmitterSubscriptionInfos)_subscriptionInfos.get(key);
 			if(entry != null) {
 				synchronized(entry) {
 					if(entry._delivererId == transmitterId) {
-						long _ids[] = {entry._transmitterId};
-						long way = _bestWayManager.getBestWay(ids[i]);
+						final long[] _ids = {entry._transmitterId};
+						final long way = _bestWayManager.getBestWay(ids[i]);
 						if((way != -1) && (way != _localTransmitterId) && (way != entry._delivererId)) {
 							entry._delivererId = way;
-							Long _key = new Long(way);
-							ArrayList list = (ArrayList)tmp.get(_key);
+							ArrayList<Long> list = tmp.get(way);
 							if(list == null) {
-								list = new ArrayList();
-								tmp.put(_key, list);
+								list = new ArrayList<Long>();
+								tmp.put(way, list);
 							}
-							list.add(new Long(entry._transmitterId));
+							list.add(entry._transmitterId);
 						}
 						else {
 							entry._delivererId = -1;
-							TransmitterListsDeliveryUnsubscription transmitterListsDeliveryUnsubscription = new TransmitterListsDeliveryUnsubscription(_ids);
-							for(Long subscriber : entry._subscribers) {
+							final TransmitterListsDeliveryUnsubscription transmitterListsDeliveryUnsubscription = new TransmitterListsDeliveryUnsubscription(_ids);
+							for(final Long subscriber : entry._subscribers) {
 								if(subscriber != null) {
-									T_T_HighLevelCommunicationInterface connection = _connectionsManager.getTransmitterConnection(subscriber.longValue());
+									final T_T_HighLevelCommunicationInterface connection = _connectionsManager.getTransmitterConnectionFromId(subscriber);
 									if(connection != null) {
 //										System.out.println("Sende: " + _localTransmitterId + ", " + transmitterListsDeliveryUnsubscription);
 										connection.sendTelegram(transmitterListsDeliveryUnsubscription);
@@ -554,19 +548,19 @@ public class ListsManager implements ListsManagerInterface {
 			}
 		}
 		if(tmp.size() > 0) {
-			Enumeration enumeration = tmp.keys();
+			final Enumeration<Long> enumeration = tmp.keys();
 			if(enumeration != null) {
 				while(enumeration.hasMoreElements()) {
-					Long way = (Long)enumeration.nextElement();
-					ArrayList list = (ArrayList)tmp.get(way);
+					final Long way = enumeration.nextElement();
+					final ArrayList<Long> list = tmp.get(way);
 					if(list != null) {
-						int length = list.size();
+						final int length = list.size();
 						if(length > 0) {
-							long _ids[] = new long[length];
+							final long[] _ids = new long[length];
 							for(int i = 0; i < length; ++i) {
-								_ids[i] = ((Long)list.get(i)).longValue();
+								_ids[i] = list.get(i);
 							}
-							DelayedSubscriptionHandle delayedSubscriptionHandle = new DelayedSubscriptionHandle(way.longValue(), _ids);
+							final DelayedSubscriptionHandle delayedSubscriptionHandle = new DelayedSubscriptionHandle(way, _ids);
 							synchronized(_delayedSubscriptionList) {
 								_delayedSubscriptionList.add(delayedSubscriptionHandle);
 							}
@@ -582,48 +576,48 @@ public class ListsManager implements ListsManagerInterface {
 	}
 
 
-	public final void handleDisconnection(long transmitterId) {
+	@Override
+	public final void handleDisconnection(final long transmitterId) {
 		if(transmitterId == -1) {
 			// Kann passieren, wenn eine Verbindung zu einem anderen Datenverteiler während der Initialisierungsphase unterbrochen wurde
 			// In diesem Fall kann es noch keine Einträge in der Anmeldelistenverwaltung geben
 			return;
 		}
-		ArrayList<TransmitterSubscriptionInfos> transmitterSubscriptionInfoList;
+		final ArrayList<TransmitterSubscriptionInfos> transmitterSubscriptionInfoList;
 		synchronized(_subscriptionInfos) {
 			transmitterSubscriptionInfoList = new ArrayList<TransmitterSubscriptionInfos>(_subscriptionInfos.values());
 		}
-		Hashtable tmp1 = new Hashtable();
-		Hashtable tmp2 = new Hashtable();
-		for(TransmitterSubscriptionInfos entry : transmitterSubscriptionInfoList) {
+		final Hashtable<Long, ArrayList<Long>> tmp1 = new Hashtable<Long, ArrayList<Long>>();
+		final Hashtable<Long, ArrayList<Long>> tmp2 = new Hashtable<Long, ArrayList<Long>>();
+		for(final TransmitterSubscriptionInfos entry : transmitterSubscriptionInfoList) {
 			if(entry != null) {
 				synchronized(entry) {
 					if(entry._transmitterId == transmitterId) {
-						long way = _bestWayManager.getBestWay(entry._transmitterId);
+						final long way = _bestWayManager.getBestWay(entry._transmitterId);
 						if((way != -1) && (way != _connectionsManager.getTransmitterId()) && (way != entry._delivererId)) {
-							Long _key = new Long(way);
-							ArrayList _list = (ArrayList)tmp2.get(_key);
+							ArrayList<Long> _list = tmp2.get(way);
 							if(_list == null) {
-								_list = new ArrayList();
-								tmp2.put(_key, _list);
+								_list = new ArrayList<Long>();
+								tmp2.put(way, _list);
 							}
-							_list.add(new Long(entry._transmitterId));
+							_list.add(entry._transmitterId);
 						}
 						else {
 							if(entry._delivererId != transmitterId) {
-								Long _key = new Long(entry._delivererId);
-								ArrayList _list = (ArrayList)tmp1.get(_key);
+								final Long _key = entry._delivererId;
+								ArrayList<Long> _list = tmp1.get(_key);
 								if(_list == null) {
-									_list = new ArrayList();
+									_list = new ArrayList<Long>();
 									tmp1.put(_key, _list);
 								}
-								_list.add(new Long(entry._transmitterId));
+								_list.add(entry._transmitterId);
 							}
 							entry._delivererId = -1;
-							long ids[] = {entry._transmitterId};
-							TransmitterListsDeliveryUnsubscription transmitterListsDeliveryUnsubscription = new TransmitterListsDeliveryUnsubscription(ids);
-							for(Long subscriber : entry._subscribers) {
+							final long[] ids = {entry._transmitterId};
+							final TransmitterListsDeliveryUnsubscription transmitterListsDeliveryUnsubscription = new TransmitterListsDeliveryUnsubscription(ids);
+							for(final Long subscriber : entry._subscribers) {
 								if(subscriber != null) {
-									T_T_HighLevelCommunicationInterface connection = _connectionsManager.getTransmitterConnection(subscriber.longValue());
+									final T_T_HighLevelCommunicationInterface connection = _connectionsManager.getTransmitterConnectionFromId(subscriber);
 									if(connection != null) {
 //										System.out.println("Sende: " + _localTransmitterId + ", " + transmitterListsDeliveryUnsubscription);
 										connection.sendTelegram(transmitterListsDeliveryUnsubscription);
@@ -633,29 +627,28 @@ public class ListsManager implements ListsManagerInterface {
 							entry._objectIdSet.clear();
 							entry._atgUsageSet.clear();
 							synchronized(_subscriptionInfos) {
-								_subscriptionInfos.remove(new Long(entry._transmitterId));
+								_subscriptionInfos.remove(entry._transmitterId);
 							}
 						}
 					}
 					else if(entry._delivererId == transmitterId) {
 						// the transmitter with the id kann no longer deliver the list of the specified transmitters
-						long way = _bestWayManager.getBestWay(entry._transmitterId);
+						final long way = _bestWayManager.getBestWay(entry._transmitterId);
 						if((way != -1) && (way != _connectionsManager.getTransmitterId()) && (way != entry._delivererId)) {
-							Long _key = new Long(way);
-							ArrayList _list = (ArrayList)tmp2.get(_key);
+							ArrayList<Long> _list = tmp2.get(way);
 							if(_list == null) {
-								_list = new ArrayList();
-								tmp2.put(_key, _list);
+								_list = new ArrayList<Long>();
+								tmp2.put(way, _list);
 							}
-							_list.add(new Long(entry._transmitterId));
+							_list.add(entry._transmitterId);
 						}
 						else {
 							entry._delivererId = -1;
-							long ids[] = {entry._transmitterId};
-							TransmitterListsDeliveryUnsubscription transmitterListsDeliveryUnsubscription = new TransmitterListsDeliveryUnsubscription(ids);
-							for(Long subscriber : entry._subscribers) {
+							final long[] ids = {entry._transmitterId};
+							final TransmitterListsDeliveryUnsubscription transmitterListsDeliveryUnsubscription = new TransmitterListsDeliveryUnsubscription(ids);
+							for(final Long subscriber : entry._subscribers) {
 								if(subscriber != null) {
-									T_T_HighLevelCommunicationInterface connection = _connectionsManager.getTransmitterConnection(subscriber.longValue());
+									final T_T_HighLevelCommunicationInterface connection = _connectionsManager.getTransmitterConnectionFromId(subscriber);
 									if(connection != null) {
 //										System.out.println("Sende: " + _localTransmitterId + ", " + transmitterListsDeliveryUnsubscription);
 										connection.sendTelegram(transmitterListsDeliveryUnsubscription);
@@ -668,28 +661,27 @@ public class ListsManager implements ListsManagerInterface {
 						}
 					}
 					else {
-						Long abo = new Long(transmitterId);
-						entry._subscribers.remove(abo);
+						entry._subscribers.remove(transmitterId);
 					}
 				}
 			}
 		}
 		if(tmp1.size() > 0) {
-			Enumeration enumeration = tmp1.keys();
+			final Enumeration<Long> enumeration = tmp1.keys();
 			if(enumeration != null) {
 				while(enumeration.hasMoreElements()) {
-					Long way = (Long)enumeration.nextElement();
-					ArrayList _list = (ArrayList)tmp1.get(way);
+					final Long way = enumeration.nextElement();
+					final ArrayList<Long> _list = tmp1.get(way);
 					if(_list != null) {
-						int length = _list.size();
+						final int length = _list.size();
 						if(length > 0) {
-							long _ids[] = new long[length];
+							final long[] _ids = new long[length];
 							for(int i = 0; i < length; ++i) {
-								_ids[i] = ((Long)_list.get(i)).longValue();
+								_ids[i] = _list.get(i);
 							}
-							T_T_HighLevelCommunicationInterface connection = _connectionsManager.getTransmitterConnection(way.longValue());
+							final T_T_HighLevelCommunicationInterface connection = _connectionsManager.getTransmitterConnectionFromId(way);
 							if(connection != null) {
-								TransmitterListsUnsubscription transmitterListsUnsubscription = new TransmitterListsUnsubscription(_ids);
+								final TransmitterListsUnsubscription transmitterListsUnsubscription = new TransmitterListsUnsubscription(_ids);
 //								System.out.println("Sende: " + _localTransmitterId + ", " + transmitterListsUnsubscription);
 								connection.sendTelegram(transmitterListsUnsubscription);
 							}
@@ -699,19 +691,19 @@ public class ListsManager implements ListsManagerInterface {
 			}
 		}
 		if(tmp2.size() > 0) {
-			Enumeration enumeration = tmp2.keys();
+			final Enumeration<Long> enumeration = tmp2.keys();
 			if(enumeration != null) {
 				while(enumeration.hasMoreElements()) {
-					Long way = (Long)enumeration.nextElement();
-					ArrayList _list = (ArrayList)tmp2.get(way);
+					final Long way = enumeration.nextElement();
+					final ArrayList<Long> _list = tmp2.get(way);
 					if(_list != null) {
-						int length = _list.size();
+						final int length = _list.size();
 						if(length > 0) {
-							long _ids[] = new long[length];
+							final long[] _ids = new long[length];
 							for(int i = 0; i < length; ++i) {
-								_ids[i] = ((Long)_list.get(i)).longValue();
+								_ids[i] = _list.get(i);
 							}
-							DelayedSubscriptionHandle delayedSubscriptionHandle = new DelayedSubscriptionHandle(way.longValue(), _ids);
+							final DelayedSubscriptionHandle delayedSubscriptionHandle = new DelayedSubscriptionHandle(way, _ids);
 							synchronized(_delayedSubscriptionList) {
 								_delayedSubscriptionList.add(delayedSubscriptionHandle);
 							}
@@ -733,32 +725,32 @@ public class ListsManager implements ListsManagerInterface {
 	 * Aspekten Diese Listen werden dann in eine Zuliefereraktualisierungsnachricht verpackt und an die Abonnenten weitergeleitet. Am Ende werden diese Listen
 	 * zurückgegeben.
 	 */
-	final void updateEntry(TransmitterListsUpdate transmitterListsUpdate) {
+	final void updateEntry(final TransmitterListsUpdate transmitterListsUpdate) {
 		if(transmitterListsUpdate == null) {
 			throw new IllegalArgumentException("Argument ist null");
 		}
-		boolean changed = false;
-		ArrayList addedObjects = new ArrayList();
-		ArrayList removedObjects = new ArrayList();
-		ArrayList addedAttributeGroupAspects = new ArrayList();
-		ArrayList removedAttributeGroupAspects = new ArrayList();
 
-		Long key = new Long(transmitterListsUpdate.getTransmitterId());
-		TransmitterSubscriptionInfos entry;
+		final Long key = transmitterListsUpdate.getTransmitterId();
+		final TransmitterSubscriptionInfos entry;
 		synchronized(_subscriptionInfos) {
 			entry = (TransmitterSubscriptionInfos)_subscriptionInfos.get(key);
 		}
 		if(entry != null) {
 			synchronized(entry) {
-				long objectIdsToRemove[] = transmitterListsUpdate.getObjectsToRemove();
-				long objectIdsToAdd[] = transmitterListsUpdate.getObjectsToAdd();
-				AttributeGroupAspectCombination attributeGroupAspectToRemove[] = transmitterListsUpdate.getAttributeGroupAspectsToRemove();
-				AttributeGroupAspectCombination attributeGroupAspectToAdd[] = transmitterListsUpdate.getAttributeGroupAspectsToAdd();
+				final long[] objectIdsToRemove = transmitterListsUpdate.getObjectsToRemove();
+				final long[] objectIdsToAdd = transmitterListsUpdate.getObjectsToAdd();
+				final AttributeGroupAspectCombination[] attributeGroupAspectToRemove = transmitterListsUpdate.getAttributeGroupAspectsToRemove();
+				final AttributeGroupAspectCombination[] attributeGroupAspectToAdd = transmitterListsUpdate.getAttributeGroupAspectsToAdd();
 
+				final ArrayList<AttributeGroupAspectCombination> removedAttributeGroupAspects = new ArrayList<AttributeGroupAspectCombination>();
+				final ArrayList<AttributeGroupAspectCombination> addedAttributeGroupAspects = new ArrayList<AttributeGroupAspectCombination>();
+				final ArrayList<Long> removedObjects = new ArrayList<Long>();
+				final ArrayList<Long> addedObjects = new ArrayList<Long>();
+				boolean changed = false;
 				if(transmitterListsUpdate.isDeltaMessage()) {
 					if(objectIdsToRemove != null) {
 						for(int i = objectIdsToRemove.length - 1; i > -1; --i) {
-							Long object = new Long(objectIdsToRemove[i]);
+							final Long object = objectIdsToRemove[i];
 							if(entry._objectIdSet.remove(object)) {
 								removedObjects.add(object);
 								changed = true;
@@ -768,7 +760,7 @@ public class ListsManager implements ListsManagerInterface {
 
 					if(objectIdsToAdd != null) {
 						for(int i = 0; i < objectIdsToAdd.length; ++i) {
-							Long object = new Long(objectIdsToAdd[i]);
+							final Long object = objectIdsToAdd[i];
 							entry._objectIdSet.add(object);
 							addedObjects.add(object);
 							changed = true;
@@ -778,7 +770,7 @@ public class ListsManager implements ListsManagerInterface {
 					if(attributeGroupAspectToRemove != null) {
 						for(int i = attributeGroupAspectToRemove.length - 1; i > -1; --i) {
 							final AttributeGroupAspectCombination attributeGroupAspectCombination = attributeGroupAspectToRemove[i];
-							final Long atgUsage = new Long(attributeGroupAspectCombination.getAtgUsageIdentification());
+							final Long atgUsage = attributeGroupAspectCombination.getAtgUsageIdentification();
 							if(entry._atgUsageSet.remove(atgUsage)) {
 								removedAttributeGroupAspects.add(attributeGroupAspectCombination);
 								changed = true;
@@ -789,7 +781,7 @@ public class ListsManager implements ListsManagerInterface {
 					if(attributeGroupAspectToAdd != null) {
 						for(int i = 0; i < attributeGroupAspectToAdd.length; ++i) {
 							final AttributeGroupAspectCombination attributeGroupAspectCombination = attributeGroupAspectToAdd[i];
-							final Long atgUsage = new Long(attributeGroupAspectCombination.getAtgUsageIdentification());
+							final Long atgUsage = attributeGroupAspectCombination.getAtgUsageIdentification();
 							entry._atgUsageSet.add(atgUsage);
 							addedAttributeGroupAspects.add(attributeGroupAspectCombination);
 							changed = true;
@@ -801,7 +793,7 @@ public class ListsManager implements ListsManagerInterface {
 					entry._atgUsageSet.clear();
 					if(objectIdsToAdd != null) {
 						for(int i = 0; i < objectIdsToAdd.length; ++i) {
-							final Long object = new Long(objectIdsToAdd[i]);
+							final Long object = objectIdsToAdd[i];
 							entry._objectIdSet.add(object);
 							addedObjects.add(object);
 							changed = true;
@@ -809,7 +801,7 @@ public class ListsManager implements ListsManagerInterface {
 					}
 					if(attributeGroupAspectToAdd != null) {
 						for(int i = 0; i < attributeGroupAspectToAdd.length; ++i) {
-							entry._atgUsageSet.add(new Long(attributeGroupAspectToAdd[i].getAtgUsageIdentification()));
+							entry._atgUsageSet.add(attributeGroupAspectToAdd[i].getAtgUsageIdentification());
 							addedAttributeGroupAspects.add(attributeGroupAspectToAdd[i]);
 							changed = true;
 						}
@@ -817,9 +809,9 @@ public class ListsManager implements ListsManagerInterface {
 				}
 
 				if(changed) {
-					for(Long subscriber : entry._subscribers) {
+					for(final Long subscriber : entry._subscribers) {
 						if(subscriber != null) {
-							T_T_HighLevelCommunicationInterface connection = _connectionsManager.getTransmitterConnection(subscriber.longValue());
+							final T_T_HighLevelCommunicationInterface connection = _connectionsManager.getTransmitterConnectionFromId(subscriber);
 							if(connection != null) {
 								sendTransmitterUpdates(
 										connection,
@@ -848,7 +840,7 @@ public class ListsManager implements ListsManagerInterface {
 	 *
 	 * @param info Anmeldeinformationen
 	 */
-	final void addInfo(BaseSubscriptionInfo info) {
+	final void addInfo(final BaseSubscriptionInfo info) {
 		if(info == null) {
 			throw new IllegalArgumentException("Argument ist null");
 		}
@@ -864,7 +856,7 @@ public class ListsManager implements ListsManagerInterface {
 	 *
 	 * @param info Anmeldeinformationen
 	 */
-	final void removeInfo(BaseSubscriptionInfo info) {
+	final void removeInfo(final BaseSubscriptionInfo info) {
 		if(info == null) {
 			throw new IllegalArgumentException("Argument ist null");
 		}
@@ -879,7 +871,7 @@ public class ListsManager implements ListsManagerInterface {
 	 *
 	 * @return Feld mit den potentiellen Zentraldatenverteilern. Wenn kein Datenverteiler gefunden wurde, dann wird Null zurückgegeben.
 	 */
-	final long[] getPotentialTransmitters(BaseSubscriptionInfo info) {
+	final long[] getPotentialCentralDavs(final BaseSubscriptionInfo info) {
 //		System.out.println("getPotentialTransmitters: " + info);
 		if(info == null) {
 			throw new IllegalArgumentException("Argument ist null");
@@ -887,47 +879,10 @@ public class ListsManager implements ListsManagerInterface {
 		final long requiredObjectId = info.getObjectID();
 		final long requiredAtgUsageId = info.getUsageIdentification();
 
-		long[] potentialTransmitters = new long[_subscriptionInfos.size()];
+		final long[] potentialTransmitters = new long[_subscriptionInfos.size()];
 		int numberOfPotentialTransmitters = 0;
 		synchronized(_subscriptionInfos) {
-			for(TransmitterSubscriptionInfos transmitterSubscriptionInfos : _subscriptionInfos.values()) {
-				if(transmitterSubscriptionInfos == _localTransmitterSubscriptionInfos) continue;
-				if(transmitterSubscriptionInfos.isPotentialTransmitter(requiredObjectId, requiredAtgUsageId)) {
-					potentialTransmitters[numberOfPotentialTransmitters++] = transmitterSubscriptionInfos._transmitterId;
-				}
-			}
-		}
-		if(numberOfPotentialTransmitters == 0) {
-//			System.out.println("potentialTransmitters = " + null);
-			return null;
-		}
-		long[] result = new long[numberOfPotentialTransmitters];
-		System.arraycopy(potentialTransmitters,0,result, 0, numberOfPotentialTransmitters);
-//		System.out.println("potentialTransmitters " + _localTransmitterId + ": " + potentialTransmitters.length);
-		return result;
-		
-	}
-
-	/**
-	 * Diese Methode wird von der Verbindungsverwaltung aufgerufen, um die potentiellen Zentraldatenverteiler des spezifizierten Datums zu bestimmen. In den
-	 * Anmeldelisten der erreichbaren Datenverteiler wird überprüft, ob gewünschte Objekt und die Kombination aus Attributgruppe und Aspekt enthalten ist.
-	 *
-	 * @param info Anmeldeinformationen
-	 *
-	 * @return Feld mit den potentiellen Zentraldatenverteilern. Wenn kein Datenverteiler gefunden wurde, dann wird Null zurückgegeben.
-	 */
-	final long[] getPotentialCentralDavs(BaseSubscriptionInfo info) {
-//		System.out.println("getPotentialTransmitters: " + info);
-		if(info == null) {
-			throw new IllegalArgumentException("Argument ist null");
-		}
-		final long requiredObjectId = info.getObjectID();
-		final long requiredAtgUsageId = info.getUsageIdentification();
-
-		long[] potentialTransmitters = new long[_subscriptionInfos.size()];
-		int numberOfPotentialTransmitters = 0;
-		synchronized(_subscriptionInfos) {
-			for(TransmitterSubscriptionInfos transmitterSubscriptionInfos : _subscriptionInfos.values()) {
+			for(final TransmitterSubscriptionInfos transmitterSubscriptionInfos : _subscriptionInfos.values()) {
 				if(transmitterSubscriptionInfos == _localTransmitterSubscriptionInfos) continue;
 				if(transmitterSubscriptionInfos.isPotentialCentralDav(requiredObjectId, requiredAtgUsageId)) {
 					potentialTransmitters[numberOfPotentialTransmitters++] = transmitterSubscriptionInfos._transmitterId;
@@ -938,7 +893,7 @@ public class ListsManager implements ListsManagerInterface {
 //			System.out.println("potentialTransmitters = " + null);
 			return null;
 		}
-		long[] result = new long[numberOfPotentialTransmitters];
+		final long[] result = new long[numberOfPotentialTransmitters];
 		System.arraycopy(potentialTransmitters,0,result, 0, numberOfPotentialTransmitters);
 //		System.out.println("potentialTransmitters " + _localTransmitterId + ": " + potentialTransmitters.length);
 		return result;
@@ -965,7 +920,7 @@ public class ListsManager implements ListsManagerInterface {
 	 * @param combiToAdd    Liste der zu addierenden Attributgruppen-Aspekt-Kombinationen
 	 */
 	private void sendTransmitterUpdates(
-			T_T_HighLevelCommunicationInterface connection, long transmitterId, List<Long> objToAdd, List<Long> combiToAdd) {
+			final T_T_HighLevelCommunicationInterface connection, final long transmitterId, final List<Long> objToAdd, final List<Long> combiToAdd) {
 		int objToAddPos = 0;
 		int combiToAddPos = 0;
 		boolean processObjToAdd = true;
@@ -975,18 +930,18 @@ public class ListsManager implements ListsManagerInterface {
 		boolean delta = false;
 		do {
 			// Objects to add
-			long objectsToAdd[] = null;
+			long[] objectsToAdd = null;
 			if(processObjToAdd) {
 				if(objToAdd != null) {
-					int size = objToAdd.size();
+					final int size = objToAdd.size();
 					if(size > 0) {
 						if(size > 3600) {
-							int rest = size - objToAddPos;
+							final int rest = size - objToAddPos;
 							// maximal 3600 Objekte je Telegramm hinzufügen, damit die Telegrammgröße nicht überschritten wird
-							int length = (rest > 3600 ? 3600 : rest);
+							final int length = (rest > 3600 ? 3600 : rest);
 							objectsToAdd = new long[length];
 							for(int j = objToAddPos, k = 0; k < length; ++j, ++k) {
-								objectsToAdd[k] = objToAdd.get(j).longValue();
+								objectsToAdd[k] = objToAdd.get(j);
 							}
 							objToAddPos += length;
 							if(objToAddPos >= size) {
@@ -996,7 +951,7 @@ public class ListsManager implements ListsManagerInterface {
 						else {
 							objectsToAdd = new long[size];
 							for(int j = 0; j < size; ++j) {
-								objectsToAdd[j] = objToAdd.get(j).longValue();
+								objectsToAdd[j] = objToAdd.get(j);
 							}
 							processObjToAdd = false;
 						}
@@ -1011,18 +966,18 @@ public class ListsManager implements ListsManagerInterface {
 			}
 
 			// Combinations to add
-			AttributeGroupAspectCombination attributeGroupAspectsToAdd[] = null;
+			AttributeGroupAspectCombination[] attributeGroupAspectsToAdd = null;
 			if(processCombiToAdd) {
 				if(combiToAdd != null) {
-					int size = combiToAdd.size();
+					final int size = combiToAdd.size();
 					if(size > 0) {
 						// maximal 300 Attributgruppen-Aspekt-Kombinationen je Telegramm hinzufügen, damit die Telegrammgröße nicht überschritten wird
 						if(size > 300) {
-							int rest = size - combiToAddPos;
-							int length = (rest > 300 ? 300 : rest);
+							final int rest = size - combiToAddPos;
+							final int length = (rest > 300 ? 300 : rest);
 							attributeGroupAspectsToAdd = new AttributeGroupAspectCombination[length];
 							for(int j = combiToAddPos, k = 0; k < length; ++j, ++k) {
-								attributeGroupAspectsToAdd[k] = new AttributeGroupAspectCombination(combiToAdd.get(j).longValue());
+								attributeGroupAspectsToAdd[k] = new AttributeGroupAspectCombination(combiToAdd.get(j));
 							}
 							combiToAddPos += length;
 							if(combiToAddPos >= size) {
@@ -1032,7 +987,7 @@ public class ListsManager implements ListsManagerInterface {
 						else {
 							attributeGroupAspectsToAdd = new AttributeGroupAspectCombination[size];
 							for(int j = 0; j < size; ++j) {
-								attributeGroupAspectsToAdd[j] = new AttributeGroupAspectCombination(combiToAdd.get(j).longValue());
+								attributeGroupAspectsToAdd[j] = new AttributeGroupAspectCombination(combiToAdd.get(j));
 							}
 							processCombiToAdd = false;
 						}
@@ -1047,7 +1002,7 @@ public class ListsManager implements ListsManagerInterface {
 			}
 
 			if((objectsToAdd != null) || (attributeGroupAspectsToAdd != null)) {
-				TransmitterListsUpdate transmitterListsUpdate = new TransmitterListsUpdate(
+				final TransmitterListsUpdate transmitterListsUpdate = new TransmitterListsUpdate(
 						transmitterId, delta, objectsToAdd, null, attributeGroupAspectsToAdd, null
 				);
 //				System.out.println("Sende: " + _localTransmitterId + ", " + transmitterListsUpdate);
@@ -1073,13 +1028,13 @@ public class ListsManager implements ListsManagerInterface {
 	 * @param combiToRemove Liste der zu entfernenden Attributgruppen-Aspekt-Kombinationen
 	 */
 	private void sendTransmitterUpdates(
-			T_T_HighLevelCommunicationInterface connection,
-			long transmitterId,
+			final T_T_HighLevelCommunicationInterface connection,
+			final long transmitterId,
 			boolean update,
-			List objToAdd,
-			List objToRemove,
-			List combiToAdd,
-			List combiToRemove) {
+			final List<Long> objToAdd,
+			final List<Long> objToRemove,
+			final List<AttributeGroupAspectCombination> combiToAdd,
+			final List<AttributeGroupAspectCombination> combiToRemove) {
 		int objToAddPos = 0;
 		int objToRemovePos = 0;
 		int combiToAddPos = 0;
@@ -1091,20 +1046,20 @@ public class ListsManager implements ListsManagerInterface {
 
 		do {
 			// Objects to add
-			long objectsToAdd[] = null;
+			long[] objectsToAdd = null;
 			if(processObjToAdd) {
 				if(objToAdd != null) {
-					int size = objToAdd.size();
+					final int size = objToAdd.size();
 					if(size > 0) {
 						if(size > 1800) {
-							int rest = size - objToAddPos;
+							final int rest = size - objToAddPos;
 							// maximal 1800 Objekte je Telegramm hinzufügen, damit die Telegrammgröße nicht überschritten wird
-							int length = (rest > 1800 ? 1800 : rest);
+							final int length = (rest > 1800 ? 1800 : rest);
 							objectsToAdd = new long[length];
 							for(int j = objToAddPos, k = 0; k < length; ++j, ++k) {
-								Long objectId = (Long)objToAdd.get(j);
+								final Long objectId = objToAdd.get(j);
 								if(objectId != null) {
-									objectsToAdd[k] = objectId.longValue();
+									objectsToAdd[k] = objectId;
 								}
 							}
 							objToAddPos += length;
@@ -1115,9 +1070,9 @@ public class ListsManager implements ListsManagerInterface {
 						else {
 							objectsToAdd = new long[size];
 							for(int j = 0; j < size; ++j) {
-								Long objectId = (Long)objToAdd.get(j);
+								final Long objectId = objToAdd.get(j);
 								if(objectId != null) {
-									objectsToAdd[j] = objectId.longValue();
+									objectsToAdd[j] = objectId;
 								}
 							}
 							processObjToAdd = false;
@@ -1132,20 +1087,20 @@ public class ListsManager implements ListsManagerInterface {
 				}
 			}
 			// Objects to remove
-			long objectsToRemove[] = null;
+			long[] objectsToRemove = null;
 			if(processObjToRemove) {
 				if(objToRemove != null) {
-					int size = objToRemove.size();
+					final int size = objToRemove.size();
 					if(size > 0) {
 						if(size > 1800) {
-							int rest = size - objToRemovePos;
+							final int rest = size - objToRemovePos;
 							// maximal 1800 Objekte je Telegramm entfernen, damit die Telegrammgröße nicht überschritten wird
-							int length = (rest > 1800 ? 1800 : rest);
+							final int length = (rest > 1800 ? 1800 : rest);
 							objectsToRemove = new long[length];
 							for(int j = objToRemovePos, k = 0; k < length; ++j, ++k) {
-								Long objectId = (Long)objToRemove.get(j);
+								final Long objectId = objToRemove.get(j);
 								if(objectId != null) {
-									objectsToRemove[k] = objectId.longValue();
+									objectsToRemove[k] = objectId;
 								}
 							}
 							objToRemovePos += length;
@@ -1156,9 +1111,9 @@ public class ListsManager implements ListsManagerInterface {
 						else {
 							objectsToRemove = new long[size];
 							for(int j = 0; j < size; ++j) {
-								Long objectId = (Long)objToRemove.get(j);
+								final Long objectId = objToRemove.get(j);
 								if(objectId != null) {
-									objectsToRemove[j] = objectId.longValue();
+									objectsToRemove[j] = objectId;
 								}
 							}
 							processObjToRemove = false;
@@ -1173,18 +1128,18 @@ public class ListsManager implements ListsManagerInterface {
 				}
 			}
 			// Combinations to add
-			AttributeGroupAspectCombination attributeGroupAspectsToAdd[] = null;
+			AttributeGroupAspectCombination[] attributeGroupAspectsToAdd = null;
 			if(processCombiToAdd) {
 				if(combiToAdd != null) {
-					int size = combiToAdd.size();
+					final int size = combiToAdd.size();
 					if(size > 0) {
 						if(size > 150) {
-							int rest = size - combiToAddPos;
+							final int rest = size - combiToAddPos;
 							// maximal 150 Attributgruppen-Aspekt-Kombinationen je Telegramm hinzufügen, damit die Telegrammgröße nicht überschritten wird
-							int length = (rest > 150 ? 150 : rest);
+							final int length = (rest > 150 ? 150 : rest);
 							attributeGroupAspectsToAdd = new AttributeGroupAspectCombination[length];
 							for(int j = combiToAddPos, k = 0; k < length; ++j, ++k) {
-								attributeGroupAspectsToAdd[k] = (AttributeGroupAspectCombination)combiToAdd.get(j);
+								attributeGroupAspectsToAdd[k] = combiToAdd.get(j);
 							}
 							combiToAddPos += length;
 							if(combiToAddPos >= size) {
@@ -1194,7 +1149,7 @@ public class ListsManager implements ListsManagerInterface {
 						else {
 							attributeGroupAspectsToAdd = new AttributeGroupAspectCombination[size];
 							for(int j = 0; j < size; ++j) {
-								attributeGroupAspectsToAdd[j] = (AttributeGroupAspectCombination)combiToAdd.get(j);
+								attributeGroupAspectsToAdd[j] = combiToAdd.get(j);
 							}
 							processCombiToAdd = false;
 						}
@@ -1208,18 +1163,18 @@ public class ListsManager implements ListsManagerInterface {
 				}
 			}
 			// Combinations to remove
-			AttributeGroupAspectCombination attributeGroupAspectsToRemove[] = null;
+			AttributeGroupAspectCombination[] attributeGroupAspectsToRemove = null;
 			if(processCombiToRemove) {
 				if(combiToRemove != null) {
-					int size = combiToRemove.size();
+					final int size = combiToRemove.size();
 					if(size > 0) {
 						if(size > 150) {
-							int rest = size - combiToRemovePos;
+							final int rest = size - combiToRemovePos;
 							// maximal 150 Attributgruppen-Aspekt-Kombinationen je Telegramm entfernen, damit die Telegrammgröße nicht überschritten wird
-							int length = (rest > 150 ? 150 : rest);
+							final int length = (rest > 150 ? 150 : rest);
 							attributeGroupAspectsToRemove = new AttributeGroupAspectCombination[length];
 							for(int j = combiToRemovePos, k = 0; k < length; ++j, ++k) {
-								attributeGroupAspectsToRemove[k] = (AttributeGroupAspectCombination)combiToRemove.get(j);
+								attributeGroupAspectsToRemove[k] = combiToRemove.get(j);
 							}
 							combiToRemovePos += length;
 							if(combiToRemovePos >= size) {
@@ -1229,7 +1184,7 @@ public class ListsManager implements ListsManagerInterface {
 						else {
 							attributeGroupAspectsToRemove = new AttributeGroupAspectCombination[size];
 							for(int j = 0; j < size; ++j) {
-								attributeGroupAspectsToRemove[j] = (AttributeGroupAspectCombination)combiToRemove.get(j);
+								attributeGroupAspectsToRemove[j] = combiToRemove.get(j);
 							}
 							processCombiToRemove = false;
 						}
@@ -1244,7 +1199,7 @@ public class ListsManager implements ListsManagerInterface {
 			}
 
 			if((objectsToAdd != null) || (objectsToRemove != null) || (attributeGroupAspectsToAdd != null) || (attributeGroupAspectsToRemove != null)) {
-				TransmitterListsUpdate transmitterListsUpdate = new TransmitterListsUpdate(
+				final TransmitterListsUpdate transmitterListsUpdate = new TransmitterListsUpdate(
 						transmitterId, update, objectsToAdd, objectsToRemove, attributeGroupAspectsToAdd, attributeGroupAspectsToRemove
 				);
 //				System.out.println("Sende: " + _localTransmitterId + ", " + transmitterListsUpdate);
@@ -1264,14 +1219,14 @@ public class ListsManager implements ListsManagerInterface {
 	 *
 	 * @param ids long Array mit den IDs der zu löschenden Datenverteiler
 	 */
-	private void cleanPendingDelayedSubscriptions(long ids[]) {
+	private void cleanPendingDelayedSubscriptions(final long[] ids) {
 		synchronized(_delayedSubscriptionList) {
 			for(int i = 0; i < _delayedSubscriptionList.size(); ++i) {
-				DelayedSubscriptionHandle handle = (DelayedSubscriptionHandle)_delayedSubscriptionList.get(i);
+				final DelayedSubscriptionHandle handle = _delayedSubscriptionList.get(i);
 				if(handle != null) {
 					int newLength = handle._ids.length;
 					for(int j = 0; j < handle._ids.length; ++j) {
-						long id = handle._ids[j];
+						final long id = handle._ids[j];
 						for(int k = 0; k < ids.length; ++k) {
 							if(ids[k] == id) {
 								handle._ids[j] = -1;
@@ -1282,7 +1237,7 @@ public class ListsManager implements ListsManagerInterface {
 					}
 					if(newLength != handle._ids.length) {
 						if(newLength > 0) {
-							long newIds[] = new long[newLength];
+							final long[] newIds = new long[newLength];
 							for(int j = 0, k = 0; j < handle._ids.length; ++j) {
 								if(handle._ids[j] != -1) {
 									newIds[k++] = handle._ids[j];
@@ -1299,7 +1254,7 @@ public class ListsManager implements ListsManagerInterface {
 	}
 
 	public void dumpSubscriptionLists() {
-		for(Map.Entry<Long, TransmitterSubscriptionInfos> transmitterSubscriptionInfosEntry : _subscriptionInfos.entrySet()) {
+		for(final Map.Entry<Long, TransmitterSubscriptionInfos> transmitterSubscriptionInfosEntry : _subscriptionInfos.entrySet()) {
 			final TransmitterSubscriptionInfos subscriptionInfos = transmitterSubscriptionInfosEntry.getValue();
 			System.out.println(subscriptionInfos.toShortString());
 		}
@@ -1325,18 +1280,9 @@ public class ListsManager implements ListsManagerInterface {
 		 *
 		 * @param transmitterId Die ID des Datenverteilers auf den sich diese Anmeldeliste bezieht.
 		 */
-		TransmitterSubscriptionInfos(long transmitterId) {
+		TransmitterSubscriptionInfos(final long transmitterId) {
 			_transmitterId = transmitterId;
-			_subscribers = new CopyOnWriteArrayList();
-		}
-
-		public boolean isPotentialTransmitter(final long requiredObjectId, final long requiredAtgUsageId) {
-//			System.out.println("isPotentialTransmitter " + _localTransmitterId + ", requiredObjectId = " + requiredObjectId + ", requiredAtgUsageId = " + requiredAtgUsageId);
-//			System.out.println("_objectIdSet = " + _objectIdSet);
-//			System.out.println("_atgUsageSet = " + _atgUsageSet);
-			synchronized(this) {
-				return _objectIdSet.contains(requiredObjectId) && _atgUsageSet.contains(requiredAtgUsageId);
-			}
+			_subscribers = new CopyOnWriteArrayList<Long>();
 		}
 
 		public boolean isPotentialCentralDav(final long requiredObjectId, final long requiredAtgUsageId) {
@@ -1359,8 +1305,8 @@ public class ListsManager implements ListsManagerInterface {
 				if(removedAtgUsageIds != null) _atgUsageSet.removeAll(removedAtgUsageIds);
 				_atgUsageSet.addAll(addedAtgUsageIds);
 				
-				for(Long subscriber : _subscribers) {
-					T_T_HighLevelCommunicationInterface connection = _connectionsManager.getTransmitterConnection(subscriber.longValue());
+				for(final Long subscriber : _subscribers) {
+					final T_T_HighLevelCommunicationInterface connection = _connectionsManager.getTransmitterConnectionFromId(subscriber);
 					if(connection != null) {
 						sendTransmitterUpdates(
 								connection,
@@ -1379,8 +1325,8 @@ public class ListsManager implements ListsManagerInterface {
 		private List<AttributeGroupAspectCombination> convertListOfLongsToListOfAttributeGroupAspectCombinations(final List<Long> atgUsageIds) {
 			if(atgUsageIds== null) return null;
 			final ArrayList<AttributeGroupAspectCombination> result = new ArrayList<AttributeGroupAspectCombination>(atgUsageIds.size());
-			for(Long atgUsageId : atgUsageIds) {
-				result.add(new AttributeGroupAspectCombination(atgUsageId.longValue()));
+			for(final Long atgUsageId : atgUsageIds) {
+				result.add(new AttributeGroupAspectCombination(atgUsageId));
 			}
 			return result;
 		}
@@ -1391,9 +1337,9 @@ public class ListsManager implements ListsManagerInterface {
 			str += "Zulieferer: " + _delivererId + "\n";
 			str += "Abonnenten: [";
 			for(int i = 0; i < _subscribers.size(); ++i) {
-				Long abo = (Long)_subscribers.get(i);
+				final Long abo = (Long)_subscribers.get(i);
 				if(abo != null) {
-					str += "\t" + abo.longValue();
+					str += "\t" + abo;
 				}
 			}
 			str += "]\n";
@@ -1403,12 +1349,12 @@ public class ListsManager implements ListsManagerInterface {
 		}
 
 		public String toShortString() {
-			StringBuilder builder = new StringBuilder();
+			final StringBuilder builder = new StringBuilder();
 			builder.append("DAV ").append(_transmitterId);
 			builder.append(" von: ").append(_delivererId);
 			builder.append(" an { ");
 			for(int i = 0; i < _subscribers.size(); ++i) {
-				Long abo = (Long)_subscribers.get(i);
+				final Long abo = (Long)_subscribers.get(i);
 				if(abo != null) {
 					builder.append(abo.longValue()).append(" ");
 				}
@@ -1422,24 +1368,24 @@ public class ListsManager implements ListsManagerInterface {
 
 		long _way;
 
-		long _ids[];
+		long[] _ids;
 
 		long _time;
 
-		public DelayedSubscriptionHandle(long way, long ids[]) {
+		public DelayedSubscriptionHandle(final long way, final long[] ids) {
 			_way = way;
 			_ids = ids;
 			_time = System.currentTimeMillis();
 		}
 
-		public final boolean isOverTime(long t) {
+		public final boolean isOverTime(final long t) {
 			return (t - _time) > DELAYED_SUBSCRIPTION_TIME_LIMIT;
 		}
 
 		public final void work() {
-			T_T_HighLevelCommunicationInterface connection = _connectionsManager.getTransmitterConnection(_way);
+			final T_T_HighLevelCommunicationInterface connection = _connectionsManager.getTransmitterConnectionFromId(_way);
 			if(connection != null) {
-				TransmitterListsSubscription transmitterListsSubscription = new TransmitterListsSubscription(_ids);
+				final TransmitterListsSubscription transmitterListsSubscription = new TransmitterListsSubscription(_ids);
 //				System.out.println("Sende: " + _localTransmitterId + ", " + transmitterListsSubscription);
 				connection.sendTelegram(transmitterListsSubscription);
 			}
@@ -1453,6 +1399,7 @@ public class ListsManager implements ListsManagerInterface {
 			super("DelayedSubscriptionThread");
 		}
 
+		@Override
 		public final void run() {
 			while(!interrupted()) {
 				try {
@@ -1461,9 +1408,9 @@ public class ListsManager implements ListsManagerInterface {
 					}
 					while(_delayedSubscriptionList.size() > 0) {
 						synchronized(_delayedSubscriptionList) {
-							long time = System.currentTimeMillis();
+							final long time = System.currentTimeMillis();
 							for(int i = 0; i < _delayedSubscriptionList.size(); ++i) {
-								DelayedSubscriptionHandle handle = (DelayedSubscriptionHandle)_delayedSubscriptionList.get(i);
+								final DelayedSubscriptionHandle handle = _delayedSubscriptionList.get(i);
 								if(handle != null) {
 									if(handle.isOverTime(time)) {
 										handle.work();
@@ -1511,12 +1458,12 @@ public class ListsManager implements ListsManagerInterface {
 	}
 
 	private class LocalSubscriptionInfos {
-		private DelayedTrigger _localSubscriptionAddedTrigger;
-		private DelayedTrigger _localSubscriptionRemovedTrigger;
-		private Map<Long, ReferenceCount> _objectIds = new HashMap<Long, ReferenceCount>();
-		private Map<Long, ReferenceCount> _changedObjectIds = new HashMap<Long, ReferenceCount>();
-		private Map<Long, ReferenceCount> _atgUsageIds = new HashMap<Long, ReferenceCount>();
-		private Map<Long, ReferenceCount> _changedAtgUsageIds = new HashMap<Long, ReferenceCount>();
+		private final DelayedTrigger _localSubscriptionAddedTrigger;
+		private final DelayedTrigger _localSubscriptionRemovedTrigger;
+		private final Map<Long, ReferenceCount> _objectIds = new HashMap<Long, ReferenceCount>();
+		private final Map<Long, ReferenceCount> _changedObjectIds = new HashMap<Long, ReferenceCount>();
+		private final Map<Long, ReferenceCount> _atgUsageIds = new HashMap<Long, ReferenceCount>();
+		private final Map<Long, ReferenceCount> _changedAtgUsageIds = new HashMap<Long, ReferenceCount>();
 
 		public LocalSubscriptionInfos() {
 			_localSubscriptionAddedTrigger = new DelayedTrigger("SubscriptionAddedTrigger", 1700, 1000, 2500);
@@ -1561,7 +1508,7 @@ public class ListsManager implements ListsManagerInterface {
 		}
 
 		private boolean incrementReferenceCount(final Map<Long, ReferenceCount> objectIds, final long objectId) {
-			ReferenceCount objectReferenceCount = objectIds.get(objectId);
+			final ReferenceCount objectReferenceCount = objectIds.get(objectId);
 			if(objectReferenceCount == null) {
 				objectIds.put(objectId, new ReferenceCount(1));
 				return true;
@@ -1575,7 +1522,7 @@ public class ListsManager implements ListsManagerInterface {
 		}
 
 		private boolean decrementReferenceCount(final Map<Long, ReferenceCount> objectIds, final long objectId) {
-			ReferenceCount objectReferenceCount = objectIds.get(objectId);
+			final ReferenceCount objectReferenceCount = objectIds.get(objectId);
 			if(objectReferenceCount == null) {
 				objectIds.put(objectId, new ReferenceCount(-1));
 				return false;
@@ -1591,18 +1538,19 @@ public class ListsManager implements ListsManagerInterface {
 
 		private class AddedTriggerTarget implements TriggerTarget {
 
+			@Override
 			public void shot() {
 				try {
-//					System.out.println("ListsManager$LocalSubscriptionInfos$AddedTriggerTarget.shot");
-//					System.out.println("Thread.currentThread().getName() = " + Thread.currentThread().getName());
-//					synchronized(LocalSubscriptionInfos.this) {
-//						System.out.println("_changedObjectIds = " + _changedObjectIds.size());
-//						System.out.println("_changedAtgUsageIds = " + _changedAtgUsageIds.size());
-//					}
-//					long t0 = System.currentTimeMillis();
-					List<Long> addedObjectIds = new ArrayList<Long>();
-					List<Long> addedAtgUsageIds = new ArrayList<Long>();
+					// System.out.println("ListsManager$LocalSubscriptionInfos$AddedTriggerTarget.shot");
+					// System.out.println("Thread.currentThread().getName() = " + Thread.currentThread().getName());
+					synchronized(LocalSubscriptionInfos.this) {
+						// System.out.println("_changedObjectIds = " + _changedObjectIds.size());
+						// System.out.println("_changedAtgUsageIds = " + _changedAtgUsageIds.size());
+					}
+					long t0 = System.currentTimeMillis();
 					synchronized(_localSubscriptionInfosSendLock) {
+						final List<Long> addedAtgUsageIds = new ArrayList<Long>();
+						final List<Long> addedObjectIds = new ArrayList<Long>();
 						synchronized(LocalSubscriptionInfos.this) {
 							extractAdditions(_changedObjectIds, addedObjectIds);
 							extractAdditions(_changedAtgUsageIds, addedAtgUsageIds);
@@ -1620,15 +1568,16 @@ public class ListsManager implements ListsManagerInterface {
 			}
 
 			private void extractAdditions(final Map<Long, ReferenceCount> changedObjectIds, final List<Long> addedObjects) {
-				for(Map.Entry<Long, ReferenceCount> changedEntry : changedObjectIds.entrySet()) {
+				for(final Map.Entry<Long, ReferenceCount> changedEntry : changedObjectIds.entrySet()) {
 					final int referenceCount = changedEntry.getValue().getReferenceCount();
 					if(referenceCount > 0) addedObjects.add(changedEntry.getKey());
 				}
-				for(Long addedObject : addedObjects) {
+				for(final Long addedObject : addedObjects) {
 					changedObjectIds.remove(addedObject);
 				}
 			}
 
+			@Override
 			public void close() {
 			}
 
@@ -1636,6 +1585,7 @@ public class ListsManager implements ListsManagerInterface {
 
 		private class RemovedTriggerTarget implements TriggerTarget {
 
+			@Override
 			public void shot() {
 				try {
 //					System.out.println("ListsManager$LocalSubscriptionInfos.shot");
@@ -1645,11 +1595,11 @@ public class ListsManager implements ListsManagerInterface {
 //						System.out.println("_changedAtgUsageIds = " + _changedAtgUsageIds.size());
 //					}
 //					long t0 = System.currentTimeMillis();
-					List<Long> addedObjectIds = new ArrayList<Long>();
-					List<Long> removedObjectIds = new ArrayList<Long>();
-					List<Long> addedAtgUsageIds = new ArrayList<Long>();
-					List<Long> removedAtgUsageIds = new ArrayList<Long>();
 					synchronized(_localSubscriptionInfosSendLock) {
+						final List<Long> removedAtgUsageIds = new ArrayList<Long>();
+						final List<Long> addedAtgUsageIds = new ArrayList<Long>();
+						final List<Long> removedObjectIds = new ArrayList<Long>();
+						final List<Long> addedObjectIds = new ArrayList<Long>();
 						synchronized(LocalSubscriptionInfos.this) {
 							extractChanges(_changedObjectIds, addedObjectIds, removedObjectIds);
 							extractChanges(_changedAtgUsageIds, addedAtgUsageIds, removedAtgUsageIds);
@@ -1669,7 +1619,7 @@ public class ListsManager implements ListsManagerInterface {
 			}
 
 			private void extractChanges(final Map<Long, ReferenceCount> changedObjectIds, final List<Long> addedObjects, final List<Long> removedObjects) {
-				for(Map.Entry<Long, ReferenceCount> changedEntry : changedObjectIds.entrySet()) {
+				for(final Map.Entry<Long, ReferenceCount> changedEntry : changedObjectIds.entrySet()) {
 					final int referenceCount = changedEntry.getValue().getReferenceCount();
 					if(referenceCount > 0) addedObjects.add(changedEntry.getKey());
 					else if(referenceCount < 0) removedObjects.add(changedEntry.getKey());
@@ -1677,6 +1627,7 @@ public class ListsManager implements ListsManagerInterface {
 				changedObjectIds.clear();
 			}
 
+			@Override
 			public void close() {
 			}
 

@@ -30,7 +30,7 @@ import de.bsvrz.dav.daf.communication.lowLevel.telegrams.TransmitterBestWayUpdat
  * Verbindungsverwaltung darauf zugreifen kann. Die eigentliche Verwaltung wird in der Klasse RoutingTable realisiert.
  *
  * @author Kappich Systemberatung
- * @version $Revision: 8100 $
+ * @version $Revision: 11481 $
  */
 public class BestWayManager implements BestWayManagerInterface {
 
@@ -59,6 +59,7 @@ public class BestWayManager implements BestWayManagerInterface {
 	 * Methode der RoutingTable auf und gibt die ID des Datenverteilers zurück, über den der optimale Weg läuft. Wenn kein Weg zum spezifizierten Datenverteiler
 	 * existiert, wird <code>-1</code> zurückgegeben.
 	 */
+	@Override
 	public final long getBestWay(long destinationDavId) {
 		final RoutingConnectionInterface connection = _routingTable.findBestConnection(destinationDavId);
 		return ((connection == null) ? -1 : connection.getRemoteNodeId());
@@ -110,10 +111,10 @@ public class BestWayManager implements BestWayManagerInterface {
 		if((connection == null) || (transmitterBestWayUpdate == null)) {
 			throw new IllegalArgumentException("Argument ist null");
 		}
-		RoutingUpdate routingUpdates[] = transmitterBestWayUpdate.getRoutingUpdates();
+		RoutingUpdate[] routingUpdates = transmitterBestWayUpdate.getRoutingUpdates();
 		if(routingUpdates != null) {
 			_routingTable.update(connection.getRemoteNodeId(), routingUpdates);
-			long ids[] = new long[routingUpdates.length];
+			long[] ids = new long[routingUpdates.length];
 			for(int i = 0; i < routingUpdates.length; ++i) {
 				ids[i] = routingUpdates[i].getTransmitterId();
 			}

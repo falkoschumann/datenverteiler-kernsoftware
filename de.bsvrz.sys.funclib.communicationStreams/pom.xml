@@ -26,7 +26,7 @@
     <parent>
         <groupId>kernsoftware</groupId>
         <artifactId>kernsoftware</artifactId>
-        <version>3.5.0</version>
+        <version>3.6.2</version>
         <relativePath>..</relativePath>
     </parent>
 
@@ -34,22 +34,22 @@
         <dependency>
             <groupId>de.bsvrz.sys.funclib</groupId>
             <artifactId>de.bsvrz.sys.funclib.concurrent</artifactId>
-            <version>3.5.0</version>
+            <version>3.6.2</version>
         </dependency>
         <dependency>
             <groupId>de.bsvrz.sys.funclib</groupId>
             <artifactId>de.bsvrz.sys.funclib.dataSerializer</artifactId>
-            <version>3.5.0</version>
+            <version>3.6.2</version>
         </dependency>
         <dependency>
             <groupId>de.bsvrz.sys.funclib</groupId>
             <artifactId>de.bsvrz.sys.funclib.debug</artifactId>
-            <version>3.5.0</version>
+            <version>3.6.2</version>
         </dependency>
         <dependency>
             <groupId>de.bsvrz.dav</groupId>
             <artifactId>de.bsvrz.dav.daf</artifactId>
-            <version>3.5.0</version>
+            <version>3.6.2</version>
         </dependency>
     </dependencies>
 

@@ -85,6 +85,7 @@ class ExtendedUserInfo extends AbstractUserInfo {
 	}
 
 	/** Gibt die ID des Benutzers zurück */
+	@Override
 	public final long getUserId() {
 		return _userId;
 	}
@@ -119,6 +120,7 @@ class ExtendedUserInfo extends AbstractUserInfo {
 		throw new UnsupportedOperationException("removeInvalidChild nicht implementiert");
 	}
 
+	@Override
 	public boolean maySubscribeData(final BaseSubscriptionInfo info, final byte state) {
 		final UserAction action;
 		switch(state) {
@@ -141,6 +143,7 @@ class ExtendedUserInfo extends AbstractUserInfo {
 		return maySubscribeData(info, action);
 	}
 	
+	@Override
 	public boolean maySubscribeData(final BaseSubscriptionInfo info, final UserAction action) {
 		final long id = info.getObjectID();
 		final SystemObject object = _dataModel.getObject(id);
@@ -158,11 +161,13 @@ class ExtendedUserInfo extends AbstractUserInfo {
 		return maySubscribeData(object, attributeGroup, aspect, action);
 	}
 
+	@Override
 	public boolean maySubscribeData(final SystemObject object, final AttributeGroup attributeGroup, final Aspect aspect, final UserAction action) {
 		if(object == null) throw new IllegalArgumentException("object ist null");
 		if(attributeGroup == null) throw new IllegalArgumentException("attributeGroup ist null");
 		if(aspect == null) throw new IllegalArgumentException("aspect ist null");
 		if(!isInitialized()) waitForInitialization();
+		if(!getSystemObject().isValid()) return false; // das Benutzerobjekt kann zwischenzeitlich gelöscht worden sein
 		_readLock.lock();
 		try{
 			// Falls die Rechte implizit erlaubt sind, erlauben wir die Aktion
@@ -179,6 +184,7 @@ class ExtendedUserInfo extends AbstractUserInfo {
 		}
 	}
 
+	@Override
 	public boolean mayCreateModifyRemoveObject(final ConfigurationArea area, final SystemObjectType type) {
 		if(!isInitialized()) waitForInitialization();
 		_readLock.lock();
@@ -194,6 +200,7 @@ class ExtendedUserInfo extends AbstractUserInfo {
 		}
 	}
 
+	@Override
 	public boolean mayModifyObjectSet(final ConfigurationArea area, final ObjectSetType type) {
 		if(!isInitialized()) waitForInitialization();
 		_readLock.lock();
@@ -210,6 +217,6 @@ class ExtendedUserInfo extends AbstractUserInfo {
 
 	@Override
 	public String toString() {
-		return "ExtendedUserInfo{" + getUser().getPidOrId() + '}';
+		return getUser().getPidOrId();
 	}
 }

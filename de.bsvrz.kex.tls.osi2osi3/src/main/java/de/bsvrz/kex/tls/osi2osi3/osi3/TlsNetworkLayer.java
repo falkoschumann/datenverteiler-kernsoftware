@@ -38,7 +38,7 @@ import java.util.*;
  * Implementierung der TLS-OSI-3 Netzwerkebene.
  *
  * @author Kappich Systemberatung
- * @version $Revision: 9604 $
+ * @version $Revision: 10824 $
  */
 public class TlsNetworkLayer implements NetworkLayer, NetworkLayerSender {
 
@@ -316,7 +316,7 @@ public class TlsNetworkLayer implements NetworkLayer, NetworkLayerSender {
 	public boolean isReducingToControlByte(final DataLinkLayer.Link link) {
 		if(link.getProperty(TlsNetworkLayerSetting.reduceToControlByte) != null) {
 			try {
-				return !TlsNetworkLayerSetting.getBooleanProperty(link.getProperty(TlsNetworkLayerSetting.reduceToControlByte));
+				return TlsNetworkLayerSetting.getBooleanProperty(link.getProperty(TlsNetworkLayerSetting.reduceToControlByte));
 			}
 			catch(IllegalArgumentException ex) {
 				_debug.warning(

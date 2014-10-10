@@ -29,7 +29,7 @@ import de.bsvrz.dav.daf.communication.lowLevel.LowLevelCommunicationInterface;
  * Diese Klasse stellt die Parameter einer Verbindung zwischen zwei Servern zur Verfügung. Sie repräsentiert die Eigenschaften dieser Verbindung.
  *
  * @author Kappich Systemberatung
- * @version $Revision: 8100 $
+ * @version $Revision: 11481 $
  */
 public class ServerConnectionProperties extends ConnectionProperties {
 
@@ -89,14 +89,14 @@ public class ServerConnectionProperties extends ConnectionProperties {
 		_dataTransmitterId = serverDavParameters.getDataTransmitterId();
 		_localConfiguration = serverDavParameters.isLocalMode();
 		if(_localConfiguration) {
-			Object objs[] = serverDavParameters.getLocalModeParameter();
+			Object[] objs = serverDavParameters.getLocalModeParameter();
 			if(objs != null) {
 				_configurationPid = (String)objs[0];
 				_configurationId = ((Long)objs[1]).longValue();
 			}
 		}
 		else {
-			Object objs[] = serverDavParameters.getRemoteModeParameter();
+			Object[] objs = serverDavParameters.getRemoteModeParameter();
 			if(objs != null) {
 				_configDataTransmitterAdress = (String)objs[0];
 				_configDataTransmitterSubAdress = ((Integer)objs[1]).intValue();
@@ -147,7 +147,7 @@ public class ServerConnectionProperties extends ConnectionProperties {
 	 * @return die Pid und die Id der Konfigurationsapplikation
 	 */
 	public final Object[] getLocalModeParameter() {
-		Object objs[] = null;
+		Object[] objs = null;
 		if(_localConfiguration) {
 			objs = new Object[2];
 			objs[0] = _configurationPid;
@@ -174,7 +174,7 @@ public class ServerConnectionProperties extends ConnectionProperties {
 	 * @return Konfigurationsparameter des Remote-Modus
 	 */
 	public final Object[] getRemoteModeParameter() {
-		Object objs[] = null;
+		Object[] objs = null;
 		if(!_localConfiguration) {
 			objs = new Object[3];
 			objs[0] = _configDataTransmitterAdress;

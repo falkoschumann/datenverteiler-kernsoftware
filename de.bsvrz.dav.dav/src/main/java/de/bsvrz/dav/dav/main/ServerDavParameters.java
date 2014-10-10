@@ -41,7 +41,7 @@ import java.util.*;
  * Setter-Methoden gesetzt und können durch entsprechende Getter-Methoden gelesen werden.
  *
  * @author Kappich Systemberatung
- * @version $Revision: 10112 $
+ * @version $Revision: 11481 $
  */
 public class ServerDavParameters {
 
@@ -196,6 +196,9 @@ public class ServerDavParameters {
 	/** Zeit in Millisekunden, die gewartet werden soll bevor Verbindungen von anderen Datenverteilern akzeptiert werden dürfen. */
 	private long _initialInterDavServerDelay;
 
+	/** Zeit in Millisekunden, die gewartet werden soll bevor versucht wird, abgebrochene Verbindungen neu aufzubauen. */
+	private long _reconnectInterDavDelay;
+
 	/** Kennung, die (falls <code>true</code>) dafür sorgt, dass der Datenverteiler auf die Applikationsfertigmeldung der Parametrierung wartet. */
 	private boolean _waitForParamApp = false;
 
@@ -293,6 +296,12 @@ public class ServerDavParameters {
 			final String alternateArgument = delayArgumentName.replaceAll("[ö]", "oe").replaceAll("[ü]", "ue");
 			_initialInterDavServerDelay = argumentList.fetchArgument(alternateArgument + "=60s").asRelativeTime();
 		}
+
+		_reconnectInterDavDelay = argumentList.fetchArgument("-wiederverbindungsWartezeit=60s").asRelativeTime();
+		if(_reconnectInterDavDelay < 1){
+			throw new MissingParameterException("Die angegebene -wiederverbindungsWartezeit=" + _reconnectInterDavDelay + "ms ist ungültig: Muss > 0 sein.");
+		}
+
 		final String[] strings = argumentList.fetchArgument("-tcpKommunikationsModul=" + getLowLevelCommunicationName()).asNonEmptyString().split(":", 2);
 		final String tcpCommunicationClassName = strings[0];
 		final String tcpCommunicationParameters = (strings.length > 1) ? strings[1] : "";
@@ -400,7 +409,7 @@ public class ServerDavParameters {
 				}
 				else {
 					try {
-						String parameters[] = ArgumentParser.getParameters(
+						String[] parameters = ArgumentParser.getParameters(
 								parameter, REMOTE_CONFIGURATION_DATA_KEY, PARAMETER_SEPARATOR
 						);
 						if((parameters != null) && (parameters.length == 3)) {
@@ -928,7 +937,7 @@ public class ServerDavParameters {
 	 *
 	 * @return Der Wert zum angegebenen Schlüssel oder <code>null</code>, falls kein Wert hierzu existiert.
 	 */
-	private String getParameter(String arguments[], String key) {
+	private String getParameter(String[] arguments, String key) {
 		String parameter = null;
 		if((arguments == null) || (key == null)) {
 			return null;
@@ -1359,7 +1368,7 @@ public class ServerDavParameters {
 	 * @return die Pid und die Id der Konfigurationsapplikation
 	 */
 	public final Object[] getLocalModeParameter() {
-		Object objs[] = null;
+		Object[] objs = null;
 		if(_localConfiguration) {
 			objs = new Object[2];
 			objs[0] = _configurationPid;
@@ -1389,7 +1398,7 @@ public class ServerDavParameters {
 	 * @return die Konfigurationsparameter des Remote-Modus
 	 */
 	public final Object[] getRemoteModeParameter() {
-		Object objs[] = null;
+		Object[] objs = null;
 		if(!_localConfiguration) {
 			objs = new Object[3];
 			objs[0] = _configDataTransmitterAddress;
@@ -1557,8 +1566,22 @@ public class ServerDavParameters {
 		return _userRightsChecking;
 	}
 
+	/** Zeit in Millisekunden, die gewartet werden soll bevor Verbindungen von anderen Datenverteilern akzeptiert werden dürfen.
+	 * @return Zeit in Millisekunden
+	 */
 	public long getInitialInterDavServerDelay() {
 		return _initialInterDavServerDelay;
+	}
+
+	/** Zeit in Millisekunden, die gewartet werden soll bevor versucht wird, abgebrochene Verbindungen zu anderen Datenverteilern neu aufzubauen.
+	 * @return Zeit in Millisekunden
+	 */
+	public long getReconnectInterDavDelay() {
+		return _reconnectInterDavDelay;
+	}
+
+	public void setReconnectInterDavDelay(final long reconnectInterDavDelay) {
+		_reconnectInterDavDelay = reconnectInterDavDelay;
 	}
 
 	/**
@@ -1583,7 +1606,7 @@ public class ServerDavParameters {
 		final String communicationProtocolName;
 		if(isLocalMode()) {
 			// If localmode set the pid of the configuration
-			Object objects[] = getLocalModeParameter();
+			Object[] objects = getLocalModeParameter();
 			if(objects == null) {
 				throw new IllegalStateException("Inkonsistente Parameter.");
 			}
@@ -1596,7 +1619,7 @@ public class ServerDavParameters {
 		}
 		else {
 			// If remotemode set the adress and sub adress of the destination transmitter
-			Object objects[] = getRemoteModeParameter();
+			Object[] objects = getRemoteModeParameter();
 			if(objects == null) {
 				throw new IllegalStateException("Inkonsistente Parameter.");
 			}
@@ -1665,7 +1688,7 @@ public class ServerDavParameters {
 
 	/**
 	 * @author Kappich Systemberatung
-	 * @version $Revision: 10112 $
+	 * @version $Revision: 11481 $
 	 */
 	public static enum UserRightsChecking {
 		Disabled,

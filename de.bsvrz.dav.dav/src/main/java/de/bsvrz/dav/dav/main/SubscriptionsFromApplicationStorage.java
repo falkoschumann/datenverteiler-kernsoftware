@@ -35,7 +35,7 @@ import java.util.*;
  * Speichert alle Anmeldungen, die über eine Kommunikationsverbindung mit einer Applikation empfangen wurden.
  *
  * @author Kappich Systemberatung
- * @version $Revision: 7715 $
+ * @version $Revision: 11481 $
  */
 public class SubscriptionsFromApplicationStorage extends SubscriptionsFromRemoteStorage {
 
@@ -170,6 +170,7 @@ public class SubscriptionsFromApplicationStorage extends SubscriptionsFromRemote
 	}
 
 
+	@Override
 	final int getType() {
 		return T_A;
 	}

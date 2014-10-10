@@ -50,20 +50,19 @@ abstract class AbstractUserInfo extends DataLoader implements UserInfoInternal {
 		super(connection, userAttributeGroupPid, USER_ASPECT_PID, accessControlManager.getUpdateLock());
 	}
 
+	@Override
 	public final void incrementReference() {
 		++_referenceCounter;
 	}
 
+	@Override
 	public final void decrementReference() {
 		--_referenceCounter;
 	}
 
+	@Override
 	public final boolean canBeSafelyDeleted() {
 		return _referenceCounter <= 0;
-	}
-
-	public final int getNumberOfReferences() {
-		return _referenceCounter;
 	}
 
 	/**

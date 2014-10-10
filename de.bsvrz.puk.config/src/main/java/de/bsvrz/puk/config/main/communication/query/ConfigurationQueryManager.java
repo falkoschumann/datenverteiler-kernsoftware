@@ -72,6 +72,7 @@ import de.bsvrz.puk.config.configFile.datamodel.ConfigNonMutableSet;
 import de.bsvrz.puk.config.configFile.fileaccess.ConfigFileBackupTask;
 import de.bsvrz.puk.config.main.authentication.Authentication;
 import de.bsvrz.puk.config.main.authentication.ConfigAuthentication;
+import de.bsvrz.puk.config.main.communication.UnknownObject;
 import de.bsvrz.puk.config.main.simulation.ConfigSimulationObject;
 import de.bsvrz.sys.funclib.concurrent.UnboundedQueue;
 import de.bsvrz.sys.funclib.dataSerializer.Deserializer;
@@ -90,7 +91,7 @@ import java.util.*;
  * Anfrage verschicken, wird dies ebenfalls durch dieses Objekt realisiert.
  *
  * @author Kappich Systemberatung
- * @version $Revision: 10674 $
+ * @version $Revision: 11772 $
  */
 public class ConfigurationQueryManager {
 
@@ -450,7 +451,14 @@ public class ConfigurationQueryManager {
 						_debug.fine("leerer Datensatz erhalten", data);
 					}
 					else {
-						SystemObject querySender = data.getReferenceValue("absender").getSystemObject();
+						SystemObject querySender;
+						try {
+							querySender = data.getReferenceValue("absender").getSystemObject();
+						}
+						catch(RuntimeException e){
+							_debug.fine("Ein Absenderobjekt ist der Konfiguration unbekannt", e);
+							querySender = new UnknownObject(data.getReferenceValue("absender").getId(), _localConfiguration.getConfigurationAuthority().getConfigurationArea());
+						}
 						_debug.finer("Konfigurationsanfrage erhalten von", querySender);
 						QueryHandler handler;
 						synchronized(_querySender2queryHandlerMap) {
@@ -1742,10 +1750,18 @@ public class ConfigurationQueryManager {
 							}
 							else if("BackupKonfigurationsdaten".equals(queryType)) {
 								// Sicherungsauftrag der Konfigurationsdateien
+								String targetDir = deserializer.readString();
+								ConfigurationAuthority configurationAuthority = null;
+								if(deserializer.getInputStream().available() != 0) {
+									configurationAuthority = (ConfigurationAuthority) deserializer.readObjectReference(
+											_localConfiguration
+									);
+								}
 								final ConfigFileBackupTask fileBackupTask = new ConfigFileBackupTask(
-										(ConfigAuthentication)_authentication,
-										(ConfigDataModel)_localConfiguration,
-										deserializer.readString(),
+										(ConfigAuthentication) _authentication,
+										(ConfigDataModel) _localConfiguration,
+										targetDir,
+										configurationAuthority,
 										_senderReplyAreaTasks,
 										queryIndex
 								);

@@ -66,7 +66,7 @@ import java.util.prefs.*;
  * Koordinaten der übergebenen Systemobjekte ein diese Objekte umfassendes Rechteck berechnet und angezeigt.
  *
  * @author Kappich Systemberatung
- * @version $Revision: 9358 $
+ * @version $Revision: 12083 $
  */
 @SuppressWarnings("serial")
 public class GenericNetDisplay extends JFrame {
@@ -140,12 +140,14 @@ public class GenericNetDisplay extends JFrame {
 
 		super();
 
+		//new PreferencesHandler(connection);
+
 		_standAlone = standAlone;
 		_connection = connection;
 		_view = view;
 		_systemObjects = systemObjects;
 
-		_noticeManager = new NoticeManager(getPreferenceStartPath().node("notices"), _connection.getDataModel());
+		_noticeManager = new NoticeManager(getPreferenceStartPath(_connection).node("notices"), _connection.getDataModel());
 
 		long t0 = System.currentTimeMillis();
 		readPreferences();
@@ -772,7 +774,8 @@ public class GenericNetDisplay extends JFrame {
 							}
 						}
 
-						Preferences gndPrefs = Preferences.userRoot().node("de/kappich/pat/gnd");
+//						Preferences gndPrefs = Preferences.userRoot().node("de/kappich/pat/gnd");
+						Preferences gndPrefs = getPreferenceStartPath(_connection);
 						try {
 							gndPrefs.exportSubtree(new FileOutputStream(xmlFile));
 						}
@@ -885,7 +888,8 @@ public class GenericNetDisplay extends JFrame {
 
 					public void clearPreferences() {
 
-						Preferences gndPrefs = Preferences.userRoot().node("de/kappich/pat/gnd");
+//						Preferences gndPrefs = Preferences.userRoot().node("de/kappich/pat/gnd");
+						Preferences gndPrefs = getPreferenceStartPath(_connection);
 						try {
 							gndPrefs.clear();
 						}
@@ -955,7 +959,8 @@ public class GenericNetDisplay extends JFrame {
 								options[1]
 						);
 						if(n == 0) {
-							Preferences gndPrefs = Preferences.userRoot().node("de/kappich/pat/gnd");
+//							Preferences gndPrefs = Preferences.userRoot().node("de/kappich/pat/gnd");
+							Preferences gndPrefs = getPreferenceStartPath(_connection);
 							try {
 								gndPrefs.removeNode();
 								System.exit(0);
@@ -1440,20 +1445,24 @@ public class GenericNetDisplay extends JFrame {
 	 * Gibt den Ausgangknoten zum Abspeichern der Benutzer-Präferenzen zurück.
 	 *
 	 * @return den Ausgangknoten zum Abspeichern der Benutzer-Präferenzen
+	 * @param connection Datenverteilerverbindung zum ermitteln des zugehörigen Einstellungs-Knotens (KV-Abhängig)
 	 */
-	private static Preferences getPreferenceStartPath() {
-
-		return Preferences.userRoot().node("de/kappich/pat/gnd/GND");
+	private static Preferences getPreferenceStartPath(final ClientDavInterface connection) {
+//		final String kvPid = GenericNetDisplay.getConnection().getLocalConfigurationAuthority().getPid();
+//		return Preferences.userRoot().node("de/kappich/pat/gnd/").node(kvPid).node("GND");
+		PreferencesHandler.setKvPid(connection.getLocalConfigurationAuthority().getPid());
+		//if(instance == null) instance = new PreferencesHandler(_connection);
+		return PreferencesHandler.getInstance().getPreferenceStartPath().node("GND");
 	}
 
 	/**
 	 * Holt die Bildschirmauflösung aus den Präferenzen, wenn sie dort hinterlegt ist, oder berechnet sie andernfalls.
 	 *
 	 * @return die Bildschirmauflösung
+	 * @param connection Datenverteilerverbindung zum ermitteln des zugehörigen Einstellungs-Knotens (KV-Abhängig)
 	 */
-	public static Double getScreenResolutionFromPreferences() {
-
-		final Preferences gndPrefs = getPreferenceStartPath();
+	public static Double getScreenResolutionFromPreferences(final ClientDavInterface connection) {
+		final Preferences gndPrefs = getPreferenceStartPath(connection);
 		Preferences resolutionPrefs = gndPrefs.node(gndPrefs.absolutePath() + "/resolution");
 		return resolutionPrefs.getDouble(RESOLUTION, new Double(Toolkit.getDefaultToolkit().getScreenResolution()));
 	}
@@ -1462,10 +1471,10 @@ public class GenericNetDisplay extends JFrame {
 	 * Holt den Namen der Startansicht aus den Präferenzen, wenn er dort hinterlegt ist.
 	 *
 	 * @return der Name der Startansicht
+	 * @param connection Datenverteilerverbindung zum ermitteln des zugehörigen Einstellungs-Knotens (KV-Abhängig)
 	 */
-	public static String getStartViewNameFromPreferences() {
-
-		final Preferences gndPrefs = getPreferenceStartPath();
+	public static String getStartViewNameFromPreferences(final ClientDavInterface connection) {
+		final Preferences gndPrefs = getPreferenceStartPath(connection);
 		Preferences startViewPrefs = gndPrefs.node(gndPrefs.absolutePath() + "/startViewName");
 		return startViewPrefs.get(STARTVIEWNAME, null);
 	}
@@ -1475,8 +1484,8 @@ public class GenericNetDisplay extends JFrame {
 		 */
 	private void readPreferences() {
 
-		_screenResolution = getScreenResolutionFromPreferences();
-		_startViewName = getStartViewNameFromPreferences();
+		_screenResolution = getScreenResolutionFromPreferences(_connection);
+		_startViewName = getStartViewNameFromPreferences(_connection);
 	}
 
 	/*
@@ -1484,7 +1493,7 @@ public class GenericNetDisplay extends JFrame {
 		 */
 	private void writeResolutionPreference(final Double screenResolution) {
 
-		Preferences gndPrefs = getPreferenceStartPath();
+		Preferences gndPrefs = getPreferenceStartPath(_connection);
 		Preferences resolutionPrefs = gndPrefs.node(gndPrefs.absolutePath() + "/resolution");
 		resolutionPrefs.putDouble(RESOLUTION, screenResolution);
 	}
@@ -1494,7 +1503,7 @@ public class GenericNetDisplay extends JFrame {
 		 */
 	private void clearResolutionPreference() {
 
-		Preferences gndPrefs = getPreferenceStartPath();
+		Preferences gndPrefs = getPreferenceStartPath(_connection);
 		Preferences resolutionPrefs = gndPrefs.node(gndPrefs.absolutePath() + "/resolution");
 		try {
 			resolutionPrefs.removeNode();
@@ -1512,7 +1521,7 @@ public class GenericNetDisplay extends JFrame {
 	 */
 	public void writeStartViewNamePreference(final String startViewName) {
 
-		Preferences gndPrefs = getPreferenceStartPath();
+		Preferences gndPrefs = getPreferenceStartPath(_connection);
 		Preferences startViewPrefs = gndPrefs.node(gndPrefs.absolutePath() + "/startViewName");
 		startViewPrefs.put(STARTVIEWNAME, startViewName);
 	}
@@ -1569,7 +1578,7 @@ public class GenericNetDisplay extends JFrame {
 	 * Eine Listener-Interface für Objekte, die sich auf Änderungen der Bildschirmauflösung anmelden wollen.
 	 *
 	 * @author Kappich Systemberatung
-	 * @version $Revision: 9358 $
+	 * @version $Revision: 12083 $
 	 */
 	interface ResolutionListener {
 

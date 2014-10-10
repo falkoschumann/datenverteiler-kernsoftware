@@ -69,7 +69,7 @@ import java.util.*;
  * <p/>
  *
  * @author Kappich Systemberatung
- * @version $Revision: 6837 $
+ * @version $Revision: 10187 $
  */
 public class Client extends WanCom implements PropertyQueryInterface {
 
@@ -408,7 +408,7 @@ public class Client extends WanCom implements PropertyQueryInterface {
 		}
 
 		public String getProperty(String name) {
-			synchronized(_linkLock) {
+			synchronized(_linkPropertyLock) {
 				String value = (_properties == null) ? null : _properties.getProperty(name);
 				return (value == null) ? Client.this.getProperty(name) : value;
 			}
@@ -416,8 +416,10 @@ public class Client extends WanCom implements PropertyQueryInterface {
 
 		public void setProperties(Properties properties) {
 			synchronized(_linkLock) {
-				_properties = properties;
-				if(_linkState == LinkState.CONNECTED || _linkState == LinkState.CONNECTING) reload();
+				synchronized(_linkPropertyLock) {
+					_properties = properties;
+					if(_linkState == LinkState.CONNECTED || _linkState == LinkState.CONNECTING) reload();
+				}
 			}
 		}
 

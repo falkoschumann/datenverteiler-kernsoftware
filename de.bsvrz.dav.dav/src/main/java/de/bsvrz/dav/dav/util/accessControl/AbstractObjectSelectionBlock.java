@@ -36,6 +36,7 @@ abstract class AbstractObjectSelectionBlock implements ObjectSelectionBlock {
 	 * Fügt einen neuen Listener hinzu, der über Änderungen an dieser Objektauswahl informiert wird
 	 * @param object Listener Listener
 	 */
+	@Override
 	public void addChangeListener(ObjectCollectionChangeListener object) {
 		if(_objectCollectionChangeListeners.size() == 0) startChangeListener();
 		_objectCollectionChangeListeners.add(object);
@@ -45,6 +46,7 @@ abstract class AbstractObjectSelectionBlock implements ObjectSelectionBlock {
 	 * Entfernt einen Listener wieder
 	 * @param object Listener Listener
 	 */
+	@Override
 	public void removeChangeListener(ObjectCollectionChangeListener object) {
 		_objectCollectionChangeListeners.remove(object);
 		if(_objectCollectionChangeListeners.size() == 0) stopChangeListener();

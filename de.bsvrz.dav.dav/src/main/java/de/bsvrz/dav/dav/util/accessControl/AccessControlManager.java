@@ -31,6 +31,7 @@ import de.bsvrz.sys.funclib.operatingMessage.MessageState;
 import de.bsvrz.sys.funclib.operatingMessage.MessageType;
 
 import java.util.*;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
@@ -80,12 +81,14 @@ public final class AccessControlManager implements RegionManager {
 
 	private HashBagMap<DataState, DataLoader> _oldObjectsWithMissingParameters;
 
+	private final LinkedBlockingQueue<Long> _notifyUserChangedQueue = new LinkedBlockingQueue<Long>();
+
 	/**
 	 * Erstellt eine neue Instanz des AccessControlManagers mit impliziter Benutzerverwaltung
 	 *
 	 * @param connection              Verbindung zum Datenverteiler
 	 * @param userRightsChangeHandler Klasse, die über Änderungen an den Benutzerrechten informiert werden soll. Das ist im allgemeinen der {@link
-	 *                                de.bsvrz.dav.dav.main.ConnectionsManager}, der bei sich ändernden Rechten eventuell ungültig gewordene Anmeldungen
+	 *                                de.bsvrz.dav.dav.main.HighLevelSubscriptionsManager}, der bei sich ändernden Rechten eventuell ungültig gewordene Anmeldungen
 	 *                                deaktiviert, kann aber für Testfälle und andere Anwendungen auch ein anderes (möglicherweise deutlich kleineres) Objekt
 	 *                                sein.
 	 * @param useNewDataModel         Sollen die neuen Zugriffsrechte benutzt werden?
@@ -100,7 +103,7 @@ public final class AccessControlManager implements RegionManager {
 	 *
 	 * @param connection                Verbindung zum Datenverteiler
 	 * @param userRightsChangeHandler   Klasse, die über Änderungen an den Benutzerrechten informiert werden soll. Das ist im allgemeinen der {@link
-	 *                                  de.bsvrz.dav.dav.main.ConnectionsManager}, der bei sich ändernden Rechten eventuell ungültig gewordene Anmeldungen
+	 *                                  de.bsvrz.dav.dav.main.HighLevelSubscriptionsManager}, der bei sich ändernden Rechten eventuell ungültig gewordene Anmeldungen
 	 *                                  deaktiviert, kann aber für Testfälle und andere Anwendungen auch ein anderes (möglicherweise deutlich kleineres) Objekt
 	 *                                  sein.
 	 * @param useImplicitUserManagement Wenn false, werden nur Benutzer berücksichtigt, die mit addUser und removeUser in diese Klasse eingefügt werden.<br> Wenn
@@ -127,6 +130,23 @@ public final class AccessControlManager implements RegionManager {
 		if(_isUsingNewDataModel) {
 			createParameterTimer();
 		}
+
+		Thread thread = new Thread("Aktualisierung Benutzerrechte"){
+			@Override
+			public void run() {
+				while(!interrupted()){
+					try {
+						Long userId = _notifyUserChangedQueue.take();
+						_userRightsChangeHandler.handleUserRightsChanged(userId);
+					}
+					catch(Exception e){
+						_debug.error("Fehler beim Ändern von Benutzerrechten", e);
+					}
+				}
+			}
+		};
+		thread.setDaemon(true);
+		thread.start();
 	}
 
 	private void createParameterTimer() {
@@ -316,6 +336,7 @@ public final class AccessControlManager implements RegionManager {
 	 *
 	 * @return Region-Klasse die Abfragen auf eine Region ermöglicht
 	 */
+	@Override
 	public Region getRegion(final SystemObject systemObject) {
 		synchronized(_regionHashMap) {
 			Region region = _regionHashMap.get(systemObject);
@@ -410,11 +431,12 @@ public final class AccessControlManager implements RegionManager {
 
 	/**
 	 * Wird aufgerufen un dem AccessControlManager zu informieren, dass ein verwaltetes Objekt sich geändert hat. Der AccessControlManager wird daraufhin nach
-	 * Benutzer-Objekten suchen, die dieses Objekt verwenden und an den {@link de.bsvrz.dav.dav.main.AuthentificationManager} eine Benachrichtigung senden, dass
+	 * Benutzer-Objekten suchen, die dieses Objekt verwenden und an den {@link de.bsvrz.dav.dav.main.HighLevelSubscriptionsManager} eine Benachrichtigung senden, dass
 	 * sich die Rechte des Benutzers geändert haben und eventuelle vorhandene Anmeldungen entfernt werden müssen.
 	 *
 	 * @param object Objekt das sich geändert hat
 	 */
+	@Override
 	public void objectChanged(final DataLoader object) {
 		final List<Long> affectedUserIds = new ArrayList<Long>();
 		_userMapLock.readLock().lock();
@@ -443,14 +465,18 @@ public final class AccessControlManager implements RegionManager {
 		// und sind daher unkritisch. Benutzer die währenddessen gelöscht werden sind sowieso unerheblich,
 		// da diese sowieso gezwungen sind alle Anmeldungen zu entfernen und eine Aktualisierung wg. geänderter Rechte sinnlos wäre
 		for(Long affectedUserId : affectedUserIds) {
-			_userRightsChangeHandler.handleUserRightsChanged(affectedUserId);
+			notifyUserRightsChangedAsync(affectedUserId);
 		}
 
 	}
 
+	private void notifyUserRightsChangedAsync(final Long affectedUserId) {
+		_notifyUserChangedQueue.add(affectedUserId);
+	}
+
 	/**
 	 * Wird aufgerufen un dem AccessControlManager zu informieren, dass ein Benutzer sich geändert hat. Der AccessControlManager wird daraufhin die referenzierten
-	 * Kindobjekte (Rollen, Regionen etc.) auf Rekursion überprüfen und an den {@link de.bsvrz.dav.dav.main.AuthentificationManager} eine Benachrichtigung senden,
+	 * Kindobjekte (Rollen, Regionen etc.) auf Rekursion überprüfen und an den {@link de.bsvrz.dav.dav.main.HighLevelSubscriptionsManager} eine Benachrichtigung senden,
 	 * dass sich die Rechte des Benutzers geändert haben und eventuelle vorhandene Anmeldungen entfernt werden müssen.
 	 *
 	 * @param userInfo Benutzerobjekt, das sich geändert hat
@@ -459,7 +485,8 @@ public final class AccessControlManager implements RegionManager {
 		if(userInfo instanceof DataLoader) {
 			final DataLoader userAsDataLoader = (DataLoader)userInfo;
 			enumerateChildren(userAsDataLoader); // Prüft auf Rekursion
-			_userRightsChangeHandler.handleUserRightsChanged(userInfo.getUserId()); // Nachricht an ConnectionsManager
+			long userId = userInfo.getUserId();
+			notifyUserRightsChangedAsync(userId); // Nachricht an ConnectionsManager
 		}
 	}
 
@@ -480,6 +507,7 @@ public final class AccessControlManager implements RegionManager {
 	 *
 	 * @return Objekt auf das Synchronisiert werden soll
 	 */
+	@Override
 	public Object getUpdateLock() {
 		return _updateLock;
 	}

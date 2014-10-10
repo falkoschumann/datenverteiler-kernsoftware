@@ -25,7 +25,7 @@ package de.bsvrz.dav.dav.main;
  * weiterzugeben.
  *
  * @author Kappich Systemberatung
- * @version $Revision: 5900 $
+ * @version $Revision: 11481 $
  */
 public interface ListsManagerInterface {
 
@@ -63,5 +63,5 @@ public interface ListsManagerInterface {
 	 *
 	 * @param ids Array mit den IDs der betroffenen Datenverteiler.
 	 */
-	void handleWaysChanges(long ids[]);
+	void handleWaysChanges(long[] ids);
 }

@@ -32,7 +32,7 @@ import de.bsvrz.dav.daf.main.config.SystemObjectType;
  * Interface, das ein BenutzerInfo-Objekt repräsentiert, das nach verschiedenen Berechtigungen gefragt werden kann.
  *
  * @author Kappich Systemberatung
- * @version $Revision: 8953 $
+ * @version $Revision: 11671 $
  */
 public interface UserInfo {
 
@@ -85,13 +85,4 @@ public interface UserInfo {
 	 */
 	boolean mayModifyObjectSet(final ConfigurationArea area, final ObjectSetType type);
 
-	/**
-	 * Gibt die Anzahl der Referenzen zurück. Wird nur für veraltete Tests gebraucht
-	 * @return Anzahl der Referenzen
-	 *
-	 * @deprecated Die Funktion selber ist sinnvoll, sollte nur nicht von außen zugreifbar sein (wird derzeit für Tests benötigt, die im falschen Package sind)
-	 * Wenn behoben bitte in {@link de.bsvrz.dav.dav.util.accessControl.UserInfoInternal} verschieben.
-	 */
-	@Deprecated
-	int getNumberOfReferences();
 }

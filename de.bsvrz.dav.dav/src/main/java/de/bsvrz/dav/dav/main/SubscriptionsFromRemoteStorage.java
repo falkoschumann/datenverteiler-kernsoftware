@@ -30,7 +30,7 @@ import java.util.*;
  * Speichert alle Anmeldungen, die über eine Kommunikationsverbindung mit einer Applikation oder mit einem anderen Datenverteiler empfangen wurden.
  *
  * @author Kappich Systemberatung
- * @version $Revision: 8332 $
+ * @version $Revision: 11561 $
  */
 public abstract class SubscriptionsFromRemoteStorage {
 

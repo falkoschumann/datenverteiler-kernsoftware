@@ -93,7 +93,7 @@ import java.util.*;
  * <p/>
  *
  * @author Kappich Systemberatung
- * @version $Revision: 10161 $
+ * @version $Revision: 11347 $
  */
 public class ParamApp implements ClientSenderInterface, ClientReceiverInterface {
 
@@ -494,7 +494,7 @@ public class ParamApp implements ClientSenderInterface, ClientReceiverInterface 
 				System.err.println("Laufzeitfehler: Ein Thread hat sich wegen einer Exception beendet:");
 				System.err.println(t);
 				e.printStackTrace(System.err);
-				_debug.warning("Laufzeitfehler: " + t + " hat sich wegen einer Exception beendet", e);
+				_debug.error("Laufzeitfehler: " + t + " hat sich wegen einer Exception beendet", e);
 			}
 		}
 	}

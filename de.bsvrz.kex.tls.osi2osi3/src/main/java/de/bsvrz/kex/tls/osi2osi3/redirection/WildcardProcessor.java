@@ -27,17 +27,14 @@ import de.bsvrz.dav.daf.main.Data.ReferenceArray;
 import de.bsvrz.dav.daf.main.config.SystemObject;
 import de.bsvrz.sys.funclib.debug.Debug;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 /**
  * Klasse zur Auswertung des OSI-3 Umleitungsparameters. Der Wildcardprozessor erzeugt ein Objekt der Klasse RedirectionInfo und initialisiert die Maps Receive-
  * und Send Entries durch die entsprechenden Funktionen.
  * 
  * @author Kappich Systemberatung
- * @version $Revision: 7046 $
+ * @version $Revision: 10172 $
  * 
  */
 public class WildcardProcessor {
@@ -86,8 +83,14 @@ public class WildcardProcessor {
 			devices = sender.getReferenceArray("TlsKnoten");
 			// Alle explizit angegebenen Geräte aufnehmen
 			for(int j = 0; j < devices.getLength(); j++) {
-				SystemObject device = devices.getReferenceValue(j).getSystemObject();
-				nodes.add(_tlsModel.getTlsNode(device));
+				try {
+					SystemObject device = devices.getReferenceValue(j).getSystemObject();
+					TlsNode tlsNode = _tlsModel.getTlsNode(device);
+					nodes.add(tlsNode);
+				}
+				catch(Exception e) {
+					_debug.warning("Parameter für OSI3-Umleitung: Der Absender TlsKnoten mit dem Index " + j + " konnte nicht ermittelt werden und wird ignoriert", e);
+				}
 			}
 			// Ist das Filter Suche spezifiziert?
 			Array searchNodes = sender.getArray("Suche");
@@ -107,11 +110,22 @@ public class WildcardProcessor {
 			// Zielknoten auswerten
 			SystemObject[] targets = incomingTelegrams.getItem(i).getItem("Weiterleitung").getReferenceArray("ZielTlsKnoten").getSystemObjectArray();
 			// Map füllen
-			int[] destinations = new int[targets.length];
-			for(int j = 0; j < destinations.length; j++) {
-				destinations[j] = _tlsModel.getTlsNode(targets[j]).getNodeNumber();
+
+			ArrayList<Integer> integers = new ArrayList<Integer>();
+			for(int j = 0; j < targets.length; j++) {
+				try {
+					int nodeNumber = _tlsModel.getTlsNode(targets[j]).getNodeNumber();
+					integers.add(new Integer(nodeNumber));
+				}
+				catch(Exception e) {
+					_debug.warning("Parameter für OSI3-Umleitung: Der ZielTlsKnoten mit dem Index " + j + " konnte nicht ermittelt werden und wird ignoriert", e);
+				}
 			}
-			
+			int[] destinations = new int[integers.size()];
+			for(int j = 0; j < destinations.length; j++) {
+				destinations[j] = integers.get(j).intValue();
+			}
+
 			// Konverter Klassenname
 			String converterClassName = incomingTelegrams.getItem(i).getItem("Weiterleitung").getTextValue("Konverter").getText().trim();
 
@@ -158,8 +172,14 @@ public class WildcardProcessor {
 			devices = receiver.getReferenceArray("TlsKnoten");
 			// Alle explizit angegebenen Geräte aufnehmen
 			for(int j = 0; j < devices.getLength(); j++) {
-				SystemObject device = devices.getReferenceValue(j).getSystemObject();
-				nodes.add(_tlsModel.getTlsNode(device));
+				try {
+					SystemObject device = devices.getReferenceValue(j).getSystemObject();
+					TlsNode tlsNode = _tlsModel.getTlsNode(device);
+					nodes.add(tlsNode);
+				}
+				catch(Exception e) {
+					_debug.warning("Parameter für OSI3-Umleitung: Der Empfänger TlsKnoten mit dem Index " + j + " konnte nicht ermittelt werden und wird ignoriert", e);
+				}
 			}
 			// Ist das Filter Suche spezifiziert?
 			Array searchNodes = receiver.getArray("Suche");
@@ -178,8 +198,13 @@ public class WildcardProcessor {
 			SystemObject[] targets = sendingTelegrams.getItem(i).getItem("Weiterleitung").getReferenceArray("ZielTlsKnoten").getSystemObjectArray();
 			List<Integer> destinationList = new ArrayList<Integer>();
 			for(int j = 0; j < targets.length; j++) {
-				int nodeNumber = _tlsModel.getTlsNode(targets[j]).getNodeNumber();
-				destinationList.add(nodeNumber);
+				try {
+					int nodeNumber = _tlsModel.getTlsNode(targets[j]).getNodeNumber();
+					destinationList.add(nodeNumber);
+				}
+				catch(Exception e) {
+					_debug.warning("Parameter für OSI3-Umleitung: Der ZielTlsKnoten mit dem Index " + j + " konnte nicht ermittelt werden und wird ignoriert", e);
+				}
 			}
 
 			// Eventuel später weitere Knoten aufnehmen, wenn eine Referenz auf den Typ eines übergeordneten Zielknotens angegeben wurde.
@@ -373,8 +398,13 @@ public class WildcardProcessor {
 			// Exclusive Knoten aufnehmen
 			ReferenceArray exclusiveSystemobjects = searchItems.getItem(k).getReferenceArray("AuszuschließendeTlsKnoten");
 			for(int l = 0; l < exclusiveSystemobjects.getLength(); l++) {
-				SystemObject device = exclusiveSystemobjects.getReferenceValue(l).getSystemObject();
-				exclusiveNode.add(_tlsModel.getTlsNode(device));
+				try {
+					SystemObject device = exclusiveSystemobjects.getReferenceValue(l).getSystemObject();
+					exclusiveNode.add(_tlsModel.getTlsNode(device));
+				}
+				catch(Exception e) {
+					_debug.warning("Parameter für OSI3-Umleitung: Der AuszuschließendeTlsKnoten mit dem Index " + l + " konnte nicht ermittelt werden und wird ignoriert", e);
+				}
 			}
 			// Filter auswerten
 			SystemObject[] superiorSystemobjects = searchItems.getItem(k).getReferenceArray("ÜbergeordneteTlsKnoten").getSystemObjectArray();

@@ -24,38 +24,12 @@ package de.bsvrz.dav.dav.communication.appProtocol;
 import de.bsvrz.dav.daf.communication.dataRepresentation.datavalue.SendDataObject;
 import de.bsvrz.dav.daf.communication.lowLevel.HighLevelCommunicationCallbackInterface;
 import de.bsvrz.dav.daf.communication.lowLevel.LowLevelCommunicationInterface;
-import de.bsvrz.dav.daf.communication.lowLevel.telegrams.ApplicationDataTelegram;
-import de.bsvrz.dav.daf.communication.lowLevel.telegrams.AuthentificationAnswer;
-import de.bsvrz.dav.daf.communication.lowLevel.telegrams.AuthentificationRequest;
-import de.bsvrz.dav.daf.communication.lowLevel.telegrams.AuthentificationTextAnswer;
-import de.bsvrz.dav.daf.communication.lowLevel.telegrams.AuthentificationTextRequest;
-import de.bsvrz.dav.daf.communication.lowLevel.telegrams.BaseSubscriptionInfo;
-import de.bsvrz.dav.daf.communication.lowLevel.telegrams.ClosingTelegram;
-import de.bsvrz.dav.daf.communication.lowLevel.telegrams.ComParametersAnswer;
-import de.bsvrz.dav.daf.communication.lowLevel.telegrams.ComParametersRequest;
-import de.bsvrz.dav.daf.communication.lowLevel.telegrams.DataTelegram;
-import de.bsvrz.dav.daf.communication.lowLevel.telegrams.ProtocolVersionAnswer;
-import de.bsvrz.dav.daf.communication.lowLevel.telegrams.ProtocolVersionRequest;
-import de.bsvrz.dav.daf.communication.lowLevel.telegrams.ReceiveSubscriptionTelegram;
-import de.bsvrz.dav.daf.communication.lowLevel.telegrams.ReceiveUnsubscriptionTelegram;
-import de.bsvrz.dav.daf.communication.lowLevel.telegrams.RequestSenderDataTelegram;
-import de.bsvrz.dav.daf.communication.lowLevel.telegrams.SendSubscriptionTelegram;
-import de.bsvrz.dav.daf.communication.lowLevel.telegrams.SendUnsubscriptionTelegram;
-import de.bsvrz.dav.daf.communication.lowLevel.telegrams.TelegramTimeAnswer;
-import de.bsvrz.dav.daf.communication.lowLevel.telegrams.TelegramTimeRequest;
-import de.bsvrz.dav.daf.communication.lowLevel.telegrams.TerminateOrderTelegram;
+import de.bsvrz.dav.daf.communication.lowLevel.telegrams.*;
 import de.bsvrz.dav.daf.main.CommunicationError;
 import de.bsvrz.dav.daf.main.config.ConfigurationChangeException;
 import de.bsvrz.dav.daf.main.impl.CommunicationConstant;
-import de.bsvrz.dav.dav.communication.accessControl.AccessControlPlugin;
-import de.bsvrz.dav.dav.communication.accessControl.AccessControlUtil;
-import de.bsvrz.dav.dav.main.AuthentificationComponent;
-import de.bsvrz.dav.dav.main.ConnectionsManager;
-import de.bsvrz.dav.dav.main.ServerConnectionProperties;
-import de.bsvrz.dav.dav.main.SubscriptionsFromApplicationStorage;
-import de.bsvrz.dav.dav.main.SubscriptionsFromRemoteStorage;
-import de.bsvrz.dav.dav.main.SubscriptionsManager;
-import de.bsvrz.dav.dav.main.Transmitter;
+import de.bsvrz.dav.dav.main.*;
+import de.bsvrz.dav.dav.subscriptions.LocalSubscription;
 import de.bsvrz.sys.funclib.debug.Debug;
 
 import java.util.*;
@@ -64,7 +38,7 @@ import java.util.*;
  * Diese Klasse stellt eine Verbindung vom Datenverteiler zur Applikation dar. Über diese Verbindung können Telegramme an eine Applikation verschickt werden.
  *
  * @author Kappich Systemberatung
- * @version $Revision: 8333 $
+ * @version $Revision: 12020 $
  */
 public class T_A_HighLevelCommunication implements T_A_HighLevelCommunicationInterface, HighLevelCommunicationCallbackInterface {
 
@@ -77,7 +51,7 @@ public class T_A_HighLevelCommunication implements T_A_HighLevelCommunicationInt
 	private ServerConnectionProperties _properties;
 
 	/** Die unterstützten Versionen des Datenverteilers */
-	private int _versions[];
+	private int[] _versions;
 
 	/** Der Applikation Id */
 	private long _applicationId;
@@ -97,15 +71,6 @@ public class T_A_HighLevelCommunication implements T_A_HighLevelCommunicationInt
 	/** Die Pid der Konfiguration */
 	private String _configurationPid;
 
-	/** Die Verwaltung der Anmelde Komponenten */
-	private SubscriptionsManager _subscriptionsManager;
-
-	/** Die Verwaltung der Datenverteiler Verbindungen */
-	private ConnectionsManager _connectionsManager;
-
-	/** Die Anmeldekomponente diese Verbindung */
-	private SubscriptionsFromApplicationStorage _subscriptionsFromApplicationStorage;
-
 	/** Die Authentifizierungskomponente */
 	private AuthentificationComponent _authentificationComponent;
 
@@ -123,59 +88,40 @@ public class T_A_HighLevelCommunication implements T_A_HighLevelCommunicationInt
 	private Object _closedLock = new Object();
 
 	private final long _connectionCreatedTime;
-
-	/** Wird benachrichtigt, sobald die Verbindung zur Applikation komplett aufgebaut wurde. Ist dieses Objekt nicht vorhanden, wird nichts gemacht. */
-	private ConnectionsManager.ApplicationStatusUpdater _applicationStatusUpdater = null;
-
 	/** Map in der eine je Datenidentifikation eine Liste von empfangenen Telegrammen, die zu einem Datensatz gehören zwischengespeichert werden können */
 	private Map<BaseSubscriptionInfo, List<ApplicationDataTelegram>> _stalledTelegramListMap = new HashMap<BaseSubscriptionInfo, List<ApplicationDataTelegram>>();
 
-	/** Installierte PlugIn-Filter, die zur Zugriffsrechteprüfung bestimmte ATGUs filtern */
-	private final Map<Long, List<AccessControlPlugin>> _pluginFilters;
+	private final HighLevelApplicationManager _applicationManager;
 
-	private final AccessControlUtil _accessControlUtil;
+	private final LowLevelConnectionsManagerInterface _lowLevelConnectionsManager;
 
 	/**
 	 * Erzeugt ein neues Objekt mit den gegebenen Parametern.
 	 *
 	 * @param properties           stellt die Parameter einer Verbindung zwischen zwei Servern
-	 * @param subscriptionsManager Verwaltung der Anmeldungen
-	 * @param connectionsManager   Verbindungsverwaltung
+	 * @param lowLevelConnectionsManager
 	 * @param waitForConfiguration true: ,false:
 	 */
 	public T_A_HighLevelCommunication(
 			ServerConnectionProperties properties,
-			SubscriptionsManager subscriptionsManager,
-			ConnectionsManager connectionsManager,
-			boolean waitForConfiguration
-	) {
+			HighLevelApplicationManager applicationManager, final LowLevelConnectionsManagerInterface lowLevelConnectionsManager, boolean waitForConfiguration) {
+		_lowLevelConnectionsManager = lowLevelConnectionsManager;
 		_applicationId = -1;
 		_versions = new int[1];
 		_versions[0] = 3;
 		_lowLevelCommunication = properties.getLowLevelCommunication();
 		_properties = properties;
-		_subscriptionsManager = subscriptionsManager;
-		_connectionsManager = connectionsManager;
-		_pluginFilters = connectionsManager.getPluginFilterMap();
+		_applicationManager = applicationManager;
 		_authentificationComponent = _properties.getAuthentificationComponent();
 		_syncSystemTelegramList = new LinkedList<DataTelegram>();
 		_waitForConfiguration = waitForConfiguration;
-		_sync = hashCode();
+		_sync = new Integer(hashCode());
 		_connectionCreatedTime = System.currentTimeMillis();
 		_lowLevelCommunication.setHighLevelComponent(this);
-		_accessControlUtil = new AccessControlUtil();
 	}
 
-	/**
-	 * Dieses Objekt wird benachrichtigt, sobald die Verbindung zur Applikation aufgebaut wurde.
-	 *
-	 * @param applicationStatusUpdater Objekt, das benachrichtigt wird.
-	 */
-	public void setApplicationStatusUpdater(ConnectionsManager.ApplicationStatusUpdater applicationStatusUpdater) {
-		_applicationStatusUpdater = applicationStatusUpdater;
-	}
-
-	public final long getTelegrammTime(final long maxWaitingTime) throws CommunicationError {
+	@Override
+	public final long getTelegramTime(final long maxWaitingTime) throws CommunicationError {
 		long time = System.currentTimeMillis();
 		TelegramTimeRequest telegramTimeRequest = new TelegramTimeRequest(time);
 		_lowLevelCommunication.send(telegramTimeRequest);
@@ -217,14 +163,20 @@ public class T_A_HighLevelCommunication implements T_A_HighLevelCommunicationInt
 		return telegramTimeAnswer.getRoundTripTime();
 	}
 
+	@Override
+	public final void sendData(final ApplicationDataTelegram telegram, final boolean toCentralDistributor) {
+		_lowLevelCommunication.send(telegram);
+	}
+
 	public final void sendData(ApplicationDataTelegram telegram) {
 		_lowLevelCommunication.send(telegram);
 	}
 
-	public final void sendData(ApplicationDataTelegram telegrams[]) {
+	public final void sendData(ApplicationDataTelegram[] telegrams) {
 		_lowLevelCommunication.send(telegrams);
 	}
 
+	@Override
 	public final void terminate(final boolean error, final String message) {
 		final DataTelegram terminationTelegram;
 		if(error) {
@@ -273,60 +225,56 @@ public class T_A_HighLevelCommunication implements T_A_HighLevelCommunicationInt
 			if(_lowLevelCommunication != null) {
 				_lowLevelCommunication.disconnect(error, message, terminationTelegram);
 			}
-			if(_connectionsManager != null) {
-				_connectionsManager.unsubscribeConnection(this);
-			}
-			if((_subscriptionsManager != null) && (_subscriptionsFromApplicationStorage != null)) {
-				_subscriptionsManager.remove(_subscriptionsFromApplicationStorage);
-			}
+			_applicationManager.removeApplication(this);
 		}
 	}
 
 
+	@Override
 	public void disconnected(boolean error, final String message) {
 		terminate(error, message);
 	}
 
+	@Override
 	public void updateConfigData(SendDataObject receivedData) {
 		throw new UnsupportedOperationException("updateConfigData nicht implementiert");
 	}
 
+	@Override
 	public final void triggerSender(BaseSubscriptionInfo data, byte state) {
 		RequestSenderDataTelegram requestSenderDataTelegram = new RequestSenderDataTelegram(data, state);
 		_lowLevelCommunication.send(requestSenderDataTelegram);
 	}
 
-	public final SubscriptionsFromRemoteStorage getSubscriptionsFromRemoteStorage() {
-		return _subscriptionsFromApplicationStorage;
-	}
-
+	@Override
 	public final long getId() {
 		return _applicationId;
 	}
 
+	@Override
 	public final long getRemoteUserId() {
 		return _remoteUserId;
 	}
 
+	@Override
 	public final long getConfigurationId() {
 		return _configurationId;
 	}
 
-	public final long getDataTransmitterId() {
-		return _properties.getDataTransmitterId();
-	}
-
+	@Override
 	public final String getApplicationTypePid() {
 		return _applicationTypePid;
 	}
 
+	@Override
 	public final String getApplicationName() {
 		return _applicationName;
 	}
 
+	@Override
 	public final boolean isConfiguration() {
 		if(CommunicationConstant.CONFIGURATION_TYPE_PID.equals(_applicationTypePid)) {
-			Object objects[] = _properties.getLocalModeParameter();
+			Object[] objects = _properties.getLocalModeParameter();
 			if(objects != null) {
 				String configurationPid = (String)objects[0];
 				if(_configurationPid.equals(configurationPid)) {
@@ -337,6 +285,7 @@ public class T_A_HighLevelCommunication implements T_A_HighLevelCommunicationInt
 		return false;
 	}
 
+	@Override
 	public final void continueAuthentification() {
 		synchronized(_sync) {
 			_waitForConfiguration = false;
@@ -352,7 +301,7 @@ public class T_A_HighLevelCommunication implements T_A_HighLevelCommunicationInt
 	 *
 	 * @return Version, die aus den gegebenen Versionen unterstützt wird. Wird keine der übergebenen Versionen unterstützt, so wird -1 zurückgegeben.
 	 */
-	private int getPrefferedVersion(int versions[]) {
+	private int getPrefferedVersion(int[] versions) {
 		if(_versions == null) {
 			return -1;
 		}
@@ -366,6 +315,7 @@ public class T_A_HighLevelCommunication implements T_A_HighLevelCommunicationInt
 		return -1;
 	}
 
+	@Override
 	public final void update(DataTelegram telegram) {
 		if(Transmitter._debugLevel > 10) {
 			System.err.println("T_A <-  " + (telegram == null ? "null" : telegram.toShortDebugString()));
@@ -422,7 +372,7 @@ public class T_A_HighLevelCommunication implements T_A_HighLevelCommunicationInt
 								// Die von der Konfiguration vorgegebene Pid und Id des Konfigurationsverantwortlichen wird als Default für die Applikationen
 								// gespeichert
 								_properties.setLocalModeParameter(_configurationPid, formativeConfigurationId);
-								_connectionsManager.setLocaleModeParameter(_configurationPid, formativeConfigurationId);
+								_lowLevelConnectionsManager.setLocalModeParameter(_configurationPid, formativeConfigurationId);
 								_debug.info("Default-Konfiguration " + _configurationPid + ", Id " + formativeConfigurationId);
 								mustWait = false;
 							}
@@ -459,7 +409,7 @@ public class T_A_HighLevelCommunication implements T_A_HighLevelCommunicationInt
 				String userName = authentificationRequest.getUserName();
 
 				try {
-					_remoteUserId = _connectionsManager.isValidUser(
+					_remoteUserId = _lowLevelConnectionsManager.login(
 							userName,
 							authentificationRequest.getUserPassword(),
 							_authentificationComponent.getAuthentificationText(_applicationName),
@@ -471,28 +421,28 @@ public class T_A_HighLevelCommunication implements T_A_HighLevelCommunicationInt
 					if(_remoteUserId > -1) {
 						// Pid und Id der Default-Konfiguration aus globalen Einstellungen holen und in lokalen Einstellungen speichern
 						if(_properties.isLocalMode()) {
-							String pid = _connectionsManager.getLocaleModeConfigurationPid();
-							long id = _connectionsManager.getLocaleModeConfigurationId();
+							String pid = _lowLevelConnectionsManager.getLocalModeConfigurationPid();
+							long id = _lowLevelConnectionsManager.getLocalModeConfigurationId();
 							_properties.setLocalModeParameter(pid, id);
 						}
 						if(CommunicationConstant.LOCALE_CONFIGURATION_PID_ALIASE.equals(_configurationPid)) {
-							Object objects[] = _properties.getLocalModeParameter();
+							Object[] objects = _properties.getLocalModeParameter();
 							if(objects != null) {
 								_configurationPid = (String)objects[0];
 								_configurationId = ((Long)objects[1]).longValue();
 							}
 							else {
-								_configurationId = _connectionsManager.getConfigurationId(_configurationPid);
+								_configurationId = _applicationManager.getConfigurationId(_configurationPid);
 							}
 						}
 						else {
-							_configurationId = _connectionsManager.getConfigurationId(_configurationPid);
+							_configurationId = _applicationManager.getConfigurationId(_configurationPid);
 						}
 
 						if(CommunicationConstant.CONFIGURATION_TYPE_PID.equals(_applicationTypePid)) {
-							Object objects[] = _properties.getLocalModeParameter();
+							Object[] objects = _properties.getLocalModeParameter();
 							if(objects == null) {
-								_applicationId = _connectionsManager.getApplicationId(_applicationTypePid, _applicationName);
+								_applicationId = _applicationManager.createNewApplication(this, _applicationTypePid, _applicationName);
 							}
 							else {
 								String _configurationPid = (String)objects[0];
@@ -500,12 +450,12 @@ public class T_A_HighLevelCommunication implements T_A_HighLevelCommunicationInt
 									_applicationId = 0;
 								}
 								else {
-									_applicationId = _connectionsManager.getApplicationId(_applicationTypePid, _applicationName);
+									_applicationId = _applicationManager.createNewApplication(this, _applicationTypePid, _applicationName);
 								}
 							}
 						}
 						else {
-							_applicationId = _connectionsManager.getApplicationId(_applicationTypePid, _applicationName);
+							_applicationId = _applicationManager.createNewApplication(this, _applicationTypePid, _applicationName);
 						}
 						if(_applicationId == -1) {
 							terminate(
@@ -515,6 +465,7 @@ public class T_A_HighLevelCommunication implements T_A_HighLevelCommunicationInt
 							);
 							return;
 						}
+						_lowLevelConnectionsManager.updateApplicationId(this);
 						if(_configurationId == -1) {
 							terminate(true, "Ungültige Pid der Konfiguration: " + _configurationPid);
 							return;
@@ -522,11 +473,6 @@ public class T_A_HighLevelCommunication implements T_A_HighLevelCommunicationInt
 						authentificationAnswer = new AuthentificationAnswer(
 								_remoteUserId, _applicationId, _configurationId, _properties.getDataTransmitterId()
 						);
-
-						// Der Benutzer hat sich erfolgreich angemeldet. Also ist die Verbindung hergestellt.
-						if(_applicationStatusUpdater != null) {
-							_applicationStatusUpdater.applicationAdded(this);
-						}
 					}
 					else {
 						authentificationAnswer = new AuthentificationAnswer(false);
@@ -553,11 +499,7 @@ public class T_A_HighLevelCommunication implements T_A_HighLevelCommunicationInt
 				if(keepAliveReceiveTimeOut < 6000) keepAliveReceiveTimeOut = 6000;
 
 				ComParametersAnswer comParametersAnswer = null;
-//				if(keepAliveSendTimeOut < keepAliveReceiveTimeOut) {
-//					long tmp = keepAliveSendTimeOut;
-//					keepAliveSendTimeOut = keepAliveReceiveTimeOut;
-//					keepAliveReceiveTimeOut = tmp;
-//				}
+
 				byte cacheThresholdPercentage = comParametersRequest.getCacheThresholdPercentage();
 				short flowControlThresholdTime = comParametersRequest.getFlowControlThresholdTime();
 				int minConnectionSpeed = comParametersRequest.getMinConnectionSpeed();
@@ -569,15 +511,13 @@ public class T_A_HighLevelCommunication implements T_A_HighLevelCommunicationInt
 				_lowLevelCommunication.updateThroughputParameters(
 						(float)cacheThresholdPercentage * 0.01f, (long)(flowControlThresholdTime * 1000), minConnectionSpeed
 				);
-				_subscriptionsFromApplicationStorage = new SubscriptionsFromApplicationStorage(this);
-				_subscriptionsManager.subscribe(_subscriptionsFromApplicationStorage);
 				// locale Configuration
 				if(CommunicationConstant.CONFIGURATION_TYPE_PID.equals(_applicationTypePid)) {
-					Object objects[] = _properties.getLocalModeParameter();
+					Object[] objects = _properties.getLocalModeParameter();
 					if(objects != null) {
 						String configurationPid = (String)objects[0];
 						if(_configurationPid.equals(configurationPid)) {
-							_connectionsManager.setLocalConfigurationAvaillable();
+							_lowLevelConnectionsManager.setLocalConfigurationAvailable();
 						}
 					}
 				}
@@ -590,43 +530,27 @@ public class T_A_HighLevelCommunication implements T_A_HighLevelCommunicationInt
 			}
 			case DataTelegram.SEND_SUBSCRIPTION_TYPE: {
 				SendSubscriptionTelegram sendSubscriptionTelegram = (SendSubscriptionTelegram)telegram;
-				_connectionsManager.handleApplicationSendSubscription(this, sendSubscriptionTelegram);
+				_applicationManager.handleSendSubscription(this, sendSubscriptionTelegram);
 				break;
 			}
 			case DataTelegram.SEND_UNSUBSCRIPTION_TYPE: {
 				SendUnsubscriptionTelegram sendUnsubscriptionTelegram = (SendUnsubscriptionTelegram)telegram;
-				_connectionsManager.handleApplicationSendUnsubscription(this, sendUnsubscriptionTelegram);
+				_applicationManager.handleSendUnsubscription(this, sendUnsubscriptionTelegram);
 				break;
 			}
 			case DataTelegram.RECEIVE_SUBSCRIPTION_TYPE: {
 				ReceiveSubscriptionTelegram receiveSubscriptionTelegram = (ReceiveSubscriptionTelegram)telegram;
-				_connectionsManager.handleApplicationReceiveSubscription(this, receiveSubscriptionTelegram);
+				_applicationManager.handleReceiveSubscription(this, receiveSubscriptionTelegram);
 				break;
 			}
 			case DataTelegram.RECEIVE_UNSUBSCRIPTION_TYPE: {
 				ReceiveUnsubscriptionTelegram receiveUnsubscriptionTelegram = (ReceiveUnsubscriptionTelegram)telegram;
-				_connectionsManager.handleApplicationReceiveUnsubscription(this, receiveUnsubscriptionTelegram);
+				_applicationManager.handleReceiveUnsubscription(this, receiveUnsubscriptionTelegram);
 				break;
 			}
 			case DataTelegram.APPLICATION_DATA_TELEGRAM_TYPE: {
 				ApplicationDataTelegram applicationDataTelegram = (ApplicationDataTelegram)telegram;
-				final long usageIdentification = applicationDataTelegram.getBaseSubscriptionInfo().getUsageIdentification();
-				final List<AccessControlPlugin> controlPluginInterfaceList = _pluginFilters.get(usageIdentification);
-				if(controlPluginInterfaceList != null) {
-					// Es sind Plugins zuständig. Daten an Plugin übergeben...
-					final ApplicationDataTelegram[] telegrams = _accessControlUtil.processTelegramByPlugins(
-							applicationDataTelegram, controlPluginInterfaceList, _remoteUserId, _connectionsManager
-					);
-					// ... und wieder verschicken. Da das Datenobjekt durch die Verarbeitung größer werden kann, müssen hier eventuell mehrere
-					// Telegramme verschickt werden. Oder gar keins, wenn erst auf weitere (Teil-)Telegramme gewartet werden muss bzw. das Plugin die Nachricht verwirft.
-					for(ApplicationDataTelegram dataTelegram : telegrams) {
-						_subscriptionsManager.sendData(this, dataTelegram);
-					}
-				}
-				else {
-					// Kein Plugin zuständig, Daten einfach weiter verarbeiten
-					_subscriptionsManager.sendData(this, applicationDataTelegram);
-				}
+				_applicationManager.handleDataTelegram(this, applicationDataTelegram);
 				break;
 			}
 			case DataTelegram.TERMINATE_ORDER_TYPE: {
@@ -690,5 +614,14 @@ public class T_A_HighLevelCommunication implements T_A_HighLevelCommunicationInt
 	 */
 	public List<ApplicationDataTelegram> deleteStalledTelegramList(final BaseSubscriptionInfo info) {
 		return _stalledTelegramListMap.remove(info);
+	}
+
+	@Override
+	public String toString() {
+		if(_applicationName != null) {
+			return _applicationName + " [" + _applicationId + "]";
+		}
+		return "[" + _applicationId + "]";
+
 	}
 }

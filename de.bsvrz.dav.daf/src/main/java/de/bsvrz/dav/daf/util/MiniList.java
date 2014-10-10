@@ -23,7 +23,7 @@ import java.util.*;
 
 /**
  * @author Kappich Systemberatung
- * @version $Revision: 10242 $
+ * @version $Revision: 10831 $
  */
 public final class MiniList<E> implements List<E> {
 
@@ -59,7 +59,12 @@ public final class MiniList<E> implements List<E> {
 	public boolean contains(final Object o) {
 		if(_elements == null) return false;
 		for(final Object element : _elements) {
-			if(element.equals(o)) return true;
+			if(element != null) {
+				if(element.equals(o)) return true;
+			}
+			else {
+				if(o == null) return true;
+			}
 		}
 		return false;
 	}

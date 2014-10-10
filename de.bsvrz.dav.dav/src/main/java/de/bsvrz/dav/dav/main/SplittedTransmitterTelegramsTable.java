@@ -31,7 +31,7 @@ import java.util.*;
  * so werden diese zurückgegeben und der Datensatz kann rekonstruiert werden.
  *
  * @author Kappich Systemberatung
- * @version $Revision: 5068 $
+ * @version $Revision: 11481 $
  */
 public class SplittedTransmitterTelegramsTable {
 
@@ -82,14 +82,14 @@ public class SplittedTransmitterTelegramsTable {
 		Long subKey = new Long(telegram.getDataNumber());
 		if(table == null) {
 			table = new Hashtable<Long, TransmitterDataTelegram[]>();
-			TransmitterDataTelegram list[] = new TransmitterDataTelegram[totalTelegramCount];
+			TransmitterDataTelegram[] list = new TransmitterDataTelegram[totalTelegramCount];
 			list[index] = telegram;
 			table.put(subKey, list);
 			dataTable.put(key, table);
 			return null;
 		}
 		else {
-			TransmitterDataTelegram list[] = (TransmitterDataTelegram[])table.get(subKey);
+			TransmitterDataTelegram[] list = (TransmitterDataTelegram[])table.get(subKey);
 			if(list == null) {
 				list = new TransmitterDataTelegram[totalTelegramCount];
 				list[index] = telegram;

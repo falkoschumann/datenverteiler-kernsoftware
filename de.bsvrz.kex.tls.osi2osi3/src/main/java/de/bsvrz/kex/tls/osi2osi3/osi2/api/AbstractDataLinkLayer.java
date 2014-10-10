@@ -30,7 +30,7 @@ import java.util.*;
  * Klasse mit Default-Implementierungen einzelner Methoden der Schnittstelle für Protokolle der Sicherungsschicht (OSI 2).
  *
  * @author Kappich Systemberatung
- * @version $Revision: 9616 $
+ * @version $Revision: 10187 $
  */
 public abstract class AbstractDataLinkLayer implements DataLinkLayer {
 
@@ -160,6 +160,8 @@ public abstract class AbstractDataLinkLayer implements DataLinkLayer {
 		protected final int _remoteAddress;
 
 		protected final Object _linkLock = new Object();
+
+		protected final Object _linkPropertyLock = new Object();
 
 		protected LinkState _linkState;
 

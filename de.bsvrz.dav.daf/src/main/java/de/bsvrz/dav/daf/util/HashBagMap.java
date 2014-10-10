@@ -21,17 +21,7 @@
 package de.bsvrz.dav.daf.util;
 
 import java.io.Serializable;
-import java.util.AbstractSet;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Klasse, die zu einem Key mehrere Values zuordnen kann. Unter jedem Key wird ein Set gespeichert, sodass pro Key das
@@ -39,7 +29,7 @@ import java.util.Set;
  * wodurch dann eine Liste verwendet wird.
  *
  * @author Kappich Systemberatung
- * @version $Revision: 10763 $
+ * @version $Revision: 11131 $
  */
 @SuppressWarnings({"unchecked"})
 public class HashBagMap<K, V> implements Serializable {
@@ -87,7 +77,7 @@ public class HashBagMap<K, V> implements Serializable {
 	 */
 	public HashBagMap(final int initialCapacity, boolean useSet) {
 		_useSet = useSet;
-		_backingHashMap = new HashMap<K, Collection<V>>(initialCapacity);
+		_backingHashMap = new LinkedHashMap<K, Collection<V>>(initialCapacity);
 	}
 
 	/**
@@ -251,7 +241,7 @@ public class HashBagMap<K, V> implements Serializable {
 				return new MiniSet<V>();
 			}
 			else {
-				return new HashSet<V>(size);
+				return new LinkedHashSet<V>(size);
 			}
 		}
 		return new ArrayList<V>(size);

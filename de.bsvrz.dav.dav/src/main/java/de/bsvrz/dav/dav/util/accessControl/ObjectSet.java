@@ -30,7 +30,7 @@ import java.util.*;
  * Kapselt einen Block zur Auswahl von Objekten, z.B. "Enthaltene Objekte" bzw. "Ausgeschlossene Objekte" im Zugriffsrechte-Datenmodell.
  *
  * @author Kappich Systemberatung
- * @version $Revision: 9202 $
+ * @version $Revision: 11714 $
  */
 public final class ObjectSet implements ObjectCollection {
 
@@ -223,6 +223,7 @@ public final class ObjectSet implements ObjectCollection {
 	 *
 	 * @return Alle Objekte, die durch diesen Block ausgewählt werden
 	 */
+	@Override
 	public List<SystemObject> getAllObjects(final Collection<? extends SystemObjectType> types) {
 		final List<SystemObject> list = new ArrayList<SystemObject>();
 		for(final ObjectSelectionBlock objectSelectionBlock : _selectionBlocks) {
@@ -252,6 +253,7 @@ public final class ObjectSet implements ObjectCollection {
 	 *
 	 * @param listener Listener auf Änderungen
 	 */
+	@Override
 	public void addChangeListener(final ObjectCollectionChangeListener listener) {
 		for(final ObjectSelectionBlock objectSelectionBlockArea : _selectionBlocks) {
 			objectSelectionBlockArea.addChangeListener(listener);
@@ -263,6 +265,7 @@ public final class ObjectSet implements ObjectCollection {
 	 *
 	 * @param listener Listener auf Änderungen
 	 */
+	@Override
 	public void removeChangeListener(final ObjectCollectionChangeListener listener) {
 		for(final ObjectSelectionBlock objectSelectionBlockArea : _selectionBlocks) {
 			objectSelectionBlockArea.removeChangeListener(listener);
@@ -282,6 +285,7 @@ public final class ObjectSet implements ObjectCollection {
 		private final Collection<SystemObjectType> _types = new HashSet<SystemObjectType>();
 
 		private final MutableCollectionChangeListener _changeListener = new MutableCollectionChangeListener() {
+			@Override
 			public void collectionChanged(
 					final MutableCollection mutableCollection,
 					final short simulationVariant,
@@ -327,7 +331,7 @@ public final class ObjectSet implements ObjectCollection {
 			}
 			final Data.ReferenceArray types = item.getReferenceArray("Typ");
 			for(int i = 0; i < types.getLength(); i++) {
-				_types.add((SystemObjectType)types.getReferenceValue(i).getSystemObject());
+				_types.add(asLocalType(types.getReferenceValue(i).getSystemObject()));
 			}
 		}
 
@@ -337,6 +341,7 @@ public final class ObjectSet implements ObjectCollection {
 			       + ", _configurationAreas=" + _configurationAreas + '}';
 		}
 
+		@Override
 		public boolean contains(final SystemObject object) {
 			return matchesConfigurationArea(object) && matchesType(object);
 		}
@@ -362,11 +367,13 @@ public final class ObjectSet implements ObjectCollection {
 			return false;
 		}
 
+		@Override
 		public Collection<SystemObjectType> getAllObjectTypes() {
 			if(_types.size() > 0) return Collections.unmodifiableCollection(_types);
 			return _connection.getDataModel().getBaseTypes();
 		}
 
+		@Override
 		public Collection<SystemObject> getAllObjects(final Collection<? extends SystemObjectType> types) {
 			final Collection<ConfigurationArea> configurationAreas = new ArrayList<ConfigurationArea>();
 			configurationAreas.addAll(_configurationAreas);
@@ -422,6 +429,27 @@ public final class ObjectSet implements ObjectCollection {
 	}
 
 	/**
+	 * Hilfsklasse hauptsächlich für KexDav, die sicherstellt, dass Typreferenzen gültig sind und zum lokalen Datenmodell passen.
+	 * @param systemObject potentieller SystemObjektTyp
+	 * @return Korrekter SystemObjektTyp aus dem lokalen Datenmodell
+	 */
+	private SystemObjectType asLocalType(final SystemObject systemObject) {
+		if(systemObject instanceof SystemObjectType) {
+			SystemObjectType systemObjectType = (SystemObjectType) systemObject;
+			if(systemObjectType.getDataModel() == _connection.getDataModel()){
+				return systemObjectType;
+			}
+			else {
+				// Für KExDav: Typ-Objekt in richtiges Datenmodell konvertieren
+				SystemObjectType type = _connection.getDataModel().getType(systemObjectType.getPid());
+				if(type == null) throw new IllegalArgumentException("Typ " + systemObjectType + " ist auf dem lokalen Datenverteiler nicht vorhanden.");
+				return type;
+			}
+		}
+		throw new IllegalArgumentException("Objekt " + systemObject + " ist kein Systemobjekttyp");
+	}
+
+	/**
 	 * Kapselt einen "AuswahlRegion" oder einen "AuswahlBereich"-Block mit leerer Mengenangabe, bei dem das Region[]-Array bzw. die KV[] und KB[]-Arrays leer sind,
 	 * das also nur zum Filtern nach Typ benutzt wird. Wird zudem für einen AuswahlObjekt-Block benutzt, wenn keine Objektliste angegeben wurde, also alle
 	 * Systemobjekte ausgewählt sind. Ist zur Laufzeit änderbar, wenn die verwalteten Typen dynamisch sind bzw. kein Typ angegeben wurde.
@@ -431,6 +459,7 @@ public final class ObjectSet implements ObjectCollection {
 		private Collection<SystemObjectType> _types;
 
 		private final MutableCollectionChangeListener _changeListener = new MutableCollectionChangeListener() {
+			@Override
 			public void collectionChanged(
 					final MutableCollection mutableCollection,
 					final short simulationVariant,
@@ -452,7 +481,7 @@ public final class ObjectSet implements ObjectCollection {
 			if(dataHasType) {
 				final Data.ReferenceArray types = item.getReferenceArray("Typ");
 				for(int i = 0; i < types.getLength(); i++) {
-					_types.add((SystemObjectType)types.getReferenceValue(i).getSystemObject());
+					_types.add(asLocalType(types.getReferenceValue(i).getSystemObject()));
 				}
 			}
 			if(_types.size() == 0) {
@@ -465,6 +494,7 @@ public final class ObjectSet implements ObjectCollection {
 			return "ObjectSelectionBlockTypeSimple{" + "_types=" + _types + '}';
 		}
 
+		@Override
 		public boolean contains(final SystemObject object) {
 			return matchesType(object);
 		}
@@ -477,10 +507,12 @@ public final class ObjectSet implements ObjectCollection {
 			return false;
 		}
 
+		@Override
 		public Collection<SystemObjectType> getAllObjectTypes() {
 			return Collections.unmodifiableCollection(_types);
 		}
 
+		@Override
 		public Collection<SystemObject> getAllObjects(final Collection<? extends SystemObjectType> types) {
 			final Collection<SystemObject> list = new ArrayList<SystemObject>();
 			for(final SystemObjectType systemObjectType : Region.mergeTypes(types, _types)) {
@@ -521,6 +553,7 @@ public final class ObjectSet implements ObjectCollection {
 		private final Collection<SystemObjectType> _types;
 
 		private final RegionChangeListener _innerRegionChangeListener = new RegionChangeListener() {
+			@Override
 			public void regionChanged(final Region region) {
 				notifyBlockChanged();
 			}
@@ -550,7 +583,7 @@ public final class ObjectSet implements ObjectCollection {
 			}
 			final Data.ReferenceArray types = item.getReferenceArray("Typ");
 			for(int i = 0; i < types.getLength(); i++) {
-				_types.add((SystemObjectType)types.getReferenceValue(i).getSystemObject());
+				_types.add(asLocalType(types.getReferenceValue(i).getSystemObject()));
 			}
 		}
 
@@ -559,6 +592,7 @@ public final class ObjectSet implements ObjectCollection {
 			return "ObjectSelectionBlockRegionSimple{" + "_types=" + _types + ", _regions=" + _regions + '}';
 		}
 
+		@Override
 		public boolean contains(final SystemObject object) {
 			return matchesRegion(object) && matchesType(object);
 		}
@@ -581,11 +615,13 @@ public final class ObjectSet implements ObjectCollection {
 			return false;
 		}
 
+		@Override
 		public Collection<SystemObjectType> getAllObjectTypes() {
 			if(_types.size() == 0) return _connection.getDataModel().getBaseTypes();
 			return Collections.unmodifiableCollection(_types);
 		}
 
+		@Override
 		public Collection<SystemObject> getAllObjects(final Collection<? extends SystemObjectType> types) {
 			final Collection<SystemObject> list = new ArrayList<SystemObject>();
 			for(final Region region : _regions) {
@@ -599,6 +635,7 @@ public final class ObjectSet implements ObjectCollection {
 			return list;
 		}
 
+		@Override
 		public Collection<Region> getRegions() {
 			return Collections.unmodifiableCollection(_regions);
 		}
@@ -638,6 +675,7 @@ public final class ObjectSet implements ObjectCollection {
 			return "ObjectSelectionBlockObjectsSimple{" + "_objects=" + _objects + '}';
 		}
 
+		@Override
 		public boolean contains(final SystemObject object) {
 			return matchesObjectList(object);
 		}
@@ -646,10 +684,12 @@ public final class ObjectSet implements ObjectCollection {
 			return _objects.contains(object);
 		}
 
+		@Override
 		public Collection<SystemObjectType> getAllObjectTypes() {
 			return _connection.getDataModel().getBaseTypes();
 		}
 
+		@Override
 		public Collection<SystemObject> getAllObjects(final Collection<? extends SystemObjectType> types) {
 			return Collections.unmodifiableCollection(_objects);
 		}
@@ -671,6 +711,7 @@ public final class ObjectSet implements ObjectCollection {
 		private final Collection<MutableSet> _mutableSets = new HashSet<MutableSet>();
 
 		private final ObjectCollectionChangeListener _innerChangeListener = new ObjectCollectionChangeListener() {
+			@Override
 			public void blockChanged() {
 				refreshObjectCache();
 				notifyBlockChanged();
@@ -678,6 +719,7 @@ public final class ObjectSet implements ObjectCollection {
 		};
 
 		private final MutableSetChangeListener _mutableSetChangeListener = new MutableSetChangeListener() {
+			@Override
 			public void update(final MutableSet set, final SystemObject[] addedObjects, final SystemObject[] removedObjects) {
 				refreshObjectCache();
 				notifyBlockChanged();
@@ -764,22 +806,26 @@ public final class ObjectSet implements ObjectCollection {
 			return "ObjectSelectionBlockObjectSet{" + "_objectSetName='" + _objectSetName + '\'' + ", _innerBlock=" + _innerBlock + '}';
 		}
 
+		@Override
 		public boolean contains(final SystemObject object) {
 			if(!isInitialized) initialize();
 			return _objectCache.contains(object);
 		}
 
 		/** Wird derzeit nicht gebraucht, da Mengenabfragen nicht verschachtelt werden können. Implementierung schadet aber nicht und ist trivial. */
+		@Override
 		public Collection<SystemObjectType> getAllObjectTypes() {
 			if(!isInitialized) initialize();
 			return _connection.getDataModel().getBaseTypes();
 		}
 
+		@Override
 		public Collection<SystemObject> getAllObjects(final Collection<? extends SystemObjectType> types) {
 			if(!isInitialized) initialize();
 			return Collections.unmodifiableCollection(_objectCache);
 		}
 
+		@Override
 		public Collection<Region> getRegions() {
 			if(_innerBlock instanceof ObjectSelectionBlockRegion) {
 				final ObjectSelectionBlockRegion objectSelectionBlockRegion = (ObjectSelectionBlockRegion)_innerBlock;

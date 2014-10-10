@@ -19,6 +19,8 @@
  */
 package de.kappich.pat.gnd.viewManagement;
 
+import de.kappich.pat.gnd.gnd.GenericNetDisplay;
+import de.kappich.pat.gnd.gnd.PreferencesHandler;
 import de.kappich.pat.gnd.layerManagement.Layer;
 import de.kappich.pat.gnd.layerManagement.LayerManager;
 import de.kappich.pat.gnd.layerManagement.LayerManager.LayerManagerChangeListener;
@@ -46,14 +48,14 @@ import javax.swing.table.TableModel;
  * zu ändern.
  * 
  * @author Kappich Systemberatung
- * @version $Revision: 8080 $
+ * @version $Revision: 10225 $
  *
  */
 @SuppressWarnings("serial")
 public class ViewManager extends AbstractTableModel implements TableModel, LayerManagerChangeListener {
-	
+
 	private static final ViewManager _instance = new ViewManager();
-	
+
 	/**
 	 * Die übliche getInstance-Methode eines Singletons.
 	 */
@@ -322,7 +324,8 @@ public class ViewManager extends AbstractTableModel implements TableModel, Layer
 	 * @return der Knoten, unter dem die Views gespeichert werden
 	 */
 	public static Preferences getPreferenceStartPath() {
-		return Preferences.userRoot().node("de/kappich/pat/gnd/View");
+//		return Preferences.userRoot().node("de/kappich/pat/gnd/").node(kvPid).node("View");
+		return PreferencesHandler.getInstance().getPreferenceStartPath().node("View");
 	}
 	
 	private int remove( final String viewName) {

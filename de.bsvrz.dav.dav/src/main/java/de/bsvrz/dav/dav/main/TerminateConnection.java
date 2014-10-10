@@ -40,12 +40,12 @@ import de.bsvrz.sys.funclib.debug.Debug;
 import java.util.List;
 
 /**
- * Stoppt den Datenverteiler- bzw. Applikation-Verbindung mit der übergebene Objekt Spezifikation.
- * -objekt ID oder IDs durch Kommata getrennt, ist die Angabe welche Prozesse Terminiert werden soll.
+ * Stoppt die Datenverteiler- bzw. Applikations-Verbindung mit der übergebenen Objekt-Spezifikation.
+ * -objekt ID oder IDs durch Kommata getrennt, ist die Angabe welche Prozesse terminiert werden sollen.
  * Bsp : "-objekt=1466766103639706224 -benutzer=Tester -authentifizierung=passwd -debugLevelStdErrText=INFO"
  *
  * @author Kappich Systemberatung
- * @version $Revision: 8582 $
+ * @version $Revision: 11481 $
  */
 public class TerminateConnection implements StandardApplication {
 
@@ -57,32 +57,37 @@ public class TerminateConnection implements StandardApplication {
 		disconnect();
 	}
 
+	@Override
 	public void parseArguments(ArgumentList argumentList) throws Exception {
 		_debug = Debug.getLogger();
 		_debug.fine("argumentList = " + argumentList);
 		_objectSpec = argumentList.fetchArgument("-objekt=").asNonEmptyString();
 	}
 
+	@Override
 	public void initialize(ClientDavInterface connection) throws Exception {
 		List<SystemObject> systemObjectList = ConfigurationHelper.getObjects(_objectSpec, connection.getDataModel());
 		sendTerminationData(connection, systemObjectList);
 	}
 
 	public static void sendTerminationData(final ClientDavInterface connection, final List<SystemObject> systemObjectList) throws InterruptedException {
-		System.out.println("systemObjectList = " + systemObjectList);
+		if(_debug == null){
+			_debug = Debug.getLogger();
+		}
+//		System.out.println("systemObjectList = " + systemObjectList);
 
 		DataModel configuration = connection.getDataModel();
 		SystemObject object = connection.getLocalDav();
 
-		_debug.info("Objekt: " + object);
+		_debug.fine("Objekt: " + object);
 		AttributeGroup atg = configuration.getAttributeGroup("atg.terminierung");
-		_debug.info("Attributgruppe: " + atg);
+		_debug.fine("Attributgruppe: " + atg);
 		if(atg == null){
 			throw new IllegalStateException("Aktualisieren Sie die Konfiguration der Kernsoftware.\nDie benötigte Attributgruppe (atg.terminierung) ist unbekannt.");
 		}
 
 		Aspect aspect = configuration.getAspect("asp.anfrage");
-		_debug.info("Aspekt: " + aspect);
+		_debug.fine("Aspekt: " + aspect);
 		if(aspect == null){
 			throw new IllegalStateException("Aktualisieren Sie die Konfiguration der Kernsoftware.\nDer benötigte Aspekt (asp.anfrage) ist unbekannt.");
 		}
@@ -126,14 +131,14 @@ public class TerminateConnection implements StandardApplication {
 		try {
 			connection.subscribeSender(sender, object, dataDescription, SenderRole.sender());
 			Thread.sleep(1000);
-			System.out.println("Verbindung zum Datenverteiler wird angemeldet.");
+//			System.out.println("Verbindung zum Datenverteiler wird angemeldet.");
 		}
 		catch(OneSubscriptionPerSendData e) {
-			System.out.println("Datenidentifikation ist bereits angemeldet.");
+//			System.out.println("Datenidentifikation ist bereits angemeldet.");
 		}
 
 		try {
-			System.out.println("Gewählte Applikation-/Datenverteilerverbindung wird terminiert...");
+//			System.out.println("Gewählte Applikation-/Datenverteilerverbindung wird terminiert...");
 			connection.sendData(dataTel);
 		}
 		catch(Exception e) {
@@ -145,15 +150,17 @@ public class TerminateConnection implements StandardApplication {
 	}
 
 	public static void disconnect() {
-		System.out.println("Die Verbindung zum Datenverteiler wird nun getrennt.");
+//		System.out.println("Die Verbindung zum Datenverteiler wird nun getrennt.");
 	}
 
 	private static class Transmitter implements ClientSenderInterface {
 
+		@Override
 		public void dataRequest(SystemObject object, DataDescription dataDescription, byte state) {
 			//System.out.println("state = " + state);
 		}
 
+		@Override
 		public boolean isRequestSupported(SystemObject object, DataDescription dataDescription) {
 			return false;
 		}
