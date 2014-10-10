@@ -21,11 +21,11 @@
 package de.bsvrz.kex.tls.osi2osi3.osi3;
 
 /**
- * Eine Hilfsklasse, für die Osi3 Schicht. Hier sind einstellbare Parameter festgelegt. Des weiteren gibt es eine Methode, die den Wert eines Paramaters als
+ * Eine Hilfsklasse, für die Osi3 Schicht. Hier sind einstellbare Parameter festgelegt. Des weiteren gibt es eine Methode, die den Wert eines Parameters als
  * Boolean zurück gibt, falls möglich.
  *
  * @author Kappich Systemberatung
- * @version $Revision: 9616 $
+ * @version $Revision: 10824 $
  */
 public class TlsNetworkLayerSetting {
 

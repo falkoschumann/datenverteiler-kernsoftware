@@ -74,7 +74,7 @@ public abstract class DataLoader {
 	private final Object _updateNotifier = new Object();
 
 	/** Wie lange auf Daten gewartet wird (in ms) */
-	private static final int TIMEOUT = 1000 * 5;
+	private static final int TIMEOUT = 1000 * 15;
 
 	private final ReadWriteLock _readWriteLock = new ReentrantReadWriteLock();
 
@@ -103,6 +103,7 @@ public abstract class DataLoader {
 		_attributeGroupPid = attributeGroupPid;
 		_aspectPid = aspectPid;
 		_receiver = new ClientReceiverInterface() {
+			@Override
 			public final void update(final ResultData[] results) {
 				boolean hasData = false;
 				synchronized(lock) {
@@ -141,7 +142,7 @@ public abstract class DataLoader {
 
 	/**
 	 * Gibt die untergeordneten Objekte zurück. Z.B. die Rollen und Regionen bei der Berechtigungsklasse oder die Berechtigungsklassen beim Benutzer. Wird
-	 * gebraucht um Rekursionen zu erkennen und um den {@link de.bsvrz.dav.dav.main.ConnectionsManager} über geänderte Benutzerrechte zu informieren. Achtung: Es
+	 * gebraucht um Rekursionen zu erkennen und um den {@link de.bsvrz.dav.dav.main.HighLevelSubscriptionsManager} über geänderte Benutzerrechte zu informieren. Achtung: Es
 	 * werden nur die direkten Kinder zurückzugeben, nicht die "Enkel" usw. - Will man alle "Enkel" usw. haben muss man diese Funktion rekursiv aufrufen.<br>
 	 * Hinweis: Mit {@link #deactivateInvalidChild(DataLoader)} deaktivierte Kindelemente werden nicht aufgeführt.
 	 *
@@ -191,7 +192,7 @@ public abstract class DataLoader {
 	@Override
 	public String toString() {
 		if(_systemObject == null) return this.getClass().getSimpleName();
-		return this.getClass().getSimpleName() + "{" + _systemObject.getPidOrId() + "}";
+		return _systemObject.getPidOrId();
 	}
 
 	/**
@@ -272,7 +273,7 @@ public abstract class DataLoader {
 	 * Wartet bis dieses Objekt mit dem Laden fertig ist, aber maximal die in {@link #TIMEOUT} angegebene Zeit. Bei Anfragen an dieses Objekt, sollte zu erst diese
 	 * Funktion aufgerufen werden um sicherzustellen, das das Objekt bereits Daten erhalten hat.
 	 */
-	void waitForInitialization() {
+	public void waitForInitialization() {
 		synchronized(_updateNotifier) {
 			final long startTime = System.currentTimeMillis();
 			while(!isInitialized()) {
@@ -288,6 +289,17 @@ public abstract class DataLoader {
 					return;
 				}
 			}
+		}
+	}
+
+
+	/**
+	 * Wartet bis dieses Objekt und alle Kindobjekte mit dem Laden fertig sind, aber pro Objekt maximal die in {@link #TIMEOUT} angegebene Zeit.
+	 */
+	public void waitForInitializationTree() {
+		waitForInitialization();
+		for(DataLoader dataLoader: getChildObjects()) {
+			dataLoader.waitForInitializationTree();
 		}
 	}
 

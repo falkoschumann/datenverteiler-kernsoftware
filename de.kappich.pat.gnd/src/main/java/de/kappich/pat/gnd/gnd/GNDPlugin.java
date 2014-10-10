@@ -53,7 +53,7 @@ import java.util.Set;
  * Eine Klasse, um die GND als GTM-Plugin zur Verfügung zu stellen.
  *
  * @author Kappich Systemberatung
- * @version $Revision: 9286 $
+ * @version $Revision: 12083 $
  */
 public class GNDPlugin extends ExternalModuleAdapter implements SelectionListener {
 
@@ -232,7 +232,7 @@ public class GNDPlugin extends ExternalModuleAdapter implements SelectionListene
 			String[] viewArray = viewNames.toArray(new String[viewNames.size()]);
 
 			_displayViewsComboBox = new JComboBox(viewArray);
-			final String startViewName = GenericNetDisplay.getStartViewNameFromPreferences();
+			final String startViewName = GenericNetDisplay.getStartViewNameFromPreferences(getConnection());
 			if((startViewName != null) && (_viewManager.hasView(startViewName))) {
 				_displayViewsComboBox.setSelectedItem(startViewName);
 			}

@@ -36,76 +36,78 @@ import java.util.*;
 
 /**
  * Die Start-Klasse für die GND im Stand-Alone-Betrieb.
- * 
+ *
  * @author Kappich Systemberatung
- * @version $Revision: 8080 $
+ * @version $Revision: 11347 $
  */
 public class RunGND extends AbstractGUIApplication implements StandardApplication {
-	
-	final List<String> _plugins = new ArrayList<String>(); 
-	
+
+	final List<String> _plugins = new ArrayList<String>();
+
 	/** @param args die Aufrufparemeter */
-	
+
 	public static void main(String[] args) {
 		System.getProperties().put("apple.laf.useScreenMenuBar", "true");
 		Thread.setDefaultUncaughtExceptionHandler(new UncaughtExceptionHandler());
 		StandardApplicationRunner.run(new RunGND(), args);
 	}
-	
+
 	public void parseArguments(ArgumentList argumentList) throws Exception {
 		_debug = Debug.getLogger();
 		_debug.fine("argumentList = " + argumentList);
-		final Argument pluginArgument = argumentList.fetchArgument( "-plugins=");
-		if ( pluginArgument != null && pluginArgument.hasValue()) {
+		final Argument pluginArgument = argumentList.fetchArgument("-plugins=");
+		if(pluginArgument != null && pluginArgument.hasValue()) {
 			final String value = pluginArgument.getValue();
-			if ( (value != null) && (value.length() > 0)) {
+			if((value != null) && (value.length() > 0)) {
 				final String[] valueParts = value.split(",");
-				for ( String valuePart : valueParts) {
-					if ( (valuePart != null) && (valuePart.length() > 0)) {
-						_plugins.add( valuePart);
+				for(String valuePart : valueParts) {
+					if((valuePart != null) && (valuePart.length() > 0)) {
+						_plugins.add(valuePart);
 					}
 				}
 			}
 		}
 	}
-	
+
 	public void initialize(ClientDavInterface connection) throws Exception {
+		PreferencesHandler.setKvPid(connection.getLocalConfigurationAuthority().getPid());
+
 		ViewManager viewManager = ViewManager.getInstance();
-		List<SystemObject> systemObjects = getSystemObjects( connection);
+		List<SystemObject> systemObjects = getSystemObjects(connection);
 		String viewName = "Vordefinierte Ansicht 1";
-		final View view = viewManager.getView( viewName);
+		final View view = viewManager.getView(viewName);
 		if(view == null) {
 			final String x = "RunGND: ein View namens '" + viewName + "' kann nicht gefunden werden.";
 			_debug.error(x);
 			System.err.println(x);
 			System.exit(1); // RunGND darf beendet werden!
 		}
-		if ( _plugins.size() > 0) {
+		if(_plugins.size() > 0) {
 			GenericNetDisplay.addPlugins(_plugins);
 		}
 		GenericNetDisplay gnd = new GenericNetDisplay(view, connection, systemObjects, true);
 		gnd.setVisible(true);
 	}
-	
-	private List<SystemObject> getSystemObjects( ClientDavInterface connection) {
+
+	private List<SystemObject> getSystemObjects(ClientDavInterface connection) {
 		List<SystemObject> systemObjects = new ArrayList<SystemObject>();
 		return systemObjects;
 	}
-	
-	
+
+
 	private static Debug _debug;
-	
+
 	private static class UncaughtExceptionHandler implements Thread.UncaughtExceptionHandler {
-		
+
 		public void uncaughtException(Thread t, Throwable e) {
 			System.err.println("Laufzeitfehler: Ein Thread hat sich wegen einer Exception beendet:");
 			System.err.println(t);
 			e.printStackTrace(System.err);
-			_debug.warning("Laufzeitfehler: " + t + " hat sich wegen einer Exception beendet", e);
-			System.exit(1);	// RunGND darf beendet werden!
+			_debug.error("Laufzeitfehler: " + t + " hat sich wegen einer Exception beendet", e);
+			System.exit(1);    // RunGND darf beendet werden!
 		}
 	}
-	
+
 	@Override
 	protected String getApplicationName() {
 		return "Kappich Systemberatung - Generische Netzdarstellung";

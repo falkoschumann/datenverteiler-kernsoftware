@@ -26,46 +26,25 @@ import de.bsvrz.dav.daf.communication.dataRepresentation.datavalue.SendDataObjec
 import de.bsvrz.dav.daf.communication.lowLevel.ConnectionInterface;
 import de.bsvrz.dav.daf.communication.lowLevel.HighLevelCommunicationCallbackInterface;
 import de.bsvrz.dav.daf.communication.lowLevel.LowLevelCommunicationInterface;
-import de.bsvrz.dav.daf.communication.lowLevel.telegrams.ApplicationDataTelegram;
-import de.bsvrz.dav.daf.communication.lowLevel.telegrams.ClosingTelegram;
-import de.bsvrz.dav.daf.communication.lowLevel.telegrams.DataTelegram;
-import de.bsvrz.dav.daf.communication.lowLevel.telegrams.RoutingUpdate;
-import de.bsvrz.dav.daf.communication.lowLevel.telegrams.TerminateOrderTelegram;
-import de.bsvrz.dav.daf.communication.lowLevel.telegrams.TransmitterAuthentificationAnswer;
-import de.bsvrz.dav.daf.communication.lowLevel.telegrams.TransmitterAuthentificationRequest;
-import de.bsvrz.dav.daf.communication.lowLevel.telegrams.TransmitterAuthentificationTextAnswer;
-import de.bsvrz.dav.daf.communication.lowLevel.telegrams.TransmitterAuthentificationTextRequest;
-import de.bsvrz.dav.daf.communication.lowLevel.telegrams.TransmitterBestWayUpdate;
-import de.bsvrz.dav.daf.communication.lowLevel.telegrams.TransmitterComParametersAnswer;
-import de.bsvrz.dav.daf.communication.lowLevel.telegrams.TransmitterComParametersRequest;
-import de.bsvrz.dav.daf.communication.lowLevel.telegrams.TransmitterDataSubscription;
-import de.bsvrz.dav.daf.communication.lowLevel.telegrams.TransmitterDataSubscriptionReceipt;
-import de.bsvrz.dav.daf.communication.lowLevel.telegrams.TransmitterDataTelegram;
-import de.bsvrz.dav.daf.communication.lowLevel.telegrams.TransmitterDataUnsubscription;
-import de.bsvrz.dav.daf.communication.lowLevel.telegrams.TransmitterListsDeliveryUnsubscription;
-import de.bsvrz.dav.daf.communication.lowLevel.telegrams.TransmitterListsSubscription;
-import de.bsvrz.dav.daf.communication.lowLevel.telegrams.TransmitterListsUnsubscription;
-import de.bsvrz.dav.daf.communication.lowLevel.telegrams.TransmitterListsUpdate;
-import de.bsvrz.dav.daf.communication.lowLevel.telegrams.TransmitterProtocolVersionAnswer;
-import de.bsvrz.dav.daf.communication.lowLevel.telegrams.TransmitterProtocolVersionRequest;
-import de.bsvrz.dav.daf.communication.lowLevel.telegrams.TransmitterTelegramTimeAnswer;
-import de.bsvrz.dav.daf.communication.lowLevel.telegrams.TransmitterTelegramTimeRequest;
+import de.bsvrz.dav.daf.communication.lowLevel.telegrams.*;
 import de.bsvrz.dav.daf.main.CommunicationError;
 import de.bsvrz.dav.daf.main.config.ConfigurationException;
 import de.bsvrz.dav.daf.main.impl.CommunicationConstant;
-import de.bsvrz.dav.dav.communication.accessControl.AccessControlUtil;
+import de.bsvrz.dav.daf.util.Longs;
 import de.bsvrz.dav.dav.main.AuthentificationComponent;
-import de.bsvrz.dav.dav.main.BestWayManager;
-import de.bsvrz.dav.dav.main.ConnectionsManager;
+import de.bsvrz.dav.dav.main.ConnectionState;
+import de.bsvrz.dav.dav.main.HighLevelTransmitterManagerInterface;
+import de.bsvrz.dav.dav.main.LowLevelConnectionsManagerInterface;
 import de.bsvrz.dav.dav.main.ServerConnectionProperties;
-import de.bsvrz.dav.dav.main.SubscriptionsFromDavStorage;
-import de.bsvrz.dav.dav.main.SubscriptionsFromRemoteStorage;
-import de.bsvrz.dav.dav.main.SubscriptionsManager;
 import de.bsvrz.dav.dav.main.Transmitter;
-import de.bsvrz.dav.dav.communication.accessControl.AccessControlPlugin;
+import de.bsvrz.dav.dav.subscriptions.RemoteCentralSubscription;
+import de.bsvrz.dav.dav.subscriptions.RemoteSourceSubscription;
+import de.bsvrz.dav.dav.subscriptions.RemoteSubscription;
+import de.bsvrz.dav.dav.subscriptions.SendingSubscription;
 import de.bsvrz.sys.funclib.debug.Debug;
 
-import java.util.*;
+import java.util.LinkedList;
+import java.util.ListIterator;
 
 
 /**
@@ -73,7 +52,7 @@ import java.util.*;
  * aufgebaut, sowie die Authentifizierung durchgeführt.
  *
  * @author Kappich Systemberatung
- * @version $Revision: 8333 $
+ * @version $Revision: 12020 $
  */
 public class T_T_HighLevelCommunication implements T_T_HighLevelCommunicationInterface, HighLevelCommunicationCallbackInterface {
 
@@ -92,28 +71,19 @@ public class T_T_HighLevelCommunication implements T_T_HighLevelCommunicationInt
 	private ServerConnectionProperties _properties;
 
 	/** Die unterstützten Versionen des Datenverteilers */
-	private int _versions[];
+	private int[] _versions;
 
 	/** Die Version, mit der die Kommunikation erfolgt */
 	private int _version;
-
-	/** Die Verwaltung der Anmelde Komponenten */
-	private SubscriptionsManager _subscriptionsManager;
-
-	/** Die Verwaltung der Datenverteiler Verbindungen */
-	private ConnectionsManager _connectionsManager;
-
-	/** Die Anmeldekomponente diese Verbindung */
-	private SubscriptionsFromDavStorage _subscriptionsFromDavStorage;
 
 	/** Die Authentifizierungskomponente */
 	private AuthentificationComponent _authentificationComponent;
 
 	/** Temporäre Liste der Systemtelegramme für interne Synchronisationszwecke. */
-	private LinkedList<DataTelegram> _syncSystemTelegramList;
+	private final LinkedList<DataTelegram> _syncSystemTelegramList;
 
 	/** Temporäre Liste der Telegramme, die vor die Initialisierung eingetroffen sind. */
-	private LinkedList<DataTelegram> _fastTelegramsList;
+	private final LinkedList<DataTelegram> _fastTelegramsList;
 
 	/** Gewichtung dieser Verbindung */
 	private short _weight;
@@ -138,27 +108,23 @@ public class T_T_HighLevelCommunication implements T_T_HighLevelCommunicationInt
 
 	private Object _closedLock = new Object();
 
-	/** Verwaltung der günstigsten Wege zu anderen Datenverteilern */
-	private BestWayManager _bestWayManager;
-
 	/** Benutzername mit dem sich dieser Datenverteiler beim anderen Datenverteiler authentifizieren soll */
 	private String _authentifyAsUser;
+
+	private final HighLevelTransmitterManagerInterface _transmitterManager;
+
+	private final LowLevelConnectionsManagerInterface _lowLevelConnectionsManager;
 
 	/** Passwort des Benutzers mit dem sich dieser Datenverteiler beim anderen Datenverteiler authentifizieren soll */
 	private String _authentifyWithPassword;
 
-	/** Installierte PlugIn-Filter, die zur Zugriffsrechteprüfung bestimmte ATGUs filtern */
-	private final Map<Long, List<AccessControlPlugin>> _pluginFilters;
-
-	private final AccessControlUtil _accessControlUtil;
+//	private final Set<RemoteSubscription> _remoteSubscriptions = new HashSet<RemoteSubscription>();
 
 	/**
 	 * Erzeugt ein neues Objekt mit den gegebenen Parametern.
 	 *
 	 * @param properties             Eigenschaften dieser Verbindung
-	 * @param subscriptionsManager   Anmeldungsverwaltung
-	 * @param connectionsManager     Verbindungsverwaltung
-	 * @param bestWayManager         Verwaltung der günstigsten Wege zu anderen Datenverteilern
+	 * @param lowLevelConnectionsManager
 	 * @param weight                 Gewichtung dieser Verbindung
 	 * @param waitForConfiguration   true: auf die KOnfiguration muss gewartet werden, false: Konfiguration ist vorhanden
 	 * @param authentifyAsUser       Benutzername mit dem sich dieser Datenverteiler beim anderen Datenverteiler authentifizieren soll
@@ -166,25 +132,20 @@ public class T_T_HighLevelCommunication implements T_T_HighLevelCommunicationInt
 	 */
 	public T_T_HighLevelCommunication(
 			ServerConnectionProperties properties,
-			SubscriptionsManager subscriptionsManager,
-			ConnectionsManager connectionsManager,
-			final BestWayManager bestWayManager,
-			short weight,
+			HighLevelTransmitterManagerInterface transmitterManager, final LowLevelConnectionsManagerInterface lowLevelConnectionsManager, short weight,
 			boolean waitForConfiguration,
 			final String authentifyAsUser,
 			final String authentifyWithPassword) {
+		_transmitterManager = transmitterManager;
+		_lowLevelConnectionsManager = lowLevelConnectionsManager;
 		_authentifyWithPassword = authentifyWithPassword;
 		_authentifyAsUser = authentifyAsUser;
-		_bestWayManager = bestWayManager;
 		_connectedTransmitterId = -1;
 		_versions = new int[1];
 		_versions[0] = 2;
 		_weight = weight;
 		_properties = properties;
 		_lowLevelCommunication = _properties.getLowLevelCommunication();
-		_subscriptionsManager = subscriptionsManager;
-		_connectionsManager = connectionsManager;
-		_pluginFilters = connectionsManager.getPluginFilterMap();		
 		_authentificationComponent = _properties.getAuthentificationComponent();
 		_syncSystemTelegramList = new LinkedList<DataTelegram>();
 		_fastTelegramsList = new LinkedList<DataTelegram>();
@@ -193,7 +154,6 @@ public class T_T_HighLevelCommunication implements T_T_HighLevelCommunicationInt
 		_authentificationSync = hashCode();
 		_isAcceptedConnection = true;
 		_lowLevelCommunication.setHighLevelComponent(this);
-		_accessControlUtil = new AccessControlUtil();
 	}
 
 	/**
@@ -270,6 +230,10 @@ public class T_T_HighLevelCommunication implements T_T_HighLevelCommunicationInt
 		);
 	}
 
+	public LowLevelConnectionsManagerInterface getLowLevelConnectionsManager() {
+		return _lowLevelConnectionsManager;
+	}
+
 	/** @return Liefert <code>true</code> zurück, falls die Verbindung geschlossen wurde, sonst <code>false</code>. */
 	boolean isClosed() {
 		return _closed;
@@ -311,7 +275,8 @@ public class T_T_HighLevelCommunication implements T_T_HighLevelCommunicationInt
 	}
 
 
-	public final long getTelegrammTime(final long maxWaitingTime) throws CommunicationError {
+	@Override
+	public final long getTelegramTime(final long maxWaitingTime) throws CommunicationError {
 		long time = System.currentTimeMillis();
 		TransmitterTelegramTimeRequest telegramTimeRequest = new TransmitterTelegramTimeRequest(time);
 		sendTelegram(telegramTimeRequest);
@@ -353,25 +318,30 @@ public class T_T_HighLevelCommunication implements T_T_HighLevelCommunicationInt
 		return telegramTimeAnswer.getRoundTripTime();
 	}
 
+	@Override
 	public final long getRemoteNodeId() {
 		return _connectedTransmitterId;
 	}
 
+	@Override
 	public final int getThroughputResistance() {
 		return _weight;
 	}
 
-	public final void sendRoutingUpdate(RoutingUpdate routingUpdates[]) {
+	@Override
+	public final void sendRoutingUpdate(RoutingUpdate[] routingUpdates) {
 		if(routingUpdates == null) {
 			throw new IllegalArgumentException("Argument ist null");
 		}
 		sendTelegram(new TransmitterBestWayUpdate(routingUpdates));
 	}
 
+	@Override
 	public final long getRemoteUserId() {
 		return _remoteUserId;
 	}
 
+	@Override
 	public final long getId() {
 		return _connectedTransmitterId;
 	}
@@ -414,6 +384,7 @@ public class T_T_HighLevelCommunication implements T_T_HighLevelCommunicationInt
 		return connection.getSubAdressNumber();
 	}
 
+	@Override
 	public void continueAuthentification() {
 		synchronized(_sync) {
 			_waitForConfiguration = false;
@@ -421,6 +392,7 @@ public class T_T_HighLevelCommunication implements T_T_HighLevelCommunicationInt
 		}
 	}
 
+	@Override
 	public void terminate(boolean error, String message) {
 		final DataTelegram terminationTelegram;
 		if(error) {
@@ -448,23 +420,21 @@ public class T_T_HighLevelCommunication implements T_T_HighLevelCommunicationInt
 			if(_lowLevelCommunication != null) {
 				_lowLevelCommunication.disconnect(error, message, terminationTelegram);
 			}
-			if(_connectionsManager != null) {
-				_connectionsManager.unsubscribeConnection(this);
-			}
-			if((_subscriptionsManager != null) && (_subscriptionsFromDavStorage != null)) {
-				_subscriptionsManager.remove(_subscriptionsFromDavStorage);
-			}
+			_transmitterManager.connectionTerminated(this);
 		}
 	}
 
 
+	@Override
 	public void disconnected(boolean error, final String message) {
 		terminate(error, message);
 	}
 
+	@Override
 	public void updateConfigData(SendDataObject receivedData) {
 		throw new UnsupportedOperationException("updateConfigData nicht implementiert");
 	}
+
 
 	public void sendTelegram(DataTelegram telegram) {
 		if(Transmitter._debugLevel > 5) System.err.println("T_T  -> " + telegram.toShortDebugString());
@@ -472,20 +442,10 @@ public class T_T_HighLevelCommunication implements T_T_HighLevelCommunicationInt
 	}
 
 	public void sendTelegrams(DataTelegram[] telegrams) {
-		if(Transmitter._debugLevel > 5) {
-			for(int i = 0; i < telegrams.length; i++) {
-				DataTelegram telegram = telegrams[i];
-				System.err.println("T_T  -> " + telegram.toShortDebugString());
-			}
-		}
 		_lowLevelCommunication.send(telegrams);
 	}
 
-	public final SubscriptionsFromRemoteStorage getSubscriptionsFromRemoteStorage() {
-		return _subscriptionsFromDavStorage;
-	}
-
-
+	@Override
 	public void update(DataTelegram telegram) {
 		if(Transmitter._debugLevel > 5) {
 			System.err.println("T_T <-  " + (telegram == null ? "null" : telegram.toShortDebugString()));
@@ -527,10 +487,10 @@ public class T_T_HighLevelCommunication implements T_T_HighLevelCommunicationInt
 				final long remoteTransmitterId = authentificationTextRequest.getTransmitterId();
 				_debug.info("Datenverteiler " + remoteTransmitterId + " möchte sich authentifizieren");
 				final T_T_HighLevelCommunication transmitterConnection;
-				synchronized(_connectionsManager) {
-					transmitterConnection = _connectionsManager.getTransmitterConnection(remoteTransmitterId);
-				}
-				if(transmitterConnection != null) {
+
+				transmitterConnection = _lowLevelConnectionsManager.getTransmitterConnection(remoteTransmitterId);
+
+				if(transmitterConnection != null && transmitterConnection.isAcceptedConnection()) {
 					final String message = "Neue Verbindung zum Datenverteiler " + remoteTransmitterId
 					                       + " wird terminiert, weil noch eine andere Verbindung zu diesem Datenverteiler besteht.";
 					_debug.warning(message);
@@ -539,12 +499,13 @@ public class T_T_HighLevelCommunication implements T_T_HighLevelCommunicationInt
 				}
 				_connectedTransmitterId = remoteTransmitterId;
 				_lowLevelCommunication.setRemoteName("DAV " + _connectedTransmitterId);
-				_weight = _connectionsManager.getWeight(_connectedTransmitterId);
-				_authentifyAsUser = _connectionsManager.getUserNameForAuthentification(_connectedTransmitterId);
-				_authentifyWithPassword = _connectionsManager.getPasswordForAuthentification(_connectedTransmitterId);
+				_weight = _transmitterManager.getWeight(_connectedTransmitterId);
+				_authentifyAsUser = _transmitterManager.getUserNameForAuthentication(_connectedTransmitterId);
+				_authentifyWithPassword = _transmitterManager.getPasswordForAuthentication(_connectedTransmitterId);
 				String text = _authentificationComponent.getAuthentificationText(Long.toString(_connectedTransmitterId));
 				TransmitterAuthentificationTextAnswer authentificationTextAnswer = new TransmitterAuthentificationTextAnswer(text);
 				sendTelegram(authentificationTextAnswer);
+				_lowLevelConnectionsManager.updateTransmitterId(this);
 				break;
 			}
 			case DataTelegram.TRANSMITTER_AUTHENTIFICATION_TEXT_ANSWER_TYPE: {
@@ -558,7 +519,7 @@ public class T_T_HighLevelCommunication implements T_T_HighLevelCommunicationInt
 				TransmitterAuthentificationRequest authentificationRequest = (TransmitterAuthentificationRequest)telegram;
 				String userName = authentificationRequest.getUserName();
 				try {
-					_remoteUserId = _connectionsManager.isValidUser(
+					_remoteUserId = _lowLevelConnectionsManager.login(
 							userName,
 							authentificationRequest.getUserPassword(),
 							_authentificationComponent.getAuthentificationText(Long.toString(_connectedTransmitterId)),
@@ -576,6 +537,7 @@ public class T_T_HighLevelCommunication implements T_T_HighLevelCommunicationInt
 						}
 						if(_isAcceptedConnection) {
 							Runnable runnable = new Runnable() {
+								@Override
 								public void run() {
 									try {
 										authentify();
@@ -655,7 +617,7 @@ public class T_T_HighLevelCommunication implements T_T_HighLevelCommunicationInt
 			case DataTelegram.TRANSMITTER_DATA_SUBSCRIPTION_TYPE: {
 				if(_initComplete) {
 					TransmitterDataSubscription subscription = (TransmitterDataSubscription)telegram;
-					_connectionsManager.handleTransmitterSubscription(this, subscription);
+					_transmitterManager.handleTransmitterSubscription(this, subscription);
 				}
 				else {
 					synchronized(_fastTelegramsList) {
@@ -667,7 +629,7 @@ public class T_T_HighLevelCommunication implements T_T_HighLevelCommunicationInt
 			case DataTelegram.TRANSMITTER_DATA_SUBSCRIPTION_RECEIPT_TYPE: {
 				if(_initComplete) {
 					TransmitterDataSubscriptionReceipt receipt = (TransmitterDataSubscriptionReceipt)telegram;
-					_connectionsManager.handleTransmitterSubscriptionReceip(this, receipt);
+					_transmitterManager.handleTransmitterSubscriptionReceipt(this, receipt);
 				}
 				else {
 					synchronized(_fastTelegramsList) {
@@ -679,7 +641,7 @@ public class T_T_HighLevelCommunication implements T_T_HighLevelCommunicationInt
 			case DataTelegram.TRANSMITTER_DATA_UNSUBSCRIPTION_TYPE: {
 				if(_initComplete) {
 					TransmitterDataUnsubscription unsubscription = (TransmitterDataUnsubscription)telegram;
-					_connectionsManager.handleTransmitterUnsubscription(this, unsubscription);
+					_transmitterManager.handleTransmitterUnsubscription(this, unsubscription);
 				}
 				else {
 					synchronized(_fastTelegramsList) {
@@ -691,9 +653,7 @@ public class T_T_HighLevelCommunication implements T_T_HighLevelCommunicationInt
 			case DataTelegram.TRANSMITTER_BEST_WAY_UPDATE_TYPE: {
 				if(_initComplete) {
 					TransmitterBestWayUpdate transmitterBestWayUpdate = (TransmitterBestWayUpdate)telegram;
-					synchronized(_connectionsManager) {
-						_bestWayManager.update(this, transmitterBestWayUpdate);
-					}
+					_transmitterManager.updateBestWay(this, transmitterBestWayUpdate);
 				}
 				else {
 					synchronized(_fastTelegramsList) {
@@ -705,7 +665,7 @@ public class T_T_HighLevelCommunication implements T_T_HighLevelCommunicationInt
 			case DataTelegram.TRANSMITTER_LISTS_SUBSCRIPTION_TYPE: {
 				if(_initComplete) {
 					TransmitterListsSubscription transmitterListsSubscription = (TransmitterListsSubscription)telegram;
-					_connectionsManager.handleListsSubscription(this, transmitterListsSubscription);
+					_transmitterManager.handleListsSubscription(this, transmitterListsSubscription);
 				}
 				else {
 					synchronized(_fastTelegramsList) {
@@ -717,7 +677,7 @@ public class T_T_HighLevelCommunication implements T_T_HighLevelCommunicationInt
 			case DataTelegram.TRANSMITTER_LISTS_UNSUBSCRIPTION_TYPE: {
 				if(_initComplete) {
 					TransmitterListsUnsubscription transmitterListsUnsubscription = (TransmitterListsUnsubscription)telegram;
-					_connectionsManager.handleListsUnsubscription(this, transmitterListsUnsubscription);
+					_transmitterManager.handleListsUnsubscription(this, transmitterListsUnsubscription);
 				}
 				else {
 					synchronized(_fastTelegramsList) {
@@ -729,7 +689,7 @@ public class T_T_HighLevelCommunication implements T_T_HighLevelCommunicationInt
 			case DataTelegram.TRANSMITTER_LISTS_DELIVERY_UNSUBSCRIPTION_TYPE: {
 				if(_initComplete) {
 					TransmitterListsDeliveryUnsubscription transmitterListsDeliveryUnsubscription = (TransmitterListsDeliveryUnsubscription)telegram;
-					_connectionsManager.handleListsDeliveryUnsubscription(this, transmitterListsDeliveryUnsubscription);
+					_transmitterManager.handleListsDeliveryUnsubscription(this, transmitterListsDeliveryUnsubscription);
 				}
 				else {
 					synchronized(_fastTelegramsList) {
@@ -742,7 +702,7 @@ public class T_T_HighLevelCommunication implements T_T_HighLevelCommunicationInt
 			case DataTelegram.TRANSMITTER_LISTS_UPDATE_2_TYPE: {
 				if(_initComplete) {
 					TransmitterListsUpdate transmitterListsUpdate = (TransmitterListsUpdate)telegram;
-					_connectionsManager.handleListsUpdate(this, transmitterListsUpdate);
+					_transmitterManager.handleListsUpdate(transmitterListsUpdate);
 				}
 				else {
 					synchronized(_fastTelegramsList) {
@@ -754,23 +714,7 @@ public class T_T_HighLevelCommunication implements T_T_HighLevelCommunicationInt
 			case DataTelegram.TRANSMITTER_DATA_TELEGRAM_TYPE: {
 				if(_initComplete) {
 					TransmitterDataTelegram transmitterDataTelegram = (TransmitterDataTelegram)telegram;
-					final long usageIdentification = transmitterDataTelegram.getBaseSubscriptionInfo().getUsageIdentification();
-					final List<AccessControlPlugin> controlPluginInterfaceList = _pluginFilters.get(usageIdentification);
-					if(controlPluginInterfaceList != null) {
-						// Es sind Plugins zuständig. Daten an Plugin übergeben...
-						final ApplicationDataTelegram[] telegrams = _accessControlUtil.processTelegramByPlugins(
-								transmitterDataTelegram.getApplicationDataTelegram(), controlPluginInterfaceList, _remoteUserId, _connectionsManager
-						);
-						// ... und wieder verschicken. Da das Datenobjekt durch die Verarbeitung größer werden kann, müssen hier eventuell mehrere
-						// Telegramme verschickt werden. Oder gar keins, wenn erst auf weitere (Teil-)Telegramme gewartet werden muss bzw. das Plugin die Nachricht verwirft.
-						for(ApplicationDataTelegram dataTelegram : telegrams) {
-							_subscriptionsManager.sendData(this, new TransmitterDataTelegram(dataTelegram, transmitterDataTelegram.getDirection()));
-						}
-					}
-					else {
-						// Kein Plugin zuständig, Daten einfach weiter verarbeiten
-						_subscriptionsManager.sendData(this, transmitterDataTelegram);
-					}
+						_transmitterManager.handleDataTelegram(this, transmitterDataTelegram);
 				}
 				else {
 					synchronized(_fastTelegramsList) {
@@ -803,14 +747,13 @@ public class T_T_HighLevelCommunication implements T_T_HighLevelCommunicationInt
 	 * vor Fertigstellung der Initialisierung angekommen sind (Online-Daten, Wegeanmeldungen, Listenanmeldungen usw.).
 	 *
 	 * @return true: Initialisierung abgeschlossen, false: Initialisierung nicht abgeschlossen
+	 *
+	 * 
 	 */
 	public final boolean completeInitialisation() {
 		if(!_initComplete) {
-			synchronized(_connectionsManager) {
-				_subscriptionsFromDavStorage = new SubscriptionsFromDavStorage(this);
-				_subscriptionsManager.subscribe(_subscriptionsFromDavStorage);
-				_bestWayManager.addWay(this);
-			}
+				_transmitterManager.addWay(this);
+
 			_initComplete = true;
 			synchronized(_fastTelegramsList) {
 				int size = _fastTelegramsList.size();
@@ -831,7 +774,7 @@ public class T_T_HighLevelCommunication implements T_T_HighLevelCommunicationInt
 	 *
 	 * @return die höchste unterstützte version oder -1
 	 */
-	private int getPrefferedVersion(int versions[]) {
+	private int getPrefferedVersion(int[] versions) {
 
 		if(_versions == null) {
 			return -1;
@@ -850,6 +793,8 @@ public class T_T_HighLevelCommunication implements T_T_HighLevelCommunicationInt
 	/**
 	 * Erledigt den Authentifizierungsprozess.
 	 *
+	 * TBD: In korrektes Englisch (authenticate o.ä.)  umbenennen?
+	 *
 	 * @throws de.bsvrz.dav.daf.main.CommunicationError,
 	 *          wenn bei der initialen Kommunikation mit dem Datenverteiler Fehler aufgetreten sind
 	 */
@@ -862,7 +807,7 @@ public class T_T_HighLevelCommunication implements T_T_HighLevelCommunicationInt
 		TransmitterAuthentificationTextAnswer authentificationTextAnswer = (TransmitterAuthentificationTextAnswer)waitForAnswerTelegram(
 				DataTelegram.TRANSMITTER_AUTHENTIFICATION_TEXT_ANSWER_TYPE, "Aufforderung zur Authentifizierung"
 		);
-		byte encriptedUserPassword[] = authentificationTextAnswer.getEncryptedPassword(
+		byte[] encriptedUserPassword = authentificationTextAnswer.getEncryptedPassword(
 				_properties.getAuthentificationProcess(), _authentifyWithPassword
 		);
 
@@ -881,6 +826,83 @@ public class T_T_HighLevelCommunication implements T_T_HighLevelCommunicationInt
 		}
 		_connectedTransmitterId = authentificationAnswer.getCommunicationTransmitterId();
 		_lowLevelCommunication.setRemoteName("DAV " + _connectedTransmitterId);
+		_lowLevelConnectionsManager.updateTransmitterId(this);
 
+	}
+
+	@Override
+	public String toString() {
+		return "[" + _connectedTransmitterId + "]";
+	}
+
+	public void subscribeToRemote(RemoteCentralSubscription remoteCentralSubscription) {
+//		_remoteSubscriptions.add(remoteCentralSubscription);
+		TransmitterSubscriptionType transmitterSubscriptionType = null;
+		if(remoteCentralSubscription instanceof RemoteSourceSubscription) {
+			// Auf eine Quelle meldet man sich als Empfänger an
+			transmitterSubscriptionType = TransmitterSubscriptionType.Receiver;
+		}
+		else {
+			// Auf eine Senke meldet man sich als Sender an
+			transmitterSubscriptionType = TransmitterSubscriptionType.Sender;
+		}
+		TransmitterDataSubscription telegram = new TransmitterDataSubscription(
+				remoteCentralSubscription.getBaseSubscriptionInfo(), transmitterSubscriptionType.toByte(), Longs.asArray(remoteCentralSubscription.getPotentialDistributors())
+		);
+		sendTelegram(telegram);
+	}
+
+
+	public void unsubscribeToRemote(RemoteCentralSubscription remoteCentralSubscription) {
+		TransmitterSubscriptionType transmitterSubscriptionType = null;
+		if(remoteCentralSubscription instanceof RemoteSourceSubscription) {
+			// Auf eine Quelle meldet man sich als Empfänger an
+			transmitterSubscriptionType = TransmitterSubscriptionType.Receiver;
+		}
+		else {
+			// Auf eine Senke meldet man sich als Sender an
+			transmitterSubscriptionType = TransmitterSubscriptionType.Sender;
+		}
+		TransmitterDataUnsubscription telegram = new TransmitterDataUnsubscription(
+				remoteCentralSubscription.getBaseSubscriptionInfo(), transmitterSubscriptionType.toByte(), Longs.asArray(remoteCentralSubscription.getPotentialDistributors())
+		);
+		sendTelegram(telegram);
+	}
+
+	@Override
+	public final void sendData(ApplicationDataTelegram telegram, final boolean toCentralDistributor) {
+		TransmitterDataTelegram transmitterDataTelegram = new TransmitterDataTelegram(telegram, toCentralDistributor ? (byte)0 : (byte)1);
+		sendTelegram(transmitterDataTelegram);
+	}
+
+	@Override
+	public void sendReceipt(
+			final long centralTransmitterId,
+			final ConnectionState state,
+			final TransmitterSubscriptionType receiver,
+			RemoteSubscription remoteReceiverSubscription) {
+		final byte statusByte;
+		switch(state) {
+			case TO_REMOTE_OK:
+				statusByte = TransmitterSubscriptionsConstants.POSITIV_RECEIP;
+				break;
+			case TO_REMOTE_NOT_RESPONSIBLE:
+				statusByte = TransmitterSubscriptionsConstants.NEGATIV_RECEIP;
+				break;
+			case TO_REMOTE_NOT_ALLOWED:
+				statusByte = TransmitterSubscriptionsConstants.POSITIV_RECEIP_NO_RIGHT;
+				break;
+			case TO_REMOTE_MULTIPLE:
+				statusByte = TransmitterSubscriptionsConstants.MORE_THAN_ONE_POSITIV_RECEIP;
+				break;
+			default:
+				throw new IllegalArgumentException("Status: " + state);
+		}
+		TransmitterDataSubscriptionReceipt receipt = new TransmitterDataSubscriptionReceipt(
+				remoteReceiverSubscription.getBaseSubscriptionInfo(),
+				receiver.toByte(), statusByte, centralTransmitterId,
+				Longs.asArray(remoteReceiverSubscription.getPotentialDistributors())
+		);
+		sendTelegram(receipt);
 	}
 }

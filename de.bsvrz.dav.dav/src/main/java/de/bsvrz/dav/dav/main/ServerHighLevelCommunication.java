@@ -30,21 +30,14 @@ import de.bsvrz.dav.daf.communication.lowLevel.telegrams.TelegramTimeRequest;
  * Highlevelcommunication implementiert.
  *
  * @author Kappich Systemberatung
- * @version $Revision: 7715 $
+ * @version $Revision: 11481 $
  */
 public interface ServerHighLevelCommunication {
 
 	/**
-	 * Gibt die Komponente zurück, die die Anmeldungen der Verbindung verwaltet.
-	 *
-	 * @return Komponente die die Anmeldungen der Verbindung
-	 */
-	public SubscriptionsFromRemoteStorage getSubscriptionsFromRemoteStorage();
-
-	/**
 	 * Diese Methode wird von der Verbindungsverwaltung aufgerufen. Ein Telegramm {@link TelegramTimeRequest} wird erzeugt und zur Applikation gesendet. Danach
-	 * wird auf die Antwort {@link de.bsvrz.dav.daf.communication.lowLevel.telegrams.TelegramTimeAnswer} gewartet. Wenn die Antwort nicht innerhalb der angegebenen maximalen Wartezeit
-	 * angekommen ist, wird eine {@link CommunicationError Ausnahme} erzeugt.
+	 * wird auf die Antwort {@link de.bsvrz.dav.daf.communication.lowLevel.telegrams.TelegramTimeAnswer} gewartet. Wenn die Antwort nicht innerhalb der angegebenen
+	 * maximalen Wartezeit angekommen ist, wird eine {@link CommunicationError Ausnahme} erzeugt.
 	 *
 	 * @param maxWaitingTime Maximale Zeit, die auf eine Antwort gewartet wird.
 	 *
@@ -52,7 +45,7 @@ public interface ServerHighLevelCommunication {
 	 *
 	 * @throws CommunicationError Wenn bei der initialen Kommunikation mit dem Datenverteiler Fehler aufgetreten sind.
 	 */
-	public long getTelegrammTime(final long maxWaitingTime) throws CommunicationError;
+	public long getTelegramTime(final long maxWaitingTime) throws CommunicationError;
 
 	/**
 	 * Diese Methode wird von der Verbindungsverwaltung aufgerufen, sobald die Konfiguration vorhanden ist, um zu signalisieren, dass eine blockierte
@@ -79,7 +72,8 @@ public interface ServerHighLevelCommunication {
 	/**
 	 * Terminiert die Kommunikationsverbindung.
 	 *
-	 * @param error   Ist <code>true</code>, wenn die Verbindung im Fehlerfall abgebrochen werden soll, ohne die noch gepufferten Telegramme zu versenden; <code>false</code>, wenn versucht werden soll alle gepufferten Telegramme zu versenden.
+	 * @param error   Ist <code>true</code>, wenn die Verbindung im Fehlerfall abgebrochen werden soll, ohne die noch gepufferten Telegramme zu versenden;
+	 *                <code>false</code>, wenn versucht werden soll alle gepufferten Telegramme zu versenden.
 	 * @param message Fehlermeldung, die die Fehlersituation näher beschreibt.
 	 */
 	void terminate(boolean error, final String message);

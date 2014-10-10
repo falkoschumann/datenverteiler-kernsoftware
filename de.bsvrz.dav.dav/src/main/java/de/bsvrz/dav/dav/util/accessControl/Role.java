@@ -60,10 +60,13 @@ class Role extends DataLoader {
 	/** Rekursiv referenzierte Rollen, die deaktiviert wurden */
 	private final List<Role> _disabledInnerRoles = new ArrayList<Role>();
 
+	/** Bestimmt ob Kind-Rollen additiv vereinigt werden sollen. */
+	private boolean _additiveChildren = true;
+
 	/**
 	 * Erstellt eine neue Rolle
 	 *
-	 * @param systemObject         Systemobjekt, das die Daten dieser Rolle enthält (vom Typ typ.zugriffsRolle)
+	 * @param systemObject         Systemobjekt, das die Daten dieser Rolle enthält
 	 * @param connection           Verbindung zum Datenverteiler
 	 * @param accessControlManager Klasse, die Berechtigungsobjekte verwaltet
 	 */
@@ -102,13 +105,25 @@ class Role extends DataLoader {
 				}
 				if(currentState == Role.PermissionState.EXPLICIT_FORBIDDEN) return Role.PermissionState.EXPLICIT_FORBIDDEN;
 			}
-			if(currentState != PermissionState.IMPLICIT_FORBIDDEN) return currentState;
-			for(final Role innerRole : _innerRoles) {
-				final Role.PermissionState p = innerRole.getPermission(atg, asp, action);
-				if(p.getPriority() > currentState.getPriority() && p != Role.PermissionState.EXPLICIT_FORBIDDEN) {
-					// Falls die innere Rolle Role.PermissionState.EXPLICIT_FORBIDDEN zurückgibt muss das ignoriert werden,
-					// da sich verschachtelte Rollen nur Additiv ergänzen sollen
-					currentState = p;
+			if(_additiveChildren){
+				if(currentState != PermissionState.IMPLICIT_FORBIDDEN) return currentState;
+				for(final Role innerRole : _innerRoles) {
+					final Role.PermissionState p = innerRole.getPermission(atg, asp, action);
+					if(p.getPriority() > currentState.getPriority() && p != Role.PermissionState.EXPLICIT_FORBIDDEN) {
+						// Falls die innere Rolle Role.PermissionState.EXPLICIT_FORBIDDEN zurückgibt muss das ignoriert werden,
+						// da sich verschachtelte Rollen nur Additiv ergänzen sollen
+						currentState = p;
+					}
+				}
+			}
+			else
+			{
+				for(final Role innerRole : _innerRoles) {
+					final Role.PermissionState p = innerRole.getPermission(atg, asp, action);
+					if(p.getPriority() > currentState.getPriority()) {
+						currentState = p;
+					}
+					if(currentState == Role.PermissionState.EXPLICIT_FORBIDDEN) return Role.PermissionState.EXPLICIT_FORBIDDEN;
 				}
 			}
 			return currentState;
@@ -145,13 +160,25 @@ class Role extends DataLoader {
 				}
 				if(currentState == Role.PermissionState.EXPLICIT_FORBIDDEN) return Role.PermissionState.EXPLICIT_FORBIDDEN;
 			}
-			if(currentState != PermissionState.IMPLICIT_FORBIDDEN) return currentState;
-			for(final Role innerRole : _innerRoles) {
-				final Role.PermissionState p = innerRole.getPermissionObjectChange(area, type);
-				if(p.getPriority() > currentState.getPriority() && p != Role.PermissionState.EXPLICIT_FORBIDDEN) {
-					// Falls die innere Rolle Role.PermissionState.EXPLICIT_FORBIDDEN zurückgibt muss das ignoriert werden,
-					// da sich verschachtelte Rollen nur Additiv ergänzen sollen
-					currentState = p;
+			if(_additiveChildren){
+				if(currentState != PermissionState.IMPLICIT_FORBIDDEN) return currentState;
+				for(final Role innerRole : _innerRoles) {
+					final Role.PermissionState p = innerRole.getPermissionObjectChange(area, type);
+					if(p.getPriority() > currentState.getPriority() && p != Role.PermissionState.EXPLICIT_FORBIDDEN) {
+						// Falls die innere Rolle Role.PermissionState.EXPLICIT_FORBIDDEN zurückgibt muss das ignoriert werden,
+						// da sich verschachtelte Rollen nur Additiv ergänzen sollen
+						currentState = p;
+					}
+				}
+			}
+			else
+			{
+				for(final Role innerRole : _innerRoles) {
+					final Role.PermissionState p = innerRole.getPermissionObjectChange(area, type);
+					if(p.getPriority() > currentState.getPriority()) {
+						currentState = p;
+					}
+					if(currentState == Role.PermissionState.EXPLICIT_FORBIDDEN) return Role.PermissionState.EXPLICIT_FORBIDDEN;
 				}
 			}
 			return currentState;
@@ -188,15 +215,27 @@ class Role extends DataLoader {
 				}
 				if(currentState == Role.PermissionState.EXPLICIT_FORBIDDEN) return Role.PermissionState.EXPLICIT_FORBIDDEN;
 			}
-			if(currentState != PermissionState.IMPLICIT_FORBIDDEN) return currentState;
-			for(final Role innerRole : _innerRoles) {
-				final Role.PermissionState p = innerRole.getPermissionObjectSetChange(area, type);
-				if(p.getPriority() > currentState.getPriority() && p != Role.PermissionState.EXPLICIT_FORBIDDEN) {
-					// Falls die innere Rolle Role.PermissionState.EXPLICIT_FORBIDDEN zurückgibt muss das ignoriert werden,
-					// da sich verschachtelte Rollen nur Additiv ergänzen sollen
-					currentState = p;
-				}
-			}
+					if(_additiveChildren){
+						if(currentState != PermissionState.IMPLICIT_FORBIDDEN) return currentState;
+						for(final Role innerRole : _innerRoles) {
+							final Role.PermissionState p = innerRole.getPermissionObjectSetChange(area, type);
+							if(p.getPriority() > currentState.getPriority() && p != Role.PermissionState.EXPLICIT_FORBIDDEN) {
+								// Falls die innere Rolle Role.PermissionState.EXPLICIT_FORBIDDEN zurückgibt muss das ignoriert werden,
+								// da sich verschachtelte Rollen nur Additiv ergänzen sollen
+								currentState = p;
+							}
+						}
+					}
+					else
+					{
+						for(final Role innerRole : _innerRoles) {
+							final Role.PermissionState p = innerRole.getPermissionObjectSetChange(area, type);
+							if(p.getPriority() > currentState.getPriority()) {
+								currentState = p;
+							}
+							if(currentState == Role.PermissionState.EXPLICIT_FORBIDDEN) return Role.PermissionState.EXPLICIT_FORBIDDEN;
+						}
+					}
 			return currentState;
 		}
 		finally {

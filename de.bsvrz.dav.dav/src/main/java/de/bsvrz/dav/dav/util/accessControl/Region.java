@@ -53,6 +53,7 @@ public class Region extends DataLoader implements ObjectCollectionParent {
 	private final List<Region> _disabledInnerRegions = new ArrayList<Region>();
 
 	private final ObjectCollectionChangeListener _objectCollectionChangeListener = new ObjectCollectionChangeListener() {
+		@Override
 		public void blockChanged() {
 			notifyRegionChanged();
 		}
@@ -99,7 +100,7 @@ public class Region extends DataLoader implements ObjectCollectionParent {
 	/**
 	 * Erstellt eine neue Region
 	 *
-	 * @param systemObject         Systemobjekt, das die Daten dieser Rolle enthält (vom Typ typ.zugriffsRolle)
+	 * @param systemObject         Systemobjekt, das die Daten dieser Region enthält
 	 * @param connection           Verbindung zum Datenverteiler
 	 * @param accessControlManager Klasse, die Berechtigungsobjekte verwaltet
 	 */
@@ -287,11 +288,21 @@ public class Region extends DataLoader implements ObjectCollectionParent {
 		}
 	}
 
+	@Override
 	public boolean isDisabled(final Region region) {
 		return _disabledInnerRegions.contains(region);
 	}
 
+	@Override
 	public Region getRegion(final SystemObject regionObject) {
 		return _regionManager.getRegion(regionObject);
+	}
+
+	protected ObjectSet getIncludedObjects() {
+		return _includedObjects;
+	}
+
+	protected ObjectSet getExcludedObjects() {
+		return _excludedObjects;
 	}
 }

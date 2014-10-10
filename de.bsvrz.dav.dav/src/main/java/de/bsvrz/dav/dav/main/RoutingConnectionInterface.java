@@ -27,7 +27,7 @@ import de.bsvrz.dav.daf.communication.lowLevel.telegrams.RoutingUpdate;
  * Dieses Interface deklariert Methoden, die Informationen zu Verbindungen liefern.
  *
  * @author Kappich Systemberatung
- * @version $Revision: 5068 $
+ * @version $Revision: 11481 $
  */
 public interface RoutingConnectionInterface {
 
@@ -50,5 +50,5 @@ public interface RoutingConnectionInterface {
 	 *
 	 * @param routingUpdates Aktualisierung der Verbindung
 	 */
-	public void sendRoutingUpdate(RoutingUpdate routingUpdates[]);
+	public void sendRoutingUpdate(RoutingUpdate[] routingUpdates);
 }

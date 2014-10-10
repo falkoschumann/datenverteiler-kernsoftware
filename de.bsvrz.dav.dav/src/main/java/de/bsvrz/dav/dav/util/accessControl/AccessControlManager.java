@@ -31,6 +31,8 @@ import de.bsvrz.sys.funclib.operatingMessage.MessageState;
 import de.bsvrz.sys.funclib.operatingMessage.MessageType;
 
 import java.util.*;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * Klasse, die im Datenmodell Abfragen nach Benutzerberechtigungen erlaubt.
@@ -44,7 +46,7 @@ public final class AccessControlManager implements RegionManager {
 	private static final Debug _debug = Debug.getLogger();
 
 	/**
-	 * Interval zwischen 2 Betriebsmeldungen wegen fehlenden Parametern. Außerdem die Zeit, die mindestens vergangen sein muss, bis eie fehlender
+	 * Interval zwischen 2 Betriebsmeldungen wegen fehlenden Parametern. Außerdem die Zeit, die mindestens vergangen sein muss, bis ein fehlender
 	 * Parameterdatensatz gemeldet wird. Bei der Anpassung der Zeit muss möglicherweise der Wortlaut der Betriebsmeldung geändert werden.
 	 */
 	public static final int MessageSenderInterval = 60 * 1000;
@@ -67,22 +69,26 @@ public final class AccessControlManager implements RegionManager {
 	/** Ob das neue Datenmodell (siehe {@link de.bsvrz.dav.dav.util.accessControl.ExtendedUserInfo}) benutzt wird */
 	private final boolean _isUsingNewDataModel;
 
-	/** Callback, der Aufgerufen wird, wenn sich die Rechte eines Benutzers ändern */
-	private UserRightsChangeHandler _userRightsChangeHandler;
+	/** Callback, der aufgerufen wird, wenn sich die Rechte eines Benutzers ändern */
+	private final UserRightsChangeHandler _userRightsChangeHandler;
 
 	/** Ob implizite Benutzerverwaltung durchgeführt wird, oder Benutzer mit addUser erstellt werden müssen */
-	private boolean _useImplicitUserManagement;
+	private final boolean _useImplicitUserManagement;
 
 	private final Object _updateLock = new Object();
 
+	private final ReentrantReadWriteLock _userMapLock = new ReentrantReadWriteLock();
+
 	private HashBagMap<DataState, DataLoader> _oldObjectsWithMissingParameters;
+
+	private final LinkedBlockingQueue<Long> _notifyUserChangedQueue = new LinkedBlockingQueue<Long>();
 
 	/**
 	 * Erstellt eine neue Instanz des AccessControlManagers mit impliziter Benutzerverwaltung
 	 *
 	 * @param connection              Verbindung zum Datenverteiler
 	 * @param userRightsChangeHandler Klasse, die über Änderungen an den Benutzerrechten informiert werden soll. Das ist im allgemeinen der {@link
-	 *                                de.bsvrz.dav.dav.main.ConnectionsManager}, der bei sich ändernden Rechten eventuell ungültig gewordene Anmeldungen
+	 *                                de.bsvrz.dav.dav.main.HighLevelSubscriptionsManager}, der bei sich ändernden Rechten eventuell ungültig gewordene Anmeldungen
 	 *                                deaktiviert, kann aber für Testfälle und andere Anwendungen auch ein anderes (möglicherweise deutlich kleineres) Objekt
 	 *                                sein.
 	 * @param useNewDataModel         Sollen die neuen Zugriffsrechte benutzt werden?
@@ -97,7 +103,7 @@ public final class AccessControlManager implements RegionManager {
 	 *
 	 * @param connection                Verbindung zum Datenverteiler
 	 * @param userRightsChangeHandler   Klasse, die über Änderungen an den Benutzerrechten informiert werden soll. Das ist im allgemeinen der {@link
-	 *                                  de.bsvrz.dav.dav.main.ConnectionsManager}, der bei sich ändernden Rechten eventuell ungültig gewordene Anmeldungen
+	 *                                  de.bsvrz.dav.dav.main.HighLevelSubscriptionsManager}, der bei sich ändernden Rechten eventuell ungültig gewordene Anmeldungen
 	 *                                  deaktiviert, kann aber für Testfälle und andere Anwendungen auch ein anderes (möglicherweise deutlich kleineres) Objekt
 	 *                                  sein.
 	 * @param useImplicitUserManagement Wenn false, werden nur Benutzer berücksichtigt, die mit addUser und removeUser in diese Klasse eingefügt werden.<br> Wenn
@@ -124,6 +130,23 @@ public final class AccessControlManager implements RegionManager {
 		if(_isUsingNewDataModel) {
 			createParameterTimer();
 		}
+
+		Thread thread = new Thread("Aktualisierung Benutzerrechte"){
+			@Override
+			public void run() {
+				while(!interrupted()){
+					try {
+						Long userId = _notifyUserChangedQueue.take();
+						_userRightsChangeHandler.handleUserRightsChanged(userId);
+					}
+					catch(Exception e){
+						_debug.error("Fehler beim Ändern von Benutzerrechten", e);
+					}
+				}
+			}
+		};
+		thread.setDaemon(true);
+		thread.start();
 	}
 
 	private void createParameterTimer() {
@@ -211,7 +234,7 @@ public final class AccessControlManager implements RegionManager {
 	}
 
 	@Override
-	public synchronized String toString() {
+	public String toString() {
 		return "AccessControlManager{" + "_useImplicitUserManagement=" + _useImplicitUserManagement + ", _isUsingNewDataModel=" + _isUsingNewDataModel + '}';
 	}
 
@@ -221,19 +244,26 @@ public final class AccessControlManager implements RegionManager {
 	 *
 	 * @param userId BenutzerID
 	 */
-	public final synchronized void addUser(final long userId) {
+	public final void addUser(final long userId) {
 		if(_useImplicitUserManagement) return;
 		addUserInternal(userId);
 	}
 
-	private void addUserInternal(final long userId) {
-		UserInfoInternal userInfo = _userInfoHashMap.get(userId);
-		if(userInfo == null) {
-			userInfo = createUserInfo(userId);
-			_userInfoHashMap.put(userId, userInfo);
+	private UserInfo addUserInternal(final long userId) {
+		_userMapLock.writeLock().lock();
+		try{
+			UserInfoInternal userInfo = _userInfoHashMap.get(userId);
+			if(userInfo == null) {
+				userInfo = createUserInfo(userId);
+				_userInfoHashMap.put(userId, userInfo);
+			}
+			else {
+				userInfo.incrementReference();
+			}
+			return userInfo;
 		}
-		else {
-			userInfo.incrementReference();
+		finally {
+			_userMapLock.writeLock().unlock();
 		}
 	}
 
@@ -306,6 +336,7 @@ public final class AccessControlManager implements RegionManager {
 	 *
 	 * @return Region-Klasse die Abfragen auf eine Region ermöglicht
 	 */
+	@Override
 	public Region getRegion(final SystemObject systemObject) {
 		synchronized(_regionHashMap) {
 			Region region = _regionHashMap.get(systemObject);
@@ -344,17 +375,25 @@ public final class AccessControlManager implements RegionManager {
 	 *
 	 * @return Das geforderte UserInfo-Objekt
 	 */
-	public synchronized UserInfo getUser(final long userId) {
-		final UserInfoInternal userInfo = _userInfoHashMap.get(userId);
+	public UserInfo getUser(final long userId) {
+		UserInfoInternal userInfo;
+		_userMapLock.readLock().lock();
+		try {
+			userInfo = _userInfoHashMap.get(userId);
+		}
+		finally {
+			_userMapLock.readLock().unlock();
+		}
 		if(_useImplicitUserManagement && userInfo == null) {
-			addUserInternal(userId);
-			return _userInfoHashMap.get(userId);
+			// addUserInternal verwendet _userMapLock.writeLock(). Daher muss das readLock hier freigegeben worden sein,
+			return addUserInternal(userId);
 		}
 		return userInfo;
 	}
 
 	/**
-	 * Prüft ob ein Objekt wie eine Rolle oder eine Region von einem Objekt wie einem Benutzer oder einer Berechtigungsklasse referenziert wird.
+	 * Prüft ob ein Objekt wie eine Rolle oder eine Region von einem übergeordnetem Objekt wie einem Benutzer
+	 * oder einer Berechtigungsklasse referenziert wird.
 	 *
 	 * @param parent        Mögliches Vaterobjekt
 	 * @param possibleChild Möglichen Kindobjekt
@@ -372,48 +411,82 @@ public final class AccessControlManager implements RegionManager {
 	 *
 	 * @param userId BenutzerID
 	 */
-	public final synchronized void removeUser(final long userId) {
+	public final void removeUser(final long userId) {
 		if(_useImplicitUserManagement) return;
-		final UserInfoInternal user = _userInfoHashMap.get(userId);
-		if(user != null) {
-			user.decrementReference();
-			if(user.canBeSafelyDeleted()) {
-				user.stopDataListener();
-				_userInfoHashMap.remove(userId);
+		_userMapLock.writeLock().lock();
+		try {
+			final UserInfoInternal user = _userInfoHashMap.get(userId);
+			if(user != null) {
+				user.decrementReference();
+				if(user.canBeSafelyDeleted()) {
+					user.stopDataListener();
+					_userInfoHashMap.remove(userId);
+				}
 			}
+		}
+		finally {
+			_userMapLock.writeLock().unlock();
 		}
 	}
 
 	/**
 	 * Wird aufgerufen un dem AccessControlManager zu informieren, dass ein verwaltetes Objekt sich geändert hat. Der AccessControlManager wird daraufhin nach
-	 * Benutzer-Objekten suchen, die dieses Objekt verwenden und an den {@link de.bsvrz.dav.dav.main.AuthentificationManager} eine Benachrichtigung senden, dass
+	 * Benutzer-Objekten suchen, die dieses Objekt verwenden und an den {@link de.bsvrz.dav.dav.main.HighLevelSubscriptionsManager} eine Benachrichtigung senden, dass
 	 * sich die Rechte des Benutzers geändert haben und eventuelle vorhandene Anmeldungen entfernt werden müssen.
 	 *
 	 * @param object Objekt das sich geändert hat
 	 */
-	public synchronized void objectChanged(final DataLoader object) {
-		for(final UserInfoInternal userInfo : _userInfoHashMap.values()) {
-			if(userInfo instanceof DataLoader) {
-				final DataLoader userAsDataLoader = (DataLoader)userInfo;
-				if(isChildOf(userAsDataLoader, object)) {
-					_userRightsChangeHandler.handleUserRightsChanged(userInfo.getUserId());
+	@Override
+	public void objectChanged(final DataLoader object) {
+		final List<Long> affectedUserIds = new ArrayList<Long>();
+		_userMapLock.readLock().lock();
+		try {
+			for(final UserInfoInternal userInfo : _userInfoHashMap.values()) {
+				if(userInfo instanceof DataLoader) {
+					final DataLoader userAsDataLoader = (DataLoader) userInfo;
+					if(isChildOf(userAsDataLoader, object)) {
+						affectedUserIds.add(userInfo.getUserId());
+					}
 				}
 			}
 		}
+		finally {
+			_userMapLock.readLock().unlock();
+		}
+
+		// Im Falle das _userRightsChangeHandler der ConnectionsManager ist, synchronisiert dieser auf sich selber.
+		// Daher darf der folgende Code nicht im _userMapLock stehen, sonst wäre das als verschachteltes Locking sehr
+		// DeadLock-anfällig.
+
+		// Der Fall dass zwischenzeitlich die aktuellen Benutzer geändert worden sind, ist irrelevant
+		// da der Parameterdatenempfang asynchron stattfindet und daher sowieso keine festen Aussagen bzgl.
+		// der Reihenfolge der kritischen Aufrufe von addUser()/getUser()/removeUser() etc. und objectChanged() gemacht werden können.
+		// Benutzer, die während der Auführung dieser Zeilen angelegt werden besitzen bereits die neuen Parameterdaten
+		// und sind daher unkritisch. Benutzer die währenddessen gelöscht werden sind sowieso unerheblich,
+		// da diese sowieso gezwungen sind alle Anmeldungen zu entfernen und eine Aktualisierung wg. geänderter Rechte sinnlos wäre
+		for(Long affectedUserId : affectedUserIds) {
+			notifyUserRightsChangedAsync(affectedUserId);
+		}
+
+	}
+
+	private void notifyUserRightsChangedAsync(final Long affectedUserId) {
+		_notifyUserChangedQueue.add(affectedUserId);
 	}
 
 	/**
 	 * Wird aufgerufen un dem AccessControlManager zu informieren, dass ein Benutzer sich geändert hat. Der AccessControlManager wird daraufhin die referenzierten
-	 * Kindobjekte (Rollen, Regionen etc.) auf Rekursion überprüfen und an den {@link de.bsvrz.dav.dav.main.AuthentificationManager} eine Benachrichtigung senden,
+	 * Kindobjekte (Rollen, Regionen etc.) auf Rekursion überprüfen und an den {@link de.bsvrz.dav.dav.main.HighLevelSubscriptionsManager} eine Benachrichtigung senden,
 	 * dass sich die Rechte des Benutzers geändert haben und eventuelle vorhandene Anmeldungen entfernt werden müssen.
 	 *
 	 * @param userInfo Benutzerobjekt, das sich geändert hat
 	 */
-	synchronized void userChanged(final UserInfoInternal userInfo) {
+	void userChanged(final UserInfoInternal userInfo) {
 		if(userInfo instanceof DataLoader) {
 			final DataLoader userAsDataLoader = (DataLoader)userInfo;
 			enumerateChildren(userAsDataLoader); // Prüft auf Rekursion
-			_userRightsChangeHandler.handleUserRightsChanged(userInfo.getUserId()); // Nachricht an ConnectionsManager
+			long userId = userInfo.getUserId();
+			notifyUserRightsChangedAsync(userId); // Nachricht an ConnectionsManager
 		}
 	}
 
@@ -434,6 +507,7 @@ public final class AccessControlManager implements RegionManager {
 	 *
 	 * @return Objekt auf das Synchronisiert werden soll
 	 */
+	@Override
 	public Object getUpdateLock() {
 		return _updateLock;
 	}

@@ -33,7 +33,7 @@ import java.net.Socket;
  * Klasse zum Löschen von vergessenen Lockdatei
  *
  * @author Kappich Systemberatung
- * @version $Revision: 9722 $
+ * @version $Revision: 11481 $
  */
 public class RemoveLockFiles {
 
@@ -69,6 +69,7 @@ public class RemoveLockFiles {
 			_debug.info("Lock-Dateien der Konfiguration werden gelöscht");
 			File[] lockFiles = configDirectory.listFiles(
 					new FilenameFilter() {
+						@Override
 						public boolean accept(final File dir, final String name) {
 							return name.endsWith(".lock");
 						}
@@ -132,6 +133,7 @@ public class RemoveLockFiles {
 		/** Speicherreserve, die freigegeben wird, wenn ein Error auftritt, damit die Ausgaben nach einem OutOfMemoryError funktionieren */
 		private volatile byte[] _reserve = new byte[20000];
 
+		@Override
 		public void uncaughtException(Thread t, Throwable e) {
 			if(e instanceof Error) {
 				// Speicherreserve freigeben, damit die Ausgaben nach einem OutOfMemoryError funktionieren
@@ -151,7 +153,7 @@ public class RemoveLockFiles {
 				System.err.println("Laufzeitfehler: Ein Thread hat sich wegen einer Exception beendet:");
 				System.err.println(t);
 				e.printStackTrace(System.err);
-				_debug.warning("Laufzeitfehler: " + t + " hat sich wegen einer Exception beendet", e);
+				_debug.error("Laufzeitfehler: " + t + " hat sich wegen einer Exception beendet", e);
 			}
 		}
 	}

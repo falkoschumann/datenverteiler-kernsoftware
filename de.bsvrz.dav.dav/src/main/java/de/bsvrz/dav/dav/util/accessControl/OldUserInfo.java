@@ -25,24 +25,11 @@ import de.bsvrz.dav.daf.communication.dataRepresentation.AttributeValue;
 import de.bsvrz.dav.daf.communication.dataRepresentation.datavalue.ByteAttribute;
 import de.bsvrz.dav.daf.communication.lowLevel.telegrams.BaseSubscriptionInfo;
 import de.bsvrz.dav.daf.main.ClientDavInterface;
-import de.bsvrz.dav.daf.main.ClientReceiverInterface;
 import de.bsvrz.dav.daf.main.Data;
-import de.bsvrz.dav.daf.main.DataDescription;
 import de.bsvrz.dav.daf.main.DataState;
-import de.bsvrz.dav.daf.main.ReceiveOptions;
-import de.bsvrz.dav.daf.main.ReceiverRole;
 import de.bsvrz.dav.daf.main.ResultData;
-import de.bsvrz.dav.daf.main.config.Aspect;
-import de.bsvrz.dav.daf.main.config.AttributeGroup;
-import de.bsvrz.dav.daf.main.config.AttributeGroupUsage;
-import de.bsvrz.dav.daf.main.config.ConfigurationArea;
-import de.bsvrz.dav.daf.main.config.ConfigurationException;
-import de.bsvrz.dav.daf.main.config.ConfigurationObject;
+import de.bsvrz.dav.daf.main.config.*;
 import de.bsvrz.dav.daf.main.config.ObjectSet;
-import de.bsvrz.dav.daf.main.config.ObjectSetType;
-import de.bsvrz.dav.daf.main.config.ObjectTimeSpecification;
-import de.bsvrz.dav.daf.main.config.SystemObject;
-import de.bsvrz.dav.daf.main.config.SystemObjectType;
 import de.bsvrz.dav.daf.main.impl.config.DafDataModel;
 
 import java.util.*;
@@ -51,7 +38,7 @@ import java.util.*;
  * Verwaltet die Rechte eines Benutzers.
  *
  * @author Kappich Systemberatung
- * @version $Revision: 9726 $
+ * @version $Revision: 11671 $
  */
 public class OldUserInfo extends AbstractUserInfo {
 
@@ -90,9 +77,6 @@ public class OldUserInfo extends AbstractUserInfo {
 
 	private ArrayList<AuthenticationUnit> _authentificationUnits;
 
-	/** Flage zur Bereitschaftstatus */
-	private boolean _initComplete = false;
-
 	/** Erster Durchlauf */
 	private boolean _firstTime = true;
 
@@ -128,34 +112,25 @@ public class OldUserInfo extends AbstractUserInfo {
 	}
 
 	/** Id des Benutzers */
+	@Override
 	public final long getUserId() {
 		return _userId;
 	}
 
-	public ClientReceiverInterface getClassUpdater() {
-		return _updater;
-	}
-
 	void updateAuthenticationUnit(
-			final ResultData[] results, final SystemObject authenticationClass, final DataDescription authenticationClassDataDescription) {
+			final Data data) {
 		try {
-			for(ResultData result : results) {
-				if(!isValidResult(result)) continue;
-				_authentificationUnits.clear();
-				final Data data = result.getData();
-				_debug.fine("data = " + data);
-				final Data.Array roleRegionPairs = data.getArray("rollenRegionenPaare");
-				final int numberOfPairs = roleRegionPairs.getLength();
-				for(int i = 0; i < numberOfPairs; ++i) {
-					final Data roleRegionPair = roleRegionPairs.getItem(i);
-					ConfigurationObject role = (ConfigurationObject)roleRegionPair.getReferenceValue("rolle").getSystemObject();
-					ConfigurationObject region = (ConfigurationObject)roleRegionPair.getReferenceValue("region").getSystemObject();
-					if((role != null) && (region != null)) {
-						Region regionWrapper = new Region(getRegionObjects(region));
-						Activity activities[] = getRoleActivities(role);
-						AuthenticationUnit unit = new AuthenticationUnit(regionWrapper, activities);
-						_authentificationUnits.add(unit);
-					}
+			final Data.Array roleRegionPairs = data.getArray("rollenRegionenPaare");
+			final int numberOfPairs = roleRegionPairs.getLength();
+			for(int i = 0; i < numberOfPairs; ++i) {
+				final Data roleRegionPair = roleRegionPairs.getItem(i);
+				ConfigurationObject role = (ConfigurationObject)roleRegionPair.getReferenceValue("rolle").getSystemObject();
+				ConfigurationObject region = (ConfigurationObject)roleRegionPair.getReferenceValue("region").getSystemObject();
+				if((role != null) && (region != null)) {
+					Region regionWrapper = new Region(getRegionObjects(region));
+					Activity[] activities = getRoleActivities(role);
+					AuthenticationUnit unit = new AuthenticationUnit(regionWrapper, activities);
+					_authentificationUnits.add(unit);
 				}
 			}
 		}
@@ -164,7 +139,6 @@ public class OldUserInfo extends AbstractUserInfo {
 		}
 		finally {
 			synchronized(_userRightsChangeHandler) {
-				_initComplete = true;
 				_userRightsChangeHandler.notifyAll();
 				if(_firstTime) {
 					_firstTime = false;
@@ -194,22 +168,17 @@ public class OldUserInfo extends AbstractUserInfo {
 		return true;
 	}
 
+	@Override
 	public final boolean maySubscribeData(BaseSubscriptionInfo info, byte state) {
 		// Die folgenden 2 Zeilen werden gebraucht, damit der Dav nicht in der folgenden Schleife hängenbleibt.
 		// Mit dem alten Code war das kein größeres Problem, da damals _initComplete auch ohne Daten true war.
 		waitForInitialization();
 		if(getDataState() != DataState.DATA) return false;
 
-		synchronized(_userRightsChangeHandler) {
-			while(!_initComplete) {
-				try {
-					_userRightsChangeHandler.wait();
-				}
-				catch(InterruptedException ex) {
-					break;
-				}
-			}
+		if(_updater != null) {
+			_updater.waitForInitialization();
 		}
+
 		long id = info.getObjectID();
 		AttributeGroupUsage atgUsage = getConnection().getDataModel().getAttributeGroupUsage(info.getUsageIdentification());
 		if(atgUsage == null) return false;
@@ -230,22 +199,17 @@ public class OldUserInfo extends AbstractUserInfo {
 		return false;
 	}
 
+	@Override
 	public boolean maySubscribeData(final SystemObject object, final AttributeGroup attributeGroup, final Aspect aspect, final UserAction action) {
 		// Die folgenden 2 Zeilen werden gebraucht, damit der Dav nicht in der folgenden Schleife hängenbleibt.
 		// Mit dem alten Code war das kein größeres Problem, da damals _initComplete auch ohne Daten true war.
 		waitForInitialization();
 		if(getDataState() != DataState.DATA) return false;
 
-		synchronized(_userRightsChangeHandler) {
-			while(!_initComplete) {
-				try {
-					_userRightsChangeHandler.wait();
-				}
-				catch(InterruptedException ex) {
-					break;
-				}
-			}
+		if(_updater != null) {
+			_updater.waitForInitialization();
 		}
+
 		long id = object.getId();
 		long attributeGroupId = attributeGroup.getId();
 		long aspectId = aspect.getId();
@@ -260,7 +224,7 @@ public class OldUserInfo extends AbstractUserInfo {
 		}else if(action == UserAction.DRAIN){
 			state = 3;
 		}else{
-			throw new IllegalArgumentException("Unbekannte Aktion: " + action); 
+			throw new IllegalArgumentException("Unbekannte Aktion: " + action);
 		}
 
 
@@ -275,6 +239,7 @@ public class OldUserInfo extends AbstractUserInfo {
 		return false;
 	}
 
+	@Override
 	public boolean maySubscribeData(final BaseSubscriptionInfo info, final UserAction action) {
 		byte state;
 
@@ -292,11 +257,13 @@ public class OldUserInfo extends AbstractUserInfo {
 		return maySubscribeData(info, state);
 	}
 
+	@Override
 	public boolean mayCreateModifyRemoveObject(final ConfigurationArea area, final SystemObjectType type) {
 		// Die alte Benutzerverwaltung erlaubt kein Beschränken von Objekt-Aktionen
 		return true;
 	}
 
+	@Override
 	public boolean mayModifyObjectSet(final ConfigurationArea area, final ObjectSetType type) {
 		// Die alte Benutzerverwaltung erlaubt kein Beschränken von Veränderungen an Mengen
 		return true;
@@ -323,7 +290,7 @@ public class OldUserInfo extends AbstractUserInfo {
 	}
 
 	private Activity[] getRoleActivities(ConfigurationObject role) {
-		Activity activities[] = null;
+		Activity[] activities = null;
 		if(role != null) {
 			ObjectSet activitiesSet = role.getObjectSet(ROLE_ACTIVITIES_SET_NAME);
 			if(activitiesSet != null) {
@@ -467,10 +434,11 @@ public class OldUserInfo extends AbstractUserInfo {
 	}
 
 
+	@Override
 	public void stopDataListener() {
 		super.stopDataListener();
 		if(_updater != null) {
-			_updater.disable();
+			_updater.stopDataListener();
 		}
 	}
 
@@ -634,13 +602,13 @@ public class OldUserInfo extends AbstractUserInfo {
 		private Region _region;
 
 		/** Rolle/Aktivität */
-		private Activity _activities[];
+		private Activity[] _activities;
 
 		/**
 		 * @param region     Region
 		 * @param activities Alle Aktivitäten/Rollen. Wird eine leere Liste übergeben, wird {@link #isAllowed} immer <code>false</code> zurück geben.
 		 */
-		public AuthenticationUnit(Region region, Activity activities[]) {
+		public AuthenticationUnit(Region region, Activity[] activities) {
 			if(region == null) {
 				throw new IllegalArgumentException("Region Argument ist null");
 			}
@@ -664,6 +632,7 @@ public class OldUserInfo extends AbstractUserInfo {
 		}
 	}
 
+	@Override
 	protected void update(final Data data) {
 		final ConfigurationObject authenticationClass;
 		if(data != null) {
@@ -673,40 +642,30 @@ public class OldUserInfo extends AbstractUserInfo {
 			authenticationClass = null;
 		}
 		if(authenticationClass != null) {
-			// Dieser Thread meldet nur einen Empfänger an und wird dann beendet
-			Runnable runnable = new Runnable() {
-				public final void run() {
-					if(_updater == null) {
-						_updater = new AuthenticationClassUpdater(authenticationClass);
-					}
-					else {
-						if(!authenticationClass.equals(_updater.getAuthenticationClass())) {
-							_updater.disable();
-							_updater = new AuthenticationClassUpdater(authenticationClass);
-						}
-						else {
-						}
-					}
+			if(_updater == null) {
+				_updater = new AuthenticationClassUpdater(authenticationClass);
+			}
+			else {
+				if(!authenticationClass.equals(_updater.getAuthenticationClass())) {
+					_updater.stopDataListener();
+					_updater = new AuthenticationClassUpdater(authenticationClass);
 				}
-			};
-			(new Thread(runnable)).start();
+			}
 		}
 	}
 
 	@Override
 	protected List<DataLoader> getChildObjects() {
-		// Alle Kindobjekte werden direkt hier als Unterklassen gespeichert, keine Sonderbehandlung nötig
-		return new ArrayList<DataLoader>();
+		if(_updater != null) {
+			return Collections.<DataLoader>singletonList(_updater);
+		}
+		else {
+			return Collections.emptyList();
+		}
 	}
 
 
-	private class AuthenticationClassUpdater implements ClientReceiverInterface {
-
-		/** Die Authentificationsklasse */
-		private SystemObject authenticationClass;
-
-		/** Beschreibung der Authentifikationsanmeldedaten */
-		private DataDescription _dataDescription;
+	private class AuthenticationClassUpdater extends DataLoader {
 
 		/**
 		 * Meldet sich als Empfänger auf das Objekt an, das die Berechtigungsklasse für den Benutzer darstellt. Sobald es Änderungen gibt (Regionen und/oder Aktionen
@@ -715,63 +674,36 @@ public class OldUserInfo extends AbstractUserInfo {
 		 * @param _authenticationClass Datenverteilerobjekt, das eine Berechtigungsklasse darstellt.
 		 */
 		public AuthenticationClassUpdater(SystemObject _authenticationClass) {
-			try {
-				authenticationClass = _authenticationClass;
-				AttributeGroup attributeGroup = (AttributeGroup)getConnection().getDataModel().getObject(AUTHENTIFICATION_CLASS_ATTRIBUTE_GROUP_PID);
-				if(attributeGroup == null) {
-					return;
-				}
-				Aspect aspect = (Aspect)getConnection().getDataModel().getObject(AUTHENTIFICATION_CLASS_ASPECT_PID);
-				if(aspect == null) {
-					return;
-				}
-				_dataDescription = new DataDescription(attributeGroup, aspect);
-				getConnection().subscribeReceiver(
-						this, authenticationClass, _dataDescription, ReceiveOptions.normal(), ReceiverRole.receiver()
-				);
-			}
-			catch(ConfigurationException ex) {
-				ex.printStackTrace();
-				return;
-			}
+			super(OldUserInfo.this.getConnection(), AUTHENTIFICATION_CLASS_ATTRIBUTE_GROUP_PID, AUTHENTIFICATION_CLASS_ASPECT_PID, OldUserInfo.this);
+			startDataListener(_authenticationClass);
 		}
 
 		public final SystemObject getAuthenticationClass() {
-			return authenticationClass;
+			return getSystemObject();
 		}
 
-		/** Meldet sich als Empfänger von Änderungen auf Regionen/Aktionen ab. */
-		public final void disable() {
-			try {
-				getConnection().unsubscribeReceiver(
-						this, authenticationClass, _dataDescription
-				);
-			}
-			catch(ConfigurationException ex) {
-				ex.printStackTrace();
-				return;
-			}
+		@Override
+		public void deactivateInvalidChild(final DataLoader node) {
+			// Alte BenutzerInfo-Klasse unterstützt keine Rekursion, Implementierung nicht notwendig.
+			throw new UnsupportedOperationException("removeInvalidChild nicht implementiert");
 		}
 
-		/**
-		 * Aktualisierungsmethode, die nach Empfang eines angemeldeten Datensatzes von den Datenverteiler-Applikationsfunktionen aufgerufen wird. Diese Methode muss
-		 * von der Applikation zur Verarbeitung der empfangenen Datensätze implementiert werden.
-		 *
-		 * @param results Feld mit den empfangenen Ergebnisdatensätzen.
-		 */
-		public void update(ResultData[] results) {
-			if(results == null) {
-				return;
-			}
-			updateAuthenticationUnit(results, authenticationClass, _dataDescription);
+		@Override
+		protected void update(final Data data) {
+			updateAuthenticationUnit(data);
 		}
 
+		@Override
+		protected Collection<DataLoader> getChildObjects() {
+			// Alle Kindobjekte werden direkt hier als Unterklassen gespeichert, keine Sonderbehandlung nötig
+			return Collections.emptyList();
+		}
 
 		public final int hashCode() {
 			int result = 19;
 			long id = getUser().getId();
 			result = (41 * result) + (int)(id ^ (id >>> 32));
-			id = authenticationClass.getId();
+			id = getAuthenticationClass().getId();
 			result = (41 * result) + (int)(id ^ (id >>> 32));
 			return result;
 		}
@@ -782,7 +714,7 @@ public class OldUserInfo extends AbstractUserInfo {
 			}
 			if(obj instanceof AuthenticationClassUpdater) {
 				AuthenticationClassUpdater au = (AuthenticationClassUpdater)obj;
-				if((getAssociatedUserId() == au.getAssociatedUserId()) && (authenticationClass.getId() == au.authenticationClass.getId())) {
+				if((getAssociatedUserId() == au.getAssociatedUserId()) && (getAuthenticationClass().getId() == au.getAuthenticationClass().getId())) {
 					return true;
 				}
 			}

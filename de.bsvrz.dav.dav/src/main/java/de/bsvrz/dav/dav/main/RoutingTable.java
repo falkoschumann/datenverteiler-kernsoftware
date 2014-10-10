@@ -31,7 +31,7 @@ import java.util.*;
  * Die Klasse ist für die Weginformationsverwaltung zuständig. Sie stellt die Tabelle der Weginformationen dar.
  *
  * @author Kappich Systemberatung
- * @version $Revision: 8100 $
+ * @version $Revision: 11561 $
  */
 public class RoutingTable {
 
@@ -172,7 +172,7 @@ public class RoutingTable {
 	 * @param fromNodeId     ID eines Eintrags in routingTable
 	 * @param routingUpdates Gewichte der Wege zwischen dem aktuellen Datenverteiler und den Datenverteilern
 	 */
-	public void update(long fromNodeId, RoutingUpdate routingUpdates[]) {
+	public void update(long fromNodeId, RoutingUpdate[] routingUpdates) {
 		Long remoteNodeId = new Long(fromNodeId);
 		NodeInfo remoteNode = (NodeInfo)_idToNodeInfo.get(remoteNodeId);
 		if((remoteNode == null) || (remoteNode.getDirectConnection() == null)) {
@@ -195,7 +195,7 @@ public class RoutingTable {
 			if(throughputResistance >= 0) {
 				throughputResistance += remoteNode.getDirectConnection().getThroughputResistance();
 			}
-			long involvedTransmitterIds[] = routingUpdate.getInvolvedTransmitterIds();
+			long[] involvedTransmitterIds = routingUpdate.getInvolvedTransmitterIds();
 			int visitedNodesCount = 0;
 			if(involvedTransmitterIds != null) {
 				visitedNodesCount = involvedTransmitterIds.length;
@@ -486,7 +486,7 @@ public class RoutingTable {
 			return;
 		}
 
-		RoutingUpdate routingUpdates[] = new RoutingUpdate[size];
+		RoutingUpdate[] routingUpdates = new RoutingUpdate[size];
 		for(int i = 0; i < size; ++i) {
 			NodeInfo nodeInfo = (NodeInfo)list.get(i);
 			if(nodeInfo != null) {

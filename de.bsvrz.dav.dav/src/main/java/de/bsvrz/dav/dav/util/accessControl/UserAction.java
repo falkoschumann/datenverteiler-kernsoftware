@@ -28,8 +28,19 @@ package de.bsvrz.dav.dav.util.accessControl;
  */
 public enum UserAction {
 
-	RECEIVER,      // Daten lesen
-	SENDER,        // Daten schreiben
-	SOURCE,        // Daten als Quelle anmelden
-	DRAIN          // Daten als Senke anmelden
+	RECEIVER("Empfänger"),    // Daten lesen
+	SENDER("Sender"),         // Daten schreiben
+	SOURCE("Quelle"),         // Daten als Quelle anmelden
+	DRAIN("Senke")            // Daten als Senke anmelden
+	;
+	private final String _text;
+
+	private UserAction(final String text) {
+		_text = text;
+	}
+
+	@Override
+	public String toString() {
+		return _text;
+	}
 }

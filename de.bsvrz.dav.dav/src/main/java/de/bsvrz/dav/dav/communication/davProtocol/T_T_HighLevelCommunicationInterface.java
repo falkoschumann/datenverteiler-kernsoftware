@@ -22,8 +22,9 @@
 package de.bsvrz.dav.dav.communication.davProtocol;
 
 import de.bsvrz.dav.daf.communication.lowLevel.telegrams.DataTelegram;
-import de.bsvrz.dav.dav.main.ServerHighLevelCommunication;
 import de.bsvrz.dav.dav.main.RoutingConnectionInterface;
+import de.bsvrz.dav.dav.main.ServerHighLevelCommunication;
+import de.bsvrz.dav.dav.subscriptions.TransmitterCommunicationInterface;
 
 
 /**
@@ -31,9 +32,9 @@ import de.bsvrz.dav.dav.main.RoutingConnectionInterface;
  * Telegrammen von einem Datenverteiler zum Nächsten (DaV-DaV).
  *
  * @author Kappich Systemberatung
- * @version $Revision: 5068 $
+ * @version $Revision: 11481 $
  */
-public interface T_T_HighLevelCommunicationInterface extends ServerHighLevelCommunication, RoutingConnectionInterface {
+public interface T_T_HighLevelCommunicationInterface extends ServerHighLevelCommunication, RoutingConnectionInterface, TransmitterCommunicationInterface {
 
 	/**
 	 * Diese Methode wird von der Verbindungsverwaltung, der Zuliefererverwaltung und der Anmeldungsverwaltung aufgerufen. Sie sendet über die Telegrammverwaltung
@@ -50,5 +51,5 @@ public interface T_T_HighLevelCommunicationInterface extends ServerHighLevelComm
 	 *
 	 * @see #sendTelegram(de.bsvrz.dav.daf.communication.lowLevel.telegrams.DataTelegram)
 	 */
-	public void sendTelegrams(DataTelegram telegrams[]);
+	public void sendTelegrams(DataTelegram[] telegrams);
 }

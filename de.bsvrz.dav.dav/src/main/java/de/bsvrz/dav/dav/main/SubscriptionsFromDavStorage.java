@@ -30,7 +30,7 @@ import de.bsvrz.dav.daf.communication.lowLevel.telegrams.TransmitterDataSubscrip
  * Speichert alle Anmeldungen, die über eine Kommunikationsverbindung mit einem anderen Datenverteiler empfangen wurden.
  *
  * @author Kappich Systemberatung
- * @version $Revision: 7715 $
+ * @version $Revision: 11481 $
  */
 public class SubscriptionsFromDavStorage extends SubscriptionsFromRemoteStorage {
 
@@ -47,7 +47,7 @@ public class SubscriptionsFromDavStorage extends SubscriptionsFromRemoteStorage 
 		if(subscription == null) {
 			throw new IllegalArgumentException("Der Übergabeparameter ist null");
 		}
-		if(subscription.getSubscriptionState() != 0) {
+		if(subscription.getSubscriptionType() != 0) {
 			throw new IllegalArgumentException("Die Anmeldung ist keine Sendeanmeldung");
 		}
 		BaseSubscriptionInfo baseSubscriptionInfo = subscription.getBaseSubscriptionInfo();
@@ -78,7 +78,7 @@ public class SubscriptionsFromDavStorage extends SubscriptionsFromRemoteStorage 
 		if(subscription == null) {
 			throw new IllegalArgumentException("Der Übergabeparameter ist null");
 		}
-		if(subscription.getSubscriptionState() != 1) {
+		if(subscription.getSubscriptionType() != 1) {
 			throw new IllegalArgumentException("Die Anmeldung ist keine Empfangsanmeldung");
 		}
 		BaseSubscriptionInfo baseSubscriptionInfo = subscription.getBaseSubscriptionInfo();
@@ -122,6 +122,7 @@ public class SubscriptionsFromDavStorage extends SubscriptionsFromRemoteStorage 
 		return (TransmitterDataSubscription)sendSubscriptionTable.get(info);
 	}
 
+	@Override
 	final int getType() {
 		return T_T;
 	}

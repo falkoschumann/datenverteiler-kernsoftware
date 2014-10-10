@@ -37,11 +37,7 @@ import de.bsvrz.sys.funclib.debug.Debug;
 import de.bsvrz.sys.funclib.hexdump.HexDumper;
 
 import java.io.IOException;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * Dieses OSI-2 Modul kann anstelle eines TC57-Primary-Protokolls verwendet werden, um einen von anderer Stelle aktiv gepollten Inselbus passiv abzuhören und
@@ -49,7 +45,7 @@ import java.util.Properties;
  * Richtungen übertragenen Daten ausgibt.
  *
  * @author Kappich Systemberatung
- * @version $Revision: 9602 $
+ * @version $Revision: 10187 $
  */
 public class Wiretapper extends AbstractTc57 implements PropertyQueryInterface {
 
@@ -562,7 +558,7 @@ public class Wiretapper extends AbstractTc57 implements PropertyQueryInterface {
 		}
 
 		public String getProperty(String name) {
-			synchronized(_linkLock) {
+			synchronized(_linkPropertyLock) {
 				String value = (_properties == null) ? null : _properties.getProperty(name);
 				return (value == null) ? Wiretapper.this.getProperty(name) : value;
 			}
@@ -570,7 +566,9 @@ public class Wiretapper extends AbstractTc57 implements PropertyQueryInterface {
 
 		public void setProperties(Properties properties) {
 			synchronized(_linkLock) {
-				_properties = properties;
+				synchronized(_linkPropertyLock) {
+					_properties = properties;
+				}
 			}
 		}
 

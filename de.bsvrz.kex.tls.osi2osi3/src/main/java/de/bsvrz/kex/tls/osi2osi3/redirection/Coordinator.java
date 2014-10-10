@@ -37,8 +37,7 @@ import de.bsvrz.dav.daf.main.config.SystemObjectType;
 import de.bsvrz.kex.tls.osi2osi3.osi3.NetworkLayerSender;
 import de.bsvrz.sys.funclib.debug.Debug;
 
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.*;
 
 /**
  * Koordinator der OSI2/OSI3 Umleitung. 
@@ -48,7 +47,7 @@ import java.util.Collection;
  * 
  * 
  * @author Kappich Systemberatung
- * @version $Revision: 6839 $
+ * @version $Revision: 10172 $
  *
  */
 public class Coordinator {
@@ -146,7 +145,7 @@ public class Coordinator {
 	 * an den TelegramProcessor weiter. 
 	 * 
 	 * @author Kappich Systemberatung
-	 * @version $Revision: 6839 $
+	 * @version $Revision: 10172 $
 	 *
 	 */
 	private class Receiver implements ClientReceiverInterface {
@@ -157,20 +156,26 @@ public class Coordinator {
 		 * an den TelegramProcessor weitergegeben.
 		 */
 		public void update(ResultData[] results) {
-			for(ResultData resultData : results) {
-				Data data = resultData.getData();
-				
-				_debug.fine("Update für Objekt" + resultData.getObject().getNameOrPidOrId() + " für " +  resultData.getDataDescription());
-				_debug.fine("Datensatz erhalten: " + data);
-				
-				if(data!=null){
-					RedirectionInfo redirectionInfo = _wildcardProcessor.createRedirectionInfo(data);
-					_telegramProcessor.setRedirectionInfo(redirectionInfo);
-					redirectionInfo.printAllEntries();
+			try {
+				for(ResultData resultData : results) {
+					Data data = resultData.getData();
+
+					_debug.fine("Update für Objekt" + resultData.getObject().getNameOrPidOrId() + " für " +  resultData.getDataDescription());
+					_debug.fine("Datensatz erhalten: " + data);
+
+					if(data!=null){
+						RedirectionInfo redirectionInfo = _wildcardProcessor.createRedirectionInfo(data);
+						_telegramProcessor.setRedirectionInfo(redirectionInfo);
+						redirectionInfo.printAllEntries();
+					}
+					else {
+						_telegramProcessor.setRedirectionInfo(null);
+					}
 				}
-				else {
-					_telegramProcessor.setRedirectionInfo(null);
-				}
+			}
+			catch(Exception e) {
+				_debug.warning("Parameterdatensatz für OSI3-Weiterleitung konnte nicht ausgewertet werden", e);
+				
 			}
 		}
 	}

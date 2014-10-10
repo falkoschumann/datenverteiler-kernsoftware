@@ -36,7 +36,7 @@ import java.net.Socket;
  * Klasse zum Start des Datenverteilers ohne grafische Oberfläche.
  * 
  * @author Kappich Systemberatung
- * @version $Revision: 9716 $
+ * @version $Revision: 11549 $
  */
 public class Transmitter {
 	
@@ -44,11 +44,16 @@ public class Transmitter {
 	
 	public final static int _debugLevel = 0;
 	
-	private final ConnectionsManager _connectionsManager;
+	private final LowLevelConnectionsManagerInterface _connectionsManager;
 	
 	public Transmitter(String[] args) throws Exception {
 		ArgumentList arguments = new ArgumentList(args);
-		Debug.init("Datenverteiler", arguments);
+		String debugName = arguments.fetchArgument("-debugName=Datenverteiler").asString();
+		// debugname = "" heißt, es handelt sich um einen Datenverteiler der zusammen mit anderem Code im selben Prozess gestartet
+		// wird. Hier soll der Debug-Level, Debug-Name usw. nicht überschrieben werden.
+		if(debugName.length() > 0){
+			Debug.init(debugName, arguments);
+		}
 		_debug = Debug.getLogger();
 		Thread.setDefaultUncaughtExceptionHandler(new UncaughtExceptionHandler());
 		ServerDavParameters serverDavParameters = new ServerDavParameters(arguments);
@@ -68,6 +73,7 @@ public class Transmitter {
 				_debug.warning("Lock-Dateien werden gelöscht");
 				File[] lockFiles = removeLockFiles.listFiles(
 						new FilenameFilter() {
+							@Override
 							public boolean accept(final File dir, final String name) {
 								return name.endsWith(".lock");
 							}
@@ -82,9 +88,11 @@ public class Transmitter {
 				}
 			}
 		}
-		arguments.ensureAllArgumentsUsed();
+		if(debugName.length() > 0) {
+			arguments.ensureAllArgumentsUsed();
+		}
 		_debug.info("Datenverteiler wird gestartet");
-		_connectionsManager = new ConnectionsManager(serverDavParameters);
+		_connectionsManager = new LowLevelConnectionsManager(serverDavParameters);
 		_debug.info("Datenverteiler bereit");
 		if(_debugLevel > 0) {
 			BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
@@ -100,13 +108,13 @@ public class Transmitter {
 					System.exit(0);
 				}
 				else if(inputLine.startsWith("s")) {
-					_connectionsManager.printSubscriptions();
+//					_connectionsManager.printSubscriptions();
 				}
 			}
 		}
 	}
 	
-	ConnectionsManager getConnectionsManager() {
+	LowLevelConnectionsManagerInterface getConnectionsManager() {
 		return _connectionsManager;
 	}
 	
@@ -117,7 +125,11 @@ public class Transmitter {
 	 *            der CloseActionHandler
 	 */
 	public void setCloseHandler(ApplicationCloseActionHandler closer) {
-		getConnectionsManager().selfClientDavConnection.setCloseHandler(closer);
+		getConnectionsManager().getSelfClientDavConnection().getConnection().setCloseHandler(closer);
+	}
+
+	public void shutdown(final boolean error, final String message){
+		getConnectionsManager().shutdown(error, message);
 	}
 	
 	/**
@@ -133,6 +145,7 @@ public class Transmitter {
 		catch(Exception e) {
 			if(_debug == null) _debug = Debug.getLogger();
 			_debug.error("Fehler im Datenverteiler", e);
+			e.printStackTrace();
 			System.exit(1);
 		}
 	}
@@ -146,6 +159,7 @@ public class Transmitter {
 		/** Speicherreserve, die freigegeben wird, wenn ein Error auftritt, damit die Ausgaben nach einem OutOfMemoryError funktionieren */
 		private volatile byte[] _reserve = new byte[20000];
 
+		@Override
 		public void uncaughtException(Thread t, Throwable e) {
 			if(e instanceof Error) {
 				// Speicherreserve freigeben, damit die Ausgaben nach einem OutOfMemoryError funktionieren
@@ -165,7 +179,7 @@ public class Transmitter {
 				System.err.println("Laufzeitfehler: Ein Thread hat sich wegen einer Exception beendet:");
 				System.err.println(t);
 				e.printStackTrace(System.err);
-				_debug.warning("Laufzeitfehler: " + t + " hat sich wegen einer Exception beendet", e);
+				_debug.error("Laufzeitfehler: " + t + " hat sich wegen einer Exception beendet", e);
 			}
 		}
 	}

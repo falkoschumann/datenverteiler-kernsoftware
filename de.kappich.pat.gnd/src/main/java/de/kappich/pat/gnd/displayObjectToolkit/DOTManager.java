@@ -19,20 +19,21 @@
  */
 package de.kappich.pat.gnd.displayObjectToolkit;
 
+import de.bsvrz.sys.funclib.debug.Debug;
+import de.kappich.pat.gnd.gnd.PreferencesHandler;
 import de.kappich.pat.gnd.layerManagement.LayerManager;
 import de.kappich.pat.gnd.linePlugin.DOTLine;
 import de.kappich.pat.gnd.pluginInterfaces.DisplayObjectType;
-import de.kappich.pat.gnd.pluginInterfaces.DisplayObjectTypePlugin;
 import de.kappich.pat.gnd.pluginInterfaces.DisplayObjectType.DisplayObjectTypeItem;
+import de.kappich.pat.gnd.pluginInterfaces.DisplayObjectTypePlugin;
 import de.kappich.pat.gnd.pointPlugin.DOTPoint;
-import de.kappich.pat.gnd.pointPlugin.DOTPointPainter;
 import de.kappich.pat.gnd.pointPlugin.DOTPoint.PrimitiveForm;
 import de.kappich.pat.gnd.pointPlugin.DOTPoint.PrimitiveFormType;
+import de.kappich.pat.gnd.pointPlugin.DOTPointPainter;
 
-import de.bsvrz.sys.funclib.debug.Debug;
-
-import java.awt.Color;
-import java.awt.Font;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableModel;
+import java.awt.*;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -44,16 +45,13 @@ import java.util.Set;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
-import javax.swing.table.AbstractTableModel;
-import javax.swing.table.TableModel;
-
 /**
  * Der DOTManager verwaltet alle Darstellungstypen. Derzeit ist er als Singleton implementiert, um das
  * Problem der Kommunikation verschiedener Manager zu umgehen. Er ist auch ein TableModel, damit seine 
  * Inhalte im DOTManagerDialog angezeigt werden können.
  * 
  * @author Kappich Systemberatung
- * @version $Revision: 8076 $
+ * @version $Revision: 10225 $
  *
  */
 @SuppressWarnings("serial")
@@ -304,7 +302,8 @@ public class DOTManager extends AbstractTableModel implements TableModel {
 	 * @return gibt den Ausgangsknoten zum Abspeichern aller Präferenzen des DOTManagers zurück
 	 */
 	public static Preferences getPreferenceStartPath() {
-		return Preferences.userRoot().node( "de/kappich/pat/gnd/DOT");	// Einzige Stelle dieses Strings!
+		// return Preferences.userRoot().node( "de/kappich/pat/gnd/DOT");	// Einzige Stelle dieses Strings!
+		return PreferencesHandler.getInstance().getPreferenceStartPath().node("DOT");
 	}
 	
 	private static void storeFullClassNameLookup( final DisplayObjectType dot) {
@@ -645,7 +644,7 @@ public class DOTManager extends AbstractTableModel implements TableModel {
 	 * Ein Interface für Listener, die über Änderungen von Darstellungstypen informiert werden wollen.
 	 * 
 	 * @author Kappich Systemberatung
-	 * @version $Revision: 8076 $
+	 * @version $Revision: 10225 $
 	 *
 	 */
 	public interface DOTChangeListener {

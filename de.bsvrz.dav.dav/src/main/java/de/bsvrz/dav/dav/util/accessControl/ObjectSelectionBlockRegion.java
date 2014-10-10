@@ -21,7 +21,6 @@
 package de.bsvrz.dav.dav.util.accessControl;
 
 import java.util.Collection;
-import java.util.List;
 
 /**
  * Zusätzliches Interface für ObjectSelectionBlock-Klassen, die innere Regionen referenzieren (können)

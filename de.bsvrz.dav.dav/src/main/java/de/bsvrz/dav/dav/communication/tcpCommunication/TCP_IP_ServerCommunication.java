@@ -37,7 +37,7 @@ import de.bsvrz.dav.daf.communication.lowLevel.ServerConnectionInterface;
  * TCP/IP-Implementierung des Interfaces {@link de.bsvrz.dav.daf.communication.lowLevel.ServerConnectionInterface}.
  *
  * @author Kappich Systemberatung
- * @version $Revision: 7692 $
+ * @version $Revision: 11481 $
  */
 public class TCP_IP_ServerCommunication implements ServerConnectionInterface {
 
@@ -51,6 +51,7 @@ public class TCP_IP_ServerCommunication implements ServerConnectionInterface {
 	public TCP_IP_ServerCommunication() {
 	}
 
+	@Override
 	public void connect(int subAdressNumber) throws CommunicationError {
 		try {
 			_socket = new ServerSocket();
@@ -66,6 +67,7 @@ public class TCP_IP_ServerCommunication implements ServerConnectionInterface {
 		}
 	}
 
+	@Override
 	public void disconnect() {
 		try {
 			final ServerSocket mySocket = _socket;
@@ -80,6 +82,7 @@ public class TCP_IP_ServerCommunication implements ServerConnectionInterface {
 		}
 	}
 
+	@Override
 	public ConnectionInterface accept() {
 		try {
 			if(_socket != null) {
@@ -103,6 +106,7 @@ public class TCP_IP_ServerCommunication implements ServerConnectionInterface {
 		return null;
 	}
 
+	@Override
 	public ConnectionInterface getPlainConnection() {
 		return new TCP_IP_Communication();
 	}
@@ -111,6 +115,7 @@ public class TCP_IP_ServerCommunication implements ServerConnectionInterface {
 		return new TCP_IP_Communication(socket);
 	}
 
+	@Override
 	public String getPlainConnectionName() {
 		return TCP_IP_Communication.class.getName();
 	}

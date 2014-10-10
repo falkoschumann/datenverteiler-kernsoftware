@@ -34,7 +34,7 @@ import java.util.*;
  * Klasse TlsModel, die die Informationen zu den Tls-Geräten verwaltet.
  * 
  * @author Kappich Systemberatung
- * @version $Revision: 10067 $
+ * @version $Revision: 10172 $
  */
 public class TlsModel {
 	
@@ -189,7 +189,7 @@ public class TlsModel {
 	public TlsNode getTlsNode(final SystemObject systemObject) {
 		
 		final TlsNode tlsNode = _tlsDevices.get(systemObject);
-		if(tlsNode == null) throw new IllegalArgumentException("Das Systemobjekt muss vom Typ Gerät sein");
+		if(tlsNode == null) throw new IllegalArgumentException("Das Systemobjekt muss vom Typ Gerät sein: " + systemObject);
 		return tlsNode;
 	}
 

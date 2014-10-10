@@ -26,10 +26,12 @@ import de.bsvrz.dav.daf.communication.lowLevel.AuthentificationProcess;
 import java.util.*;
 
 /**
- * Diese Klasse enhält die Komponenten zur Authentifizierung eines Benutzers/Applikation.
+ * Diese Klasse enthält die Komponenten zur Authentifizierung eines Benutzers/Applikation.
+ *
+ * TBD: Authentification ist kein englisches Wort. Umbenennen in Authentication?
  *
  * @author Kappich Systemberatung
- * @version $Revision: 5068 $
+ * @version $Revision: 11481 $
  */
 public class AuthentificationComponent {
 
@@ -92,12 +94,12 @@ public class AuthentificationComponent {
 	 *
 	 * @see {@link #getAuthentificationText(String)}
 	 */
-	synchronized final boolean authentify(String applicationName, String password, byte encryptedRandomText[]) {
+	synchronized final boolean authentify(String applicationName, String password, byte[] encryptedRandomText) {
 		boolean success = false;
 		if(encryptedRandomText != null) {
 			String text = _table.get(applicationName);
 			if((text != null) && (_authentificationProcess != null)) {
-				byte _encriptedPassword[] = _authentificationProcess.encrypt(password, text);
+				byte[] _encriptedPassword = _authentificationProcess.encrypt(password, text);
 				if(_encriptedPassword != null) {
 					if(Arrays.equals(encryptedRandomText, _encriptedPassword)) {
 						success = true;

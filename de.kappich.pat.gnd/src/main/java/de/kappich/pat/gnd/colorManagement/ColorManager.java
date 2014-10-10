@@ -19,9 +19,10 @@
  */
 package de.kappich.pat.gnd.colorManagement;
 
+import de.kappich.pat.gnd.gnd.PreferencesHandler;
 import de.kappich.pat.gnd.viewManagement.ViewManager;
 
-import java.awt.Color;
+import java.awt.*;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -33,7 +34,7 @@ import java.util.prefs.Preferences;
  * Die Farbenverwaltung verwaltet die verfügbaren Farben.
  * 
  * @author Kappich Systemberatung
- * @version $Revision: 8094 $
+ * @version $Revision: 10225 $
  *
  */
 public class ColorManager {
@@ -175,7 +176,9 @@ public class ColorManager {
 	}
 	
 	private static Preferences getPreferenceStartPath() {
-		return Preferences.userRoot().node("de/kappich/pat/gnd/Color");
+		// alter Code
+		// return Preferences.userRoot().node("de/kappich/pat/gnd/Color");
+		return PreferencesHandler.getInstance().getPreferenceStartPath().node("Color");
 	}
 	
 	private void putPreference( Preferences prefs, String name, Color color) {

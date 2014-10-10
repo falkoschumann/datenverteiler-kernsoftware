@@ -66,7 +66,7 @@ import java.util.Map;
  * Datensätze)
  *
  * @author Kappich Systemberatung
- * @version $Revision: 8953 $
+ * @version $Revision: 11487 $
  */
 public class DavTransactionManager {
 
@@ -74,7 +74,7 @@ public class DavTransactionManager {
 
 	private final ClientDavConnection _connection;
 
-	private final SubscriptionsManagerTransactionInterface _subscriptionsManager;
+	private final TelegramManagerTransactionInterface _telegramManager;
 
 	private final Map<Long, AttributeGroupUsage> _transactionAttributeGroupUsages;
 
@@ -88,11 +88,6 @@ public class DavTransactionManager {
 	 */
 	private final Map<Subscription, List<Subscription>> _drainSubscriptions = new HashMap<Subscription, List<Subscription>>();
 
-	/**
-	 * Tabelle, in der der zuletzt verwendete Datenindex für den Versand von Datensätzen pro Anmeldung gespeichert wird.
-	 */
-	private final Map<Subscription, Long> _dataIndexTable = new HashMap<Subscription, Long>();
-
 	private final boolean _disabled;
 
 	private final Map<Subscription, InnerTransactionDataSender> _myOwnDataSources = new HashMap<Subscription, InnerTransactionDataSender>();
@@ -102,11 +97,11 @@ public class DavTransactionManager {
 	/**
 	 * Erstellt einen neuen DavTransactionManager
 	 * @param connection Verbindung zum Datenverteiler
-	 * @param subscriptionsManager SubscriptionsManager
+	 * @param telegramManager SubscriptionsManager
 	 */
-	public DavTransactionManager(final ClientDavConnection connection, final SubscriptionsManagerTransactionInterface subscriptionsManager) {
+	public DavTransactionManager(final ClientDavConnection connection, final TelegramManagerTransactionInterface telegramManager) {
 		_connection = connection;
-		_subscriptionsManager = subscriptionsManager;
+		_telegramManager = telegramManager;
 		final SystemObjectType transactionType = _connection.getDataModel().getType("typ.transaktion");
 		if(transactionType == null){
 			_debug.warning("Der Typ für Transaktionsattributgruppen wurde nicht gefunden. Transaktionen sind deaktiviert.");
@@ -134,27 +129,27 @@ public class DavTransactionManager {
 	 * @param telegrams Liste mit zusammengehörigen Telegrammen, die einen Datensatz darstellen
 	 * @param isSource  Kommt der Datensatz von der lokalen Quelle? (Sonst lokale Senke)
 	 *
-	 * @return true wenn die Telegramme verändert wurden, sonst false
+	 * @return eine neue Liste mit Telegrammen wenn diese verändert wurden, sonst der telegrams-parameter.
 	 */
-	public boolean handleTelegram(final ApplicationDataTelegram[] telegrams, final boolean isSource) {
-		if(_disabled) return false;
-		final BaseSubscriptionInfo baseSubscriptionInfo = telegrams[0].getBaseSubscriptionInfo();
+	public List<ApplicationDataTelegram> handleTelegrams(final List<ApplicationDataTelegram> telegrams, final boolean isSource) {
+		if(_disabled) return telegrams;
+		final BaseSubscriptionInfo baseSubscriptionInfo = telegrams.get(0).getBaseSubscriptionInfo();
 		final AttributeGroupUsage attributeGroupUsage = _transactionAttributeGroupUsages.get(baseSubscriptionInfo.getUsageIdentification());
 		if(attributeGroupUsage == null) {
 			// Nicht in HashMap, es ist also keine Transaktion
-			return false;
+			return telegrams;
 		}
 		final AttributeGroup attributeGroup = attributeGroupUsage.getAttributeGroup();
-		final SendDataObject sendDataObject = TelegramUtility.getSendDataObject(telegrams);
+		final SendDataObject sendDataObject = TelegramUtility.getSendDataObject(telegrams.toArray(new ApplicationDataTelegram[telegrams.size()]));
 		if(sendDataObject.getErrorFlag() == 0) {
 			final Data data = DataFactory.forVersion(1).createUnmodifiableData(attributeGroup, sendDataObject.getData()).createModifiableCopy();
 			for(final Data dataset : data.getItem("Transaktion").getItem("Datensatz")) {
 				handleDataset(dataset, baseSubscriptionInfo.getSimulationVariant(), isSource);
 			}
 			final ApplicationDataTelegram[] changedTelegrams = dataToTelegrams(sendDataObject, data);
-			System.arraycopy(changedTelegrams, 0, telegrams, 0, changedTelegrams.length);
+			return Collections.unmodifiableList(Arrays.asList(changedTelegrams));
 		}
-		return true;
+		return telegrams;
 	}
 
 	/**
@@ -170,19 +165,23 @@ public class DavTransactionManager {
 		final Aspect aspect = (Aspect)dataIdentification.getReferenceValue("Aspekt").getSystemObject();
 		final long dataTime = dataset.getTimeValue("Datenzeit").getMillis();
 		final byte[] dataBytes = dataset.getUnscaledArray("Daten").getByteArray();
-		final long dataIndex = getDataIndex(new Subscription(object, attributeGroup, aspect, simulationVariant));
+
+		final long dataIndex = _telegramManager.getNextDataIndex(
+				new Subscription(object, attributeGroup, aspect, simulationVariant).getBaseSubscriptionInfo()
+		);
 		dataset.getUnscaledValue("Datenindex").set(dataIndex);
 		if(isSource) {
 			// Wenn Quelle, innere Datensätze zusätzlich selbst verschicken
 			final BaseSubscriptionInfo info = new BaseSubscriptionInfo(
 					object.getId(), attributeGroup.getAttributeGroupUsage(aspect).getId(), simulationVariant
 			);
-			_subscriptionsManager.sendTelegramsAsCentralDistributor(
-					true, applicationTelegramsToTransmitterTelegrams(
+
+			_telegramManager.sendTelegramsFromTransaction(
+					true,
 					createTelegramsFromBytes(
-							dataBytes, info, false, dataIndex, dataTime, (byte)0, null
+							dataBytes.length == 0 ? null : dataBytes, info, false, dataIndex, dataTime,
+							dataBytes.length == 0 ? (byte) 1 : (byte) 0, null
 					)
-			)
 			);
 		}
 	}
@@ -223,40 +222,6 @@ public class DavTransactionManager {
 			transmitterDataTelegrams[i] = new TransmitterDataTelegram(applicationDataTelegrams[i], (byte)1);
 		}
 		return transmitterDataTelegrams;
-	}
-
-	/**
-	 * Gibt den nächsten Datenindex für eine Anmeldung zurück
-	 *
-	 * @param subscription Anmeldung
-	 *
-	 * @return DatenIndex
-	 */
-	private long getDataIndex(final Subscription subscription) {
-		long time;
-		int dataNumber;
-		try {
-			// Hier könnte man eigentlich erst 1 annehmen und dann den Wert aus der Hashmap inkrementieren und nehmen,
-			// allerdings sendet der Datenverteiler auch selbstständig Pakete für diese Identifikation, sodass hier immer der nächste Index abgefragt werden muss.
-			dataNumber = _subscriptionsManager.getDataIndexIndex(
-					subscription.getBaseSubscriptionInfo()
-			);
-			final Long indexInTable = _dataIndexTable.get(subscription);
-			if(indexInTable == null) {
-				time = (System.currentTimeMillis() / 1000) & 0xFFFFFFFFL;
-			}
-			else {
-				time = indexInTable >> 32;
-			}
-		}
-		catch(ArithmeticException ignored) {
-			// Bei einem Index > 0x3FFFFFFF wieder auf 1 setzen und neue Zeit generieren
-			dataNumber = 1;
-			time = (System.currentTimeMillis() / 1000) & 0xFFFFFFFFL;
-		}
-		final long newIndex = time << 32 | dataNumber << 2;
-		_dataIndexTable.put(subscription, newIndex);
-		return newIndex;
 	}
 
 	/**
@@ -346,10 +311,6 @@ public class DavTransactionManager {
 						sender, subscription.getObject(), subscription.getDataDescription(), SenderRole.source()
 				);
 				_myOwnDataSources.put(subscription, sender);
-
-				// Hier wird schon vorher in den _dataIndexTable ein Zeitstempel eingefügt, damit der Zeitstempel des Datenindex nachher identisch ist, egal ob
-				// der Datenverteiler Datensätze sendet, oder diese hier manuell generiert werden
-				_dataIndexTable.put(subscription, (long)_connection.getTimeStampFromSenderSubscription(subscription.getBaseSubscriptionInfo()) << 32);
 			}
 		}
 		catch(OneSubscriptionPerSendData e) {
@@ -691,9 +652,11 @@ public class DavTransactionManager {
 	 */
 	private static class InnerTransactionDataSender implements ClientSenderInterface {
 
+		@Override
 		public void dataRequest(final SystemObject object, final DataDescription dataDescription, final byte state) {
 		}
 
+		@Override
 		public boolean isRequestSupported(final SystemObject object, final DataDescription dataDescription) {
 			return false;
 		}
@@ -712,6 +675,7 @@ public class DavTransactionManager {
 			_transactionSubscription = transactionSubscription;
 		}
 
+		@Override
 		public void update(final ResultData[] results) {
 			if(_transactionSubscription == null) return;
 			for(final ResultData result : results) {
