@@ -10,7 +10,7 @@
     <packaging>pom</packaging>
 
     <name>Kernsoftware</name>
-    <url>http://falkoschumann.github.io/datenverteiler-kernsoftware</url>
+    <url>https://github.com/falkoschumann/datenverteiler-kernsoftware</url>
     <organization>
         <name>NERZ e.V.</name>
         <url>http://www.nerz-ev.de</url>
@@ -47,7 +47,7 @@
         <site>
             <id>github.pages</id>
             <name>GitHub Pages</name>
-            <url>scm:git:https://github.com/falkoschumann/datenverteiler-kernsoftware.git</url>
+            <url>http://falkoschumann.github.io/datenverteiler-kernsoftware/</url>
         </site>
     </distributionManagement>
 
@@ -160,6 +160,29 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-site-plugin</artifactId>
                 <version>3.4</version>
+                <configuration>
+                    <skipDeploy>true</skipDeploy>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>com.github.github</groupId>
+                <artifactId>site-maven-plugin</artifactId>
+                <version>0.9</version>
+                <configuration>
+                    <server>github</server>
+                    <repositoryName>datenverteiler-kernsoftware</repositoryName>
+                    <repositoryOwner>falkoschumann</repositoryOwner>
+                    <outputDirectory>${stagingDirectory}</outputDirectory>
+                    <message>Projektseite erzeugt für Version ${project.version}</message>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>site</goal>
+                        </goals>
+                        <phase>site-deploy</phase>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
         <extensions>
