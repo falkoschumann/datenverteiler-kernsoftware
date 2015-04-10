@@ -1,0 +1,1076 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+-->
+<rss version="0.91">
+  <channel>
+    <title>PAT Systembedienung - Checkstyle report</title>
+    <link>https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.pat.sysbed</link>
+    <description>PAT Systembedienung - Checkstyle report</description>
+    <language>en-us</language>
+    <copyright>&#169;2015 NERZ e.V.</copyright>
+    <item>
+      <title>File: 73,
+             Errors: 0,
+             Warnings: 108,
+             Infos: 0
+      </title>
+            <link>https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.pat.sysbed/checkstyle.html</link>
+      <description>
+        <p>Click <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.pat.sysbed/checkstyle.html">here</a> for the full Checkstyle report.</p>
+
+        <table summary="Files" boder="1">
+          <thead>
+            <tr>
+              <th>Files</th>
+              <th style="width:30px;"><abbr title="Info">I</abbr></th>
+              <th style="width:30px;"><abbr title="Warning">W</abbr></th>
+              <th style="width:30px;"><abbr title="Error">E</abbr></th>
+            </tr>
+          </thead>
+          <tbody>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.pat.sysbed/checkstyle.html#de.bsvrz.pat.sysbed.plugins.subscriptions.AppSubscriptionsPanel.java">de/bsvrz/pat/sysbed/plugins/subscriptions/AppSubscriptionsPanel.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  1
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.pat.sysbed/checkstyle.html#de.bsvrz.pat.sysbed.preselection.util.SortUtil.java">de/bsvrz/pat/sysbed/preselection/util/SortUtil.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.pat.sysbed/checkstyle.html#de.bsvrz.pat.sysbed.plugins.parameditor.ParameterEditor.java">de/bsvrz/pat/sysbed/plugins/parameditor/ParameterEditor.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  3
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.pat.sysbed/checkstyle.html#de.bsvrz.pat.sysbed.dataview.DataViewFrame.java">de/bsvrz/pat/sysbed/dataview/DataViewFrame.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.pat.sysbed/checkstyle.html#de.bsvrz.pat.sysbed.dataview.DataViewListener.java">de/bsvrz/pat/sysbed/dataview/DataViewListener.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.pat.sysbed/checkstyle.html#de.bsvrz.pat.sysbed.preselection.tree.PreselectionTreeListener.java">de/bsvrz/pat/sysbed/preselection/tree/PreselectionTreeListener.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.pat.sysbed/checkstyle.html#de.bsvrz.pat.sysbed.preselection.lists.PreselectionListsListener.java">de/bsvrz/pat/sysbed/preselection/lists/PreselectionListsListener.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.pat.sysbed/checkstyle.html#de.bsvrz.pat.sysbed.plugins.api.DialogInterface.java">de/bsvrz/pat/sysbed/plugins/api/DialogInterface.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.pat.sysbed/checkstyle.html#de.bsvrz.pat.sysbed.dataview.RowElement.java">de/bsvrz/pat/sysbed/dataview/RowElement.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.pat.sysbed/checkstyle.html#de.bsvrz.pat.sysbed.plugins.api.ExternalModuleAdapter.java">de/bsvrz/pat/sysbed/plugins/api/ExternalModuleAdapter.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.pat.sysbed/checkstyle.html#de.bsvrz.pat.sysbed.dataview.CellKey.java">de/bsvrz/pat/sysbed/dataview/CellKey.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  1
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.pat.sysbed/checkstyle.html#de.bsvrz.pat.sysbed.plugins.parameditor.ParameterChangeInformer.java">de/bsvrz/pat/sysbed/plugins/parameditor/ParameterChangeInformer.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.pat.sysbed/checkstyle.html#de.bsvrz.pat.sysbed.main.GenericTestMonitorApplication.java">de/bsvrz/pat/sysbed/main/GenericTestMonitorApplication.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  1
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.pat.sysbed/checkstyle.html#de.bsvrz.pat.sysbed.dataview.PrintFrame.java">de/bsvrz/pat/sysbed/dataview/PrintFrame.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.pat.sysbed/checkstyle.html#de.bsvrz.pat.sysbed.plugins.datareceiver.ShowCurrentDataModule.java">de/bsvrz/pat/sysbed/plugins/datareceiver/ShowCurrentDataModule.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  1
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.pat.sysbed/checkstyle.html#de.bsvrz.pat.sysbed.preselection.treeFilter.standard.Filter.java">de/bsvrz/pat/sysbed/preselection/treeFilter/standard/Filter.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  2
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.pat.sysbed/checkstyle.html#de.bsvrz.pat.sysbed.plugins.datasender.SendCurrentDataModule.java">de/bsvrz/pat/sysbed/plugins/datasender/SendCurrentDataModule.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  1
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.pat.sysbed/checkstyle.html#de.bsvrz.pat.sysbed.dataview.DataViewModel.java">de/bsvrz/pat/sysbed/dataview/DataViewModel.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.pat.sysbed/checkstyle.html#de.bsvrz.pat.sysbed.dataEditor.DatasetEditorFrame.java">de/bsvrz/pat/sysbed/dataEditor/DatasetEditorFrame.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  2
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.pat.sysbed/checkstyle.html#de.bsvrz.pat.sysbed.plugins.api.ExternalModule.java">de/bsvrz/pat/sysbed/plugins/api/ExternalModule.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.pat.sysbed/checkstyle.html#de.bsvrz.pat.sysbed.dataview.CellKeyColumn.java">de/bsvrz/pat/sysbed/dataview/CellKeyColumn.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.pat.sysbed/checkstyle.html#de.bsvrz.pat.sysbed.plugins.api.settings.SettingsData.java">de/bsvrz/pat/sysbed/plugins/api/settings/SettingsData.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.pat.sysbed/checkstyle.html#de.bsvrz.pat.sysbed.dataview.ArchiveDataTableView.java">de/bsvrz/pat/sysbed/dataview/ArchiveDataTableView.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  1
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.pat.sysbed/checkstyle.html#de.bsvrz.pat.sysbed.dataview.selectionManagement.SelectionListener.java">de/bsvrz/pat/sysbed/dataview/selectionManagement/SelectionListener.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.pat.sysbed/checkstyle.html#de.bsvrz.pat.sysbed.dataview.UnsubscribingJFrame.java">de/bsvrz/pat/sysbed/dataview/UnsubscribingJFrame.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.pat.sysbed/checkstyle.html#de.bsvrz.pat.sysbed.dataview.DataViewPanel.java">de/bsvrz/pat/sysbed/dataview/DataViewPanel.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  9
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.pat.sysbed/checkstyle.html#de.bsvrz.pat.sysbed.plugins.subscriptions.AppSubscriptionInfoFrame.java">de/bsvrz/pat/sysbed/plugins/subscriptions/AppSubscriptionInfoFrame.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  1
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.pat.sysbed/checkstyle.html#de.bsvrz.pat.sysbed.main.ApplicationInterface.java">de/bsvrz/pat/sysbed/main/ApplicationInterface.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.pat.sysbed/checkstyle.html#de.bsvrz.pat.sysbed.preselection.tree.TreeNodeObject.java">de/bsvrz/pat/sysbed/preselection/tree/TreeNodeObject.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.pat.sysbed/checkstyle.html#de.bsvrz.pat.sysbed.dataview.DataTableObjectRenderer.java">de/bsvrz/pat/sysbed/dataview/DataTableObjectRenderer.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  5
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.pat.sysbed/checkstyle.html#de.bsvrz.pat.sysbed.plugins.subscriptions.ShowSubscriptionInfo.java">de/bsvrz/pat/sysbed/plugins/subscriptions/ShowSubscriptionInfo.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.pat.sysbed/checkstyle.html#de.bsvrz.pat.sysbed.dataview.Dataset.java">de/bsvrz/pat/sysbed/dataview/Dataset.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  4
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.pat.sysbed/checkstyle.html#de.bsvrz.pat.sysbed.plugins.api.ButtonBar.java">de/bsvrz/pat/sysbed/plugins/api/ButtonBar.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.pat.sysbed/checkstyle.html#de.bsvrz.pat.sysbed.plugins.configdata.ConfigurationDataModule.java">de/bsvrz/pat/sysbed/plugins/configdata/ConfigurationDataModule.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  1
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.pat.sysbed/checkstyle.html#de.bsvrz.pat.sysbed.preselection.lists.PreselectionListsHandler.java">de/bsvrz/pat/sysbed/preselection/lists/PreselectionListsHandler.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  5
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.pat.sysbed/checkstyle.html#de.bsvrz.pat.sysbed.plugins.onlinetable.OnlineTableModule.java">de/bsvrz/pat/sysbed/plugins/onlinetable/OnlineTableModule.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  2
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.pat.sysbed/checkstyle.html#de.bsvrz.pat.sysbed.preselection.lists.SystemObjectList.java">de/bsvrz/pat/sysbed/preselection/lists/SystemObjectList.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.pat.sysbed/checkstyle.html#de.bsvrz.pat.sysbed.dataview.RowKey.java">de/bsvrz/pat/sysbed/dataview/RowKey.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.pat.sysbed/checkstyle.html#de.bsvrz.pat.sysbed.plugins.subscriptions.SubscriptionInfoFrame.java">de/bsvrz/pat/sysbed/plugins/subscriptions/SubscriptionInfoFrame.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  1
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.pat.sysbed/checkstyle.html#de.bsvrz.pat.sysbed.plugins.parameditor.ParameterControllerInterface.java">de/bsvrz/pat/sysbed/plugins/parameditor/ParameterControllerInterface.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.pat.sysbed/checkstyle.html#de.bsvrz.pat.sysbed.plugins.datgen.DatGenModule.java">de/bsvrz/pat/sysbed/plugins/datgen/DatGenModule.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  3
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.pat.sysbed/checkstyle.html#de.bsvrz.pat.sysbed.plugins.subscriptions.SubscriptionsPanel.java">de/bsvrz/pat/sysbed/plugins/subscriptions/SubscriptionsPanel.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  2
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.pat.sysbed/checkstyle.html#de.bsvrz.pat.sysbed.dataview.selectionManagement.CellKeyServer.java">de/bsvrz/pat/sysbed/dataview/selectionManagement/CellKeyServer.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.pat.sysbed/checkstyle.html#de.bsvrz.pat.sysbed.preselection.treeFilter.plugins.api.ExtendedFilter.java">de/bsvrz/pat/sysbed/preselection/treeFilter/plugins/api/ExtendedFilter.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.pat.sysbed/checkstyle.html#de.bsvrz.pat.sysbed.plugins.api.settings.KeyValueObject.java">de/bsvrz/pat/sysbed/plugins/api/settings/KeyValueObject.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.pat.sysbed/checkstyle.html#de.bsvrz.pat.sysbed.preselection.panel.PreselectionDialog.java">de/bsvrz/pat/sysbed/preselection/panel/PreselectionDialog.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  5
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.pat.sysbed/checkstyle.html#de.bsvrz.pat.sysbed.dataview.CreateMenuBar.java">de/bsvrz/pat/sysbed/dataview/CreateMenuBar.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  4
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.pat.sysbed/checkstyle.html#de.bsvrz.pat.sysbed.plugins.api.OutputOptionsPanel.java">de/bsvrz/pat/sysbed/plugins/api/OutputOptionsPanel.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  1
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.pat.sysbed/checkstyle.html#de.bsvrz.pat.sysbed.main.SelectionModel.java">de/bsvrz/pat/sysbed/main/SelectionModel.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.pat.sysbed/checkstyle.html#de.bsvrz.pat.sysbed.PackageRuntimeInfo.java">de/bsvrz/pat/sysbed/PackageRuntimeInfo.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.pat.sysbed/checkstyle.html#de.bsvrz.pat.sysbed.dataview.RowData.java">de/bsvrz/pat/sysbed/dataview/RowData.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  4
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.pat.sysbed/checkstyle.html#de.bsvrz.pat.sysbed.plugins.api.DataIdentificationChoice.java">de/bsvrz/pat/sysbed/plugins/api/DataIdentificationChoice.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  1
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.pat.sysbed/checkstyle.html#de.bsvrz.pat.sysbed.dataEditor.DataEditorPanel.java">de/bsvrz/pat/sysbed/dataEditor/DataEditorPanel.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  6
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.pat.sysbed/checkstyle.html#de.bsvrz.pat.sysbed.dataview.CSVManager.java">de/bsvrz/pat/sysbed/dataview/CSVManager.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  2
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.pat.sysbed/checkstyle.html#de.bsvrz.pat.sysbed.plugins.archiverequest.StreamBasedArchiveRequestModule.java">de/bsvrz/pat/sysbed/plugins/archiverequest/StreamBasedArchiveRequestModule.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  9
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.pat.sysbed/checkstyle.html#de.bsvrz.pat.sysbed.main.GenericTestMonitor.java">de/bsvrz/pat/sysbed/main/GenericTestMonitor.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  2
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.pat.sysbed/checkstyle.html#de.bsvrz.pat.sysbed.dataview.RowPanel.java">de/bsvrz/pat/sysbed/dataview/RowPanel.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.pat.sysbed/checkstyle.html#de.bsvrz.pat.sysbed.dataview.ColumnWidthChangeListener.java">de/bsvrz/pat/sysbed/dataview/ColumnWidthChangeListener.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.pat.sysbed/checkstyle.html#de.bsvrz.pat.sysbed.dataview.DataTableObject.java">de/bsvrz/pat/sysbed/dataview/DataTableObject.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.pat.sysbed/checkstyle.html#de.bsvrz.pat.sysbed.main.SettingsHandler.java">de/bsvrz/pat/sysbed/main/SettingsHandler.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  13
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.pat.sysbed/checkstyle.html#de.bsvrz.pat.sysbed.preselection.tree.PreselectionTreeHandler.java">de/bsvrz/pat/sysbed/preselection/tree/PreselectionTreeHandler.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.pat.sysbed/checkstyle.html#de.bsvrz.pat.sysbed.main.TooltipAndContextUtil.java">de/bsvrz/pat/sysbed/main/TooltipAndContextUtil.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.pat.sysbed/checkstyle.html#de.bsvrz.pat.sysbed.dataview.selectionManagement.SelectionManager.java">de/bsvrz/pat/sysbed/dataview/selectionManagement/SelectionManager.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  5
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.pat.sysbed/checkstyle.html#de.bsvrz.pat.sysbed.preselection.tree.PreselectionTree.java">de/bsvrz/pat/sysbed/preselection/tree/PreselectionTree.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  2
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.pat.sysbed/checkstyle.html#de.bsvrz.pat.sysbed.dataview.RowSuccessor.java">de/bsvrz/pat/sysbed/dataview/RowSuccessor.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.pat.sysbed/checkstyle.html#de.bsvrz.pat.sysbed.plugins.onlprot.OnlineProtocolModule.java">de/bsvrz/pat/sysbed/plugins/onlprot/OnlineProtocolModule.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  1
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.pat.sysbed/checkstyle.html#de.bsvrz.pat.sysbed.preselection.panel.PreselectionPanel.java">de/bsvrz/pat/sysbed/preselection/panel/PreselectionPanel.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.pat.sysbed/checkstyle.html#de.bsvrz.pat.sysbed.plugins.sysprot.SystemProtocolModule.java">de/bsvrz/pat/sysbed/plugins/sysprot/SystemProtocolModule.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  2
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.pat.sysbed/checkstyle.html#de.bsvrz.pat.sysbed.dataview.HeaderGrid.java">de/bsvrz/pat/sysbed/dataview/HeaderGrid.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  1
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.pat.sysbed/checkstyle.html#de.bsvrz.pat.sysbed.plugins.subscriptions.CompressedAppSubscriptionsPanel.java">de/bsvrz/pat/sysbed/plugins/subscriptions/CompressedAppSubscriptionsPanel.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  1
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.pat.sysbed/checkstyle.html#de.bsvrz.pat.sysbed.preselection.lists.PreselectionLists.java">de/bsvrz/pat/sysbed/preselection/lists/PreselectionLists.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  3
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.pat.sysbed/checkstyle.html#de.bsvrz.pat.sysbed.plugins.parameditor.ParameterEditorModule.java">de/bsvrz/pat/sysbed/plugins/parameditor/ParameterEditorModule.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.pat.sysbed/checkstyle.html#de.bsvrz.pat.sysbed.preselection.lists.PreselectionListsFilter.java">de/bsvrz/pat/sysbed/preselection/lists/PreselectionListsFilter.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                      </tbody>
+        </table>
+        
+      </description>
+    </item>
+  </channel>
+</rss>
+
