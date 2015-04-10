@@ -10,7 +10,7 @@
     <packaging>pom</packaging>
 
     <name>Kernsoftware</name>
-    <url>http://falkoschumann.github.io/datenverteiler-kernsoftware</url>
+    <url>https://github.com/falkoschumann/datenverteiler-kernsoftware</url>
     <organization>
         <name>NERZ e.V.</name>
         <url>http://www.nerz-ev.de</url>
@@ -47,7 +47,7 @@
         <site>
             <id>github.pages</id>
             <name>GitHub Pages</name>
-            <url>scm:git:https://github.com/falkoschumann/datenverteiler-kernsoftware.git</url>
+            <url>http://falkoschumann.github.io/datenverteiler-kernsoftware/</url>
         </site>
     </distributionManagement>
 
@@ -108,7 +108,7 @@
         <project.build.sourceEncoding>ISO-8859-1</project.build.sourceEncoding>
         <project.reporting.outputEncoding>ISO-8859-1</project.reporting.outputEncoding>
         <project.reporting.outputEncoding>ISO-8859-1</project.reporting.outputEncoding>
-        <source.version>1.6</source.version>
+        <source.version>6</source.version>
     </properties>
 
     <build>
@@ -162,13 +162,6 @@
                 <version>3.4</version>
             </plugin>
         </plugins>
-        <extensions>
-            <extension>
-                <groupId>org.apache.maven.wagon</groupId>
-                <artifactId>wagon-ftp</artifactId>
-                <version>2.7</version>
-            </extension>
-        </extensions>
     </build>
 
     <reporting>
