@@ -6,7 +6,6 @@
 
     <groupId>de.bsvrz.kex</groupId>
     <artifactId>de.bsvrz.kex.kexdav</artifactId>
-    <packaging>jar</packaging>
 
     <name>KEx DaV</name>
 
@@ -34,47 +33,47 @@
         <dependency>
             <groupId>de.bsvrz.dav</groupId>
             <artifactId>de.bsvrz.dav.daf</artifactId>
-            <version>3.6.2</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>de.bsvrz.dav</groupId>
             <artifactId>de.bsvrz.dav.dav</artifactId>
-            <version>3.6.2</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>de.bsvrz.sys</groupId>
             <artifactId>de.bsvrz.sys.funclib.commandLineArgs</artifactId>
-            <version>3.6.2</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>de.bsvrz.sys</groupId>
             <artifactId>de.bsvrz.sys.funclib.debug</artifactId>
-            <version>3.6.2</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>de.bsvrz.puk</groupId>
             <artifactId>de.bsvrz.puk.config</artifactId>
-            <version>3.6.2</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>de.bsvrz.sys</groupId>
             <artifactId>de.bsvrz.sys.funclib.application</artifactId>
-            <version>3.6.2</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>de.bsvrz.sys</groupId>
             <artifactId>de.bsvrz.sys.funclib.losb</artifactId>
-            <version>3.6.2</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>de.bsvrz.sys</groupId>
             <artifactId>de.bsvrz.sys.funclib.operatingMessage</artifactId>
-            <version>3.6.2</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>de.bsvrz.sys</groupId>
             <artifactId>de.bsvrz.sys.funclib.concurrent</artifactId>
-            <version>3.6.2</version>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 

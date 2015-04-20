@@ -6,7 +6,6 @@
 
     <groupId>de.bsvrz.sys</groupId>
     <artifactId>de.bsvrz.sys.funclib.dataSerializer</artifactId>
-    <packaging>jar</packaging>
 
     <name>Sys Funktionsbibliothek Data Serializer</name>
 
@@ -34,12 +33,12 @@
         <dependency>
             <groupId>de.bsvrz.dav</groupId>
             <artifactId>de.bsvrz.dav.daf</artifactId>
-            <version>3.6.2</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>de.bsvrz.sys</groupId>
             <artifactId>de.bsvrz.sys.funclib.debug</artifactId>
-            <version>3.6.2</version>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 

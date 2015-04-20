@@ -6,7 +6,6 @@
 
     <groupId>de.bsvrz.dav</groupId>
     <artifactId>de.bsvrz.dav.daf</artifactId>
-    <packaging>jar</packaging>
 
     <name>DaV Datenverteiler-Applikationsfunktionen</name>
 
@@ -34,37 +33,37 @@
         <dependency>
             <groupId>de.bsvrz.sys</groupId>
             <artifactId>de.bsvrz.sys.funclib.concurrent</artifactId>
-            <version>3.6.2</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>de.bsvrz.sys</groupId>
             <artifactId>de.bsvrz.sys.funclib.crypt</artifactId>
-            <version>3.6.2</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>de.bsvrz.sys</groupId>
             <artifactId>de.bsvrz.sys.funclib.debug</artifactId>
-            <version>3.6.2</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>de.bsvrz.sys</groupId>
             <artifactId>de.bsvrz.sys.funclib.filelock</artifactId>
-            <version>3.6.2</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>de.bsvrz.sys</groupId>
             <artifactId>de.bsvrz.sys.funclib.hexdump</artifactId>
-            <version>3.6.2</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>de.bsvrz.sys</groupId>
             <artifactId>de.bsvrz.sys.funclib.timeout</artifactId>
-            <version>3.6.2</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>de.bsvrz.sys</groupId>
             <artifactId>de.bsvrz.sys.funclib.commandLineArgs</artifactId>
-            <version>3.6.2</version>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 

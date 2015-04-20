@@ -6,7 +6,6 @@
 
     <groupId>de.bsvrz.sys</groupId>
     <artifactId>de.bsvrz.sys.funclib.debug</artifactId>
-    <packaging>jar</packaging>
 
     <name>Sys Funktionsbibliothek Debug</name>
 
@@ -34,7 +33,7 @@
         <dependency>
             <groupId>de.bsvrz.sys</groupId>
             <artifactId>de.bsvrz.sys.funclib.commandLineArgs</artifactId>
-            <version>3.6.2</version>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 

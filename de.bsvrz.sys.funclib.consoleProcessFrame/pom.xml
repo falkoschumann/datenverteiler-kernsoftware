@@ -6,7 +6,6 @@
 
     <groupId>de.bsvrz.sys</groupId>
     <artifactId>de.bsvrz.sys.funclib.consoleProcessFrame</artifactId>
-    <packaging>jar</packaging>
 
     <name>Sys Funktionsbibliothek Console Process Frame</name>
 

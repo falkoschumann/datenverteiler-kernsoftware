@@ -6,7 +6,6 @@
 
     <groupId>de.kappich</groupId>
     <artifactId>de.kappich.pat.gnd</artifactId>
-    <packaging>jar</packaging>
 
     <name>Kappich GND</name>
     <organization>
@@ -38,27 +37,27 @@
         <dependency>
             <groupId>de.bsvrz.dav</groupId>
             <artifactId>de.bsvrz.dav.daf</artifactId>
-            <version>3.6.2</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>de.bsvrz.sys</groupId>
             <artifactId>de.bsvrz.sys.funclib.debug</artifactId>
-            <version>3.6.2</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>de.bsvrz.sys</groupId>
             <artifactId>de.bsvrz.sys.funclib.commandLineArgs</artifactId>
-            <version>3.6.2</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>de.bsvrz.sys</groupId>
             <artifactId>de.bsvrz.sys.funclib.application</artifactId>
-            <version>3.6.2</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>de.bsvrz.pat</groupId>
             <artifactId>de.bsvrz.pat.sysbed</artifactId>
-            <version>3.6.2</version>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 
