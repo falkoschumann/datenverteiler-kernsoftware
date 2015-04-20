@@ -42,12 +42,12 @@
             <version>3.6.2</version>
         </dependency>
         <dependency>
-            <groupId>de.bsvrz.sys.funclib</groupId>
+            <groupId>de.bsvrz.sys</groupId>
             <artifactId>de.bsvrz.sys.funclib.commandLineArgs</artifactId>
             <version>3.6.2</version>
         </dependency>
         <dependency>
-            <groupId>de.bsvrz.sys.funclib</groupId>
+            <groupId>de.bsvrz.sys</groupId>
             <artifactId>de.bsvrz.sys.funclib.debug</artifactId>
             <version>3.6.2</version>
         </dependency>
@@ -57,22 +57,22 @@
             <version>3.6.2</version>
         </dependency>
         <dependency>
-            <groupId>de.bsvrz.sys.funclib</groupId>
+            <groupId>de.bsvrz.sys</groupId>
             <artifactId>de.bsvrz.sys.funclib.application</artifactId>
             <version>3.6.2</version>
         </dependency>
         <dependency>
-            <groupId>de.bsvrz.sys.funclib</groupId>
+            <groupId>de.bsvrz.sys</groupId>
             <artifactId>de.bsvrz.sys.funclib.losb</artifactId>
             <version>3.6.2</version>
         </dependency>
         <dependency>
-            <groupId>de.bsvrz.sys.funclib</groupId>
+            <groupId>de.bsvrz.sys</groupId>
             <artifactId>de.bsvrz.sys.funclib.operatingMessage</artifactId>
             <version>3.6.2</version>
         </dependency>
         <dependency>
-            <groupId>de.bsvrz.sys.funclib</groupId>
+            <groupId>de.bsvrz.sys</groupId>
             <artifactId>de.bsvrz.sys.funclib.concurrent</artifactId>
             <version>3.6.2</version>
         </dependency>
