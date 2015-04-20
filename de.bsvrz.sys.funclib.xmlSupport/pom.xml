@@ -4,9 +4,8 @@
                       http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>de.bsvrz.sys.funclib</groupId>
+    <groupId>de.bsvrz.sys</groupId>
     <artifactId>de.bsvrz.sys.funclib.xmlSupport</artifactId>
-    <packaging>jar</packaging>
 
     <name>Sys Funktionsbibliothek XML Support</name>
 
@@ -32,14 +31,14 @@
 
     <dependencies>
         <dependency>
-            <groupId>de.bsvrz.sys.funclib</groupId>
+            <groupId>de.bsvrz.sys</groupId>
             <artifactId>de.bsvrz.sys.funclib.concurrent</artifactId>
-            <version>3.6.2</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>de.bsvrz.sys.funclib</groupId>
+            <groupId>de.bsvrz.sys</groupId>
             <artifactId>de.bsvrz.sys.funclib.debug</artifactId>
-            <version>3.6.2</version>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 

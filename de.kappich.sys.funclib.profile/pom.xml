@@ -6,7 +6,6 @@
 
     <groupId>de.kappich</groupId>
     <artifactId>de.kappich.sys.funclib.profile</artifactId>
-    <packaging>jar</packaging>
 
     <name>Kappich Profile</name>
     <organization>

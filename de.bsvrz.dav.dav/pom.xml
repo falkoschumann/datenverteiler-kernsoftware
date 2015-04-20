@@ -6,7 +6,6 @@
 
     <groupId>de.bsvrz.dav</groupId>
     <artifactId>de.bsvrz.dav.dav</artifactId>
-    <packaging>jar</packaging>
 
     <name>DaV Datenverteiler</name>
 
@@ -34,37 +33,37 @@
         <dependency>
             <groupId>de.bsvrz.dav</groupId>
             <artifactId>de.bsvrz.dav.daf</artifactId>
-            <version>3.6.2</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>de.bsvrz.sys.funclib</groupId>
+            <groupId>de.bsvrz.sys</groupId>
             <artifactId>de.bsvrz.sys.funclib.debug</artifactId>
-            <version>3.6.2</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>de.bsvrz.sys.funclib</groupId>
+            <groupId>de.bsvrz.sys</groupId>
             <artifactId>de.bsvrz.sys.funclib.commandLineArgs</artifactId>
-            <version>3.6.2</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>de.bsvrz.sys.funclib</groupId>
+            <groupId>de.bsvrz.sys</groupId>
             <artifactId>de.bsvrz.sys.funclib.concurrent</artifactId>
-            <version>3.6.2</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>de.bsvrz.sys.funclib</groupId>
+            <groupId>de.bsvrz.sys</groupId>
             <artifactId>de.bsvrz.sys.funclib.application</artifactId>
-            <version>3.6.2</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>de.bsvrz.sys.funclib</groupId>
+            <groupId>de.bsvrz.sys</groupId>
             <artifactId>de.bsvrz.sys.funclib.configObjectAcquisition</artifactId>
-            <version>3.6.2</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>de.bsvrz.sys.funclib</groupId>
+            <groupId>de.bsvrz.sys</groupId>
             <artifactId>de.bsvrz.sys.funclib.operatingMessage</artifactId>
-            <version>3.6.2</version>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 

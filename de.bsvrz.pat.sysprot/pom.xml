@@ -6,7 +6,6 @@
 
     <groupId>de.bsvrz.pat</groupId>
     <artifactId>de.bsvrz.pat.sysprot</artifactId>
-    <packaging>jar</packaging>
 
     <name>PAT System-Protokollierer</name>
 
@@ -34,37 +33,37 @@
         <dependency>
             <groupId>de.bsvrz.dav</groupId>
             <artifactId>de.bsvrz.dav.daf</artifactId>
-            <version>3.6.2</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>de.bsvrz.sys.funclib</groupId>
+            <groupId>de.bsvrz.sys</groupId>
             <artifactId>de.bsvrz.sys.funclib.dataSerializer</artifactId>
-            <version>3.6.2</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>de.bsvrz.sys.funclib</groupId>
+            <groupId>de.bsvrz.sys</groupId>
             <artifactId>de.bsvrz.sys.funclib.communicationStreams</artifactId>
-            <version>3.6.2</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>de.bsvrz.sys.funclib</groupId>
+            <groupId>de.bsvrz.sys</groupId>
             <artifactId>de.bsvrz.sys.funclib.application</artifactId>
-            <version>3.6.2</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>de.bsvrz.pat</groupId>
             <artifactId>de.bsvrz.pat.onlprot</artifactId>
-            <version>3.6.2</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>de.bsvrz.sys.funclib</groupId>
+            <groupId>de.bsvrz.sys</groupId>
             <artifactId>de.bsvrz.sys.funclib.configObjectAcquisition</artifactId>
-            <version>3.6.2</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>de.bsvrz.sys.funclib</groupId>
+            <groupId>de.bsvrz.sys</groupId>
             <artifactId>de.bsvrz.sys.funclib.commandLineArgs</artifactId>
-            <version>3.6.2</version>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 
