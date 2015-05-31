@@ -6,8 +6,16 @@
 
     <groupId>kernsoftware</groupId>
     <artifactId>kernsoftware</artifactId>
-    <version>3.6.2</version>
+    <version>${kernsoftware.version}</version>
     <packaging>pom</packaging>
+
+    <properties>
+        <kernsoftware.version>3.6.2</kernsoftware.version>
+        <project.build.sourceEncoding>ISO-8859-1</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>ISO-8859-1</project.reporting.outputEncoding>
+        <project.reporting.outputEncoding>ISO-8859-1</project.reporting.outputEncoding>
+        <source.version>6</source.version>
+    </properties>
 
     <name>Kernsoftware</name>
     <url>https://github.com/falkoschumann/datenverteiler-kernsoftware</url>
@@ -103,13 +111,6 @@
         <module>de.kappich.tools.sleep</module>
         <module>de.kappich.vew.bmvew</module>
     </modules>
-
-    <properties>
-        <project.build.sourceEncoding>ISO-8859-1</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>ISO-8859-1</project.reporting.outputEncoding>
-        <project.reporting.outputEncoding>ISO-8859-1</project.reporting.outputEncoding>
-        <source.version>6</source.version>
-    </properties>
 
     <build>
         <plugins>

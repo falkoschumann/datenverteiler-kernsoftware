@@ -25,7 +25,7 @@
     <parent>
         <groupId>kernsoftware</groupId>
         <artifactId>kernsoftware</artifactId>
-        <version>3.6.2</version>
+        <version>${kernsoftware.version}</version>
         <relativePath>..</relativePath>
     </parent>
 
@@ -33,37 +33,37 @@
         <dependency>
             <groupId>de.bsvrz.sys</groupId>
             <artifactId>de.bsvrz.sys.funclib.concurrent</artifactId>
-            <version>${project.version}</version>
+            <version>${kernsoftware.version}</version>
         </dependency>
         <dependency>
             <groupId>de.bsvrz.sys</groupId>
             <artifactId>de.bsvrz.sys.funclib.crypt</artifactId>
-            <version>${project.version}</version>
+            <version>${kernsoftware.version}</version>
         </dependency>
         <dependency>
             <groupId>de.bsvrz.sys</groupId>
             <artifactId>de.bsvrz.sys.funclib.debug</artifactId>
-            <version>${project.version}</version>
+            <version>${kernsoftware.version}</version>
         </dependency>
         <dependency>
             <groupId>de.bsvrz.sys</groupId>
             <artifactId>de.bsvrz.sys.funclib.filelock</artifactId>
-            <version>${project.version}</version>
+            <version>${kernsoftware.version}</version>
         </dependency>
         <dependency>
             <groupId>de.bsvrz.sys</groupId>
             <artifactId>de.bsvrz.sys.funclib.hexdump</artifactId>
-            <version>${project.version}</version>
+            <version>${kernsoftware.version}</version>
         </dependency>
         <dependency>
             <groupId>de.bsvrz.sys</groupId>
             <artifactId>de.bsvrz.sys.funclib.timeout</artifactId>
-            <version>${project.version}</version>
+            <version>${kernsoftware.version}</version>
         </dependency>
         <dependency>
             <groupId>de.bsvrz.sys</groupId>
             <artifactId>de.bsvrz.sys.funclib.commandLineArgs</artifactId>
-            <version>${project.version}</version>
+            <version>${kernsoftware.version}</version>
         </dependency>
     </dependencies>
 

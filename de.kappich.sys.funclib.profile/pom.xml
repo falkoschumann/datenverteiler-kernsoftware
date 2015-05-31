@@ -29,7 +29,7 @@
     <parent>
         <groupId>kernsoftware</groupId>
         <artifactId>kernsoftware</artifactId>
-        <version>3.6.2</version>
+        <version>${kernsoftware.version}</version>
         <relativePath>..</relativePath>
     </parent>
 
