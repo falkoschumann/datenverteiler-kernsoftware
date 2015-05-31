@@ -69,13 +69,6 @@
         <url>https://travis-ci.org/falkoschumann/datenverteiler-kernsoftware</url>
     </ciManagement>
 
-    <repositories>
-        <repository>
-            <id>falkoschumann-releases</id>
-            <url>http://falkoschumann.github.io/maven-repository/releases/</url>
-        </repository>
-    </repositories>
-
     <modules>
         <module>de.bsvrz.dav.daf</module>
         <module>de.bsvrz.dav.dav</module>
