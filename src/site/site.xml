@@ -39,17 +39,16 @@
         <fluidoSkin>
             <leftColumnClass>span3</leftColumnClass>
             <bodyColumnClass>span9</bodyColumnClass>
+            <gitHub>
+                <projectId>falkoschumann/datenverteiler-kernsoftware</projectId>
+                <ribbonOrientation>right</ribbonOrientation>
+            </gitHub>
         </fluidoSkin>
     </custom>
 
     <body>
         <menu ref="parent"/>
-        <!-- <menu ref="modules"/> -->
         <menu ref="reports"/>
-        <links>
-            <item name="GitHub" href="https://github.com/falkoschumann/datenverteiler-kernsoftware"/>
-            <item name="NERZ e.V." href="http://www.nerz-ev.de"/>
-        </links>
     </body>
 
 </project>

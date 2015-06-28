@@ -29,7 +29,7 @@
     <parent>
         <groupId>kernsoftware</groupId>
         <artifactId>kernsoftware</artifactId>
-        <version>${kernsoftware.version}</version>
+        <version>3.6.5</version>
         <relativePath>..</relativePath>
     </parent>
 
@@ -37,27 +37,27 @@
         <dependency>
             <groupId>de.bsvrz.dav</groupId>
             <artifactId>de.bsvrz.dav.daf</artifactId>
-            <version>${kernsoftware.version}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>de.bsvrz.sys</groupId>
             <artifactId>de.bsvrz.sys.funclib.debug</artifactId>
-            <version>${kernsoftware.version}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>de.bsvrz.sys</groupId>
             <artifactId>de.bsvrz.sys.funclib.commandLineArgs</artifactId>
-            <version>${kernsoftware.version}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>de.bsvrz.sys</groupId>
             <artifactId>de.bsvrz.sys.funclib.application</artifactId>
-            <version>${kernsoftware.version}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>de.bsvrz.pat</groupId>
             <artifactId>de.bsvrz.pat.sysbed</artifactId>
-            <version>${kernsoftware.version}</version>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 

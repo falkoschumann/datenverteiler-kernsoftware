@@ -6,15 +6,12 @@
 
     <groupId>kernsoftware</groupId>
     <artifactId>kernsoftware</artifactId>
-    <version>${kernsoftware.version}</version>
+    <version>3.6.5</version>
     <packaging>pom</packaging>
 
     <properties>
-        <kernsoftware.version>3.6.2</kernsoftware.version>
         <project.build.sourceEncoding>ISO-8859-1</project.build.sourceEncoding>
         <project.reporting.outputEncoding>ISO-8859-1</project.reporting.outputEncoding>
-        <project.reporting.outputEncoding>ISO-8859-1</project.reporting.outputEncoding>
-        <source.version>6</source.version>
     </properties>
 
     <name>Kernsoftware</name>
@@ -92,6 +89,7 @@
         <module>de.bsvrz.sys.funclib.debug</module>
         <module>de.bsvrz.sys.funclib.filelock</module>
         <module>de.bsvrz.sys.funclib.hexdump</module>
+        <module>de.bsvrz.sys.funclib.kappich</module>
         <module>de.bsvrz.sys.funclib.losb</module>
         <module>de.bsvrz.sys.funclib.operatingMessage</module>
         <module>de.bsvrz.sys.funclib.timeout</module>
@@ -112,9 +110,9 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.2</version>
                 <configuration>
-                    <source>${source.version}</source>
-                    <target>${source.version}</target>
-                    <compilerVersion>${source.version}</compilerVersion>
+                    <source>8</source>
+                    <target>8</target>
+                    <compilerVersion>8</compilerVersion>
                 </configuration>
             </plugin>
             <plugin>

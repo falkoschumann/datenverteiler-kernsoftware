@@ -46,13 +46,13 @@ import javax.swing.JPanel;
  * Es werden Attribute, Listen, Arrays von Attributen und Arrays von Listen berücksichtigt.
  * 
  * @author Kappich Systemberatung
- * @version $Revision: 8084 $
+ * @version $Revision: 12195 $
  * @see Dataset
  */
 public class RowData implements ColumnWidthChangeListener {
 	
 	/** Der Debug-Logger */
-	private final Debug _debug = Debug.getLogger();
+	private static final Debug _debug = Debug.getLogger();
 	
 	/** speichert den anzuzeigenden Text dieses Feldes */
 	private String _value = "";

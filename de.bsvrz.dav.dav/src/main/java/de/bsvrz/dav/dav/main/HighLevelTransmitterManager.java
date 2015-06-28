@@ -196,10 +196,10 @@ public class HighLevelTransmitterManager implements DistributionInterface, HighL
 			return;
 		}
 		if(subscriptionType == TransmitterSubscriptionType.Sender) {
-			subscriptionInfo.updateOrCreateRemoteSenderSubscription(communication, Longs.asList(ids), baseSubscriptionInfo);
+			subscriptionInfo.updateOrCreateRemoteSenderSubscription(communication, Longs.asList(ids));
 		}
 		else {
-			subscriptionInfo.updateOrCreateRemoteReceiverSubscription(communication, Longs.asList(ids), baseSubscriptionInfo);
+			subscriptionInfo.updateOrCreateRemoteReceiverSubscription(communication, Longs.asList(ids));
 		}
 		subscriptionInfo.close();
 	}

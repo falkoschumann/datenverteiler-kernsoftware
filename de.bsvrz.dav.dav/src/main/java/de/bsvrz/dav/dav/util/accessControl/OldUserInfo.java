@@ -38,7 +38,7 @@ import java.util.*;
  * Verwaltet die Rechte eines Benutzers.
  *
  * @author Kappich Systemberatung
- * @version $Revision: 11671 $
+ * @version $Revision: 12975 $
  */
 public class OldUserInfo extends AbstractUserInfo {
 
@@ -651,6 +651,8 @@ public class OldUserInfo extends AbstractUserInfo {
 					_updater = new AuthenticationClassUpdater(authenticationClass);
 				}
 			}
+		}else {
+			_debug.warning("Für den Benutzer " + getUser() + " liegen keine Daten vor", USER_ATTRIBUTE_GROUP_PID);
 		}
 	}
 
@@ -690,6 +692,10 @@ public class OldUserInfo extends AbstractUserInfo {
 
 		@Override
 		protected void update(final Data data) {
+			if(data == null){
+				_debug.warning("Für die Bereichtigungsklasse " + getAuthenticationClass() + " liegen keine Daten vor", AUTHENTIFICATION_CLASS_ATTRIBUTE_GROUP_PID);
+				return;
+			}
 			updateAuthenticationUnit(data);
 		}
 

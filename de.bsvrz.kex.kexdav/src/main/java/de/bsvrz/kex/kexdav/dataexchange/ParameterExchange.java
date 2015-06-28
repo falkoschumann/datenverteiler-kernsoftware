@@ -35,7 +35,7 @@ import static de.bsvrz.kex.kexdav.main.Constants.Pids.*;
  * Klasse zum Austausch von Parameterdaten einer Datenidentifikation eines Objektes. (diese Klasse gibt es einmal pro Attributgruppe und Objekt)
  *
  * @author Kappich Systemberatung
- * @version $Revision: 9269 $
+ * @version $Revision: 12677 $
  */
 public class ParameterExchange {
 
@@ -64,7 +64,7 @@ public class ParameterExchange {
 		switch(description.getStrategy()) {
 			case LocalManagementRemoteReadWrite:
 				// Schreibverbindung in Gegenrichtung
-				_pipeRemoteLocal = new LowLevelDataPipe(
+				_pipeRemoteLocal = LowLevelDataPipe.createLowLevelDataPipe(
 						object.getRemoteObject(),
 						object.getLocalObject(),
 						atg.getAtgRemotePid(),
@@ -82,7 +82,7 @@ public class ParameterExchange {
 				);
 				// Kein break, jetzt folgt die normale Verbindung
 			case LocalManagementRemoteRead:
-				_pipeLocalRemote = new LowLevelDataPipe(
+				_pipeLocalRemote = LowLevelDataPipe.createLowLevelDataPipe(
 						object.getLocalObject(),
 						object.getRemoteObject(),
 						atg.getAtgLocalPid(),
@@ -102,7 +102,7 @@ public class ParameterExchange {
 
 			case RemoteManagementLocalReadWrite:
 				// Schreibverbindung in Gegenrichtung
-				_pipeLocalRemote = new LowLevelDataPipe(
+				_pipeLocalRemote = LowLevelDataPipe.createLowLevelDataPipe(
 						object.getLocalObject(),
 						object.getRemoteObject(),
 						atg.getAtgLocalPid(),
@@ -120,7 +120,7 @@ public class ParameterExchange {
 				);
 				// Kein break, jetzt folgt die normale Verbindung
 			case RemoteManagementLocalRead:
-				_pipeRemoteLocal = new LowLevelDataPipe(
+				_pipeRemoteLocal = LowLevelDataPipe.createLowLevelDataPipe(
 						object.getRemoteObject(),
 						object.getLocalObject(),
 						atg.getAtgRemotePid(),
@@ -143,7 +143,7 @@ public class ParameterExchange {
 				_isUsingTrigger = true;
 				// kein break, die gleichen Datenkanäle erstellen, wie im LocalAndRemoteManagement-modus
 			case LocalAndRemoteManagement:
-				_pipeLocalRemote = new LowLevelDataPipe(
+				_pipeLocalRemote = LowLevelDataPipe.createLowLevelDataPipe(
 						object.getLocalObject(),
 						object.getRemoteObject(),
 						atg.getAtgLocalPid(),
@@ -160,7 +160,7 @@ public class ParameterExchange {
 						objectManagerInterface,
 						manager
 				);
-				_pipeRemoteLocal = new LowLevelDataPipe(
+				_pipeRemoteLocal = LowLevelDataPipe.createLowLevelDataPipe(
 						object.getRemoteObject(),
 						object.getLocalObject(),
 						atg.getAtgRemotePid(),

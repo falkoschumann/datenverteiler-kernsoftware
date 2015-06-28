@@ -46,7 +46,7 @@ import javax.swing.*;
  * Ein Dialog, welcher die gelieferten Online- oder Archivdaten in Tabellenform dargestellt.
  *
  * @author Kappich Systemberatung
- * @version $Revision: 8369 $
+ * @version $Revision: 13173 $
  * @see DataViewPanel
  */
 public class DataViewFrame implements PrintFrame {
@@ -223,7 +223,7 @@ public class DataViewFrame implements PrintFrame {
 	 * @param configuringData die konfigurierenden Daten
 	 */
 	public void showConfigurationData(final List<DataTableObject> configuringData) {
-		_frame.setTitle("Konfigurierende Daten (Attributegruppe: " + _attributeGroup.getNameOrPidOrId() + ", Aspekt: " + _aspect.getNameOrPidOrId() + ")");
+		_frame.setTitle("Konfigurierende Daten (Attributgruppe: " + _attributeGroup.getNameOrPidOrId() + ", Aspekt: " + _aspect.getNameOrPidOrId() + ")");
 		_frame.setVisible(true);
 		_dataViewModel.setDatasets(configuringData);
 	}
@@ -235,7 +235,7 @@ public class DataViewFrame implements PrintFrame {
 	 * @param displayOptions gibt an, wie neue Daten dargestellt werden sollen
 	 */
 	public void showOnlineData(int displayOptions) {
-		_frame.setTitle("Onlinetabelle (Attributegruppe: " + _attributeGroup.getNameOrPidOrId() + ", Aspekt: " + _aspect.getNameOrPidOrId() + ")");
+		_frame.setTitle("Onlinetabelle (Attributgruppe: " + _attributeGroup.getNameOrPidOrId() + ", Aspekt: " + _aspect.getNameOrPidOrId() + ")");
 		_frame.setVisible(true);
 		ClientReceiverInterface receiver = new DataViewReceiver(displayOptions);
 		try {

@@ -173,18 +173,6 @@ public class HighLevelSubscriptionsManager extends AbstractSubscriptionsManager 
 	}
 
 	/**
-	 * Prüft von allen Anmeldungen die den Benutzer betreffen die Rechte erneut
-	 *
-	 * @param userId Id des Benutzers
-	 */
-	@Override
-	public void handleUserRightsChanged(final long userId) {
-		for(SubscriptionInfo subscriptionInfo : _subscriptions.values()) {
-			subscriptionInfo.handleUserRightsChanged(userId);
-		}
-	}
-
-	/**
 	 * Formatiert eine baseSubscriptionInfo zu einem String, der sich zur Darstellung in Fehlerausgaben u.ä. eignet
 	 *
 	 * @param baseSubscriptionInfo baseSubscriptionInfo

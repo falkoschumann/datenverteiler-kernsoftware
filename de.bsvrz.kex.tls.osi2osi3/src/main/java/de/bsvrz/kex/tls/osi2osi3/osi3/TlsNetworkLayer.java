@@ -38,7 +38,7 @@ import java.util.*;
  * Implementierung der TLS-OSI-3 Netzwerkebene.
  *
  * @author Kappich Systemberatung
- * @version $Revision: 10824 $
+ * @version $Revision: 13027 $
  */
 public class TlsNetworkLayer implements NetworkLayer, NetworkLayerSender {
 
@@ -760,8 +760,15 @@ public class TlsNetworkLayer implements NetworkLayer, NetworkLayerSender {
 			if(osi3Length > 0) {
 				int osi3Pointer = 1;
 
+				
 
-				if(_firstLinkInfo._linkLayer != null && _firstLinkInfo._linkLayer.getProperty(TlsNetworkLayerSetting.pointerIncrement) != null) {
+
+
+
+				if(_firstLinkInfo._dontIncrementOsi3Pointer) {
+					osi3Pointer = 0;
+				}
+				else if(_firstLinkInfo._linkLayer != null && _firstLinkInfo._linkLayer.getProperty(TlsNetworkLayerSetting.pointerIncrement) != null) {
 					try {
 						if(!TlsNetworkLayerSetting.getBooleanProperty(_firstLinkInfo._linkLayer.getProperty(TlsNetworkLayerSetting.pointerIncrement))) {
 							osi3Pointer = 0;
@@ -774,7 +781,6 @@ public class TlsNetworkLayer implements NetworkLayer, NetworkLayerSender {
 						);
 					}
 				}
-				else if(_firstLinkInfo._dontIncrementOsi3Pointer) osi3Pointer = 0;
 
 				_debug.info("Der Pointer wurde zu beginn " + (osi3Pointer == 0 ? "nicht inkrementiert!" : "inkrementiert"));
 				_tlsOsi3Header[0] = (byte)(((osi3Length << 3) & 070) | (osi3Pointer & 007));

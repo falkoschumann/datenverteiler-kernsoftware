@@ -52,6 +52,12 @@ abstract class AbstractObjectSelectionBlock implements ObjectSelectionBlock {
 		if(_objectCollectionChangeListeners.size() == 0) stopChangeListener();
 	}
 
+	@Override
+	public void dispose() {
+		_objectCollectionChangeListeners.clear();
+		stopChangeListener();
+	}
+
 	/**
 	 * Wird benutzt um Listener über Änderungen dieses Blocks zu informieren.
 	 */

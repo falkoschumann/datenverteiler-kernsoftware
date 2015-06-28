@@ -302,25 +302,29 @@ public class LowLevelConnectionsManager implements LowLevelConnectionsManagerInt
 	 * @param message genauere Beschreibung des Fehlers
 	 */
 	@Override
-	public final synchronized void shutdown(final boolean error, final String message) {
-
+	public final void shutdown(final boolean error, final String message) {
+		// Außerhalb von synchronized ausführen, um Deadlocks zu vermeiden, wenn mehrere Threads aus unterschiedlichen
+		// Quellen (mit unterschiedlichen Locks) gleichzeitig Shutdown ausführen.
 		if(_closing) return;
-		_closing = true;
+		
+		synchronized(this) {
+			_closing = true;
 
-		final String debugMessage = "Der Datenverteiler wird beendet. Ursache: " + message;
-		if(error) {
-			_debug.error(debugMessage);
-		}
-		else {
-			_debug.warning(debugMessage);
-		}
-		if(_lowLevelTransmitterConnections != null) _lowLevelTransmitterConnections.close(error, message);
-		_lowLevelApplicationConnections.close(error, message);
-		try{
-			_selfClientDavConnection.getConnection().disconnect(error, message);
-		}
-		catch(Exception e){
-			_debug.fine("Beende lokale Datenverteiler-Verbindung", e);
+			final String debugMessage = "Der Datenverteiler wird beendet. Ursache: " + message;
+			if(error) {
+				_debug.error(debugMessage);
+			}
+			else {
+				_debug.warning(debugMessage);
+			}
+			if(_lowLevelTransmitterConnections != null) _lowLevelTransmitterConnections.close(error, message);
+			_lowLevelApplicationConnections.close(error, message);
+			try {
+				_selfClientDavConnection.getConnection().disconnect(error, message);
+			}
+			catch(Exception e) {
+				_debug.fine("Beende lokale Datenverteiler-Verbindung", e);
+			}
 		}
 	}
 

@@ -20,6 +20,8 @@
 
 package de.bsvrz.dav.dav.subscriptions;
 
+import de.bsvrz.sys.funclib.debug.Debug;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
@@ -30,6 +32,8 @@ import java.util.concurrent.CopyOnWriteArraySet;
  * @version $Revision: 0000 $
  */
 public class SubscriptionList {
+
+	private static final Debug _debug = Debug.getLogger();
 
 	@Override
 	public String toString() {
@@ -101,14 +105,14 @@ public class SubscriptionList {
 	public void removeReceiver(ReceivingSubscription receivingSubscription){
 		if(_drain == receivingSubscription) _drain = null;
 		if(!_receivingSubscriptions.remove(receivingSubscription)){
-//			throw new IllegalArgumentException("Nicht angemeldet");
+			_debug.warning("Melde Empfänger ab, der nicht angemeldet ist", receivingSubscription);
 		}
 	}
 
 	public void removeSender(SendingSubscription sendingSubscription){
 		if(_source == sendingSubscription) _source = null;
 		if(!_sendingSubscriptions.remove(sendingSubscription)) {
-//			throw new IllegalArgumentException("Nicht angemeldet");
+			_debug.warning("Melde Sender ab, der nicht angemeldet ist", sendingSubscription);
 		}
 	}
 

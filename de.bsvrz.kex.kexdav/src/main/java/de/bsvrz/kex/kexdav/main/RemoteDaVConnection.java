@@ -20,11 +20,7 @@
 
 package de.bsvrz.kex.kexdav.main;
 
-import de.bsvrz.dav.daf.main.ApplicationCloseActionHandler;
-import de.bsvrz.dav.daf.main.ClientDavConnection;
-import de.bsvrz.dav.daf.main.ClientDavInterface;
-import de.bsvrz.dav.daf.main.ClientDavParameters;
-import de.bsvrz.dav.daf.main.MissingParameterException;
+import de.bsvrz.dav.daf.main.*;
 import de.bsvrz.kex.kexdav.correspondingObjects.MissingAreaException;
 import de.bsvrz.kex.kexdav.dataplugin.AttributeGroupPair;
 import de.bsvrz.kex.kexdav.dataplugin.KExDaVDataPlugin;
@@ -45,7 +41,7 @@ import java.util.Properties;
  * Verbindung zu einem Remote-Datenverteiler
  *
  * @author Kappich Systemberatung
- * @version $Revision: 9272 $
+ * @version $Revision: 12913 $
  */
 public class RemoteDaVConnection {
 
@@ -101,8 +97,11 @@ public class RemoteDaVConnection {
 	 * @throws MissingAreaException ein benötigter Konfigurationsbereich fehlt
 	 */
 	public synchronized void start() throws MissingAreaException {
-		if(_remoteConnection != null) return;
-		final ClientDavInterface remoteConnection;
+		if(_remoteConnection != null) {
+			_manager.addMessage(Message.newInfo("Starte Verbindungsaufbau mit " + _connectionParameters.getDavPid() + ", Verbindung steht aber bereits."));
+			return;
+		}
+		ClientDavInterface remoteConnection = null;
 		try {
 			_manager.addMessage(Message.newInfo("Starte Verbindungsaufbau mit " + _connectionParameters.getDavPid()));
 			final ClientDavParameters parameters = new ClientDavParameters();
@@ -111,6 +110,7 @@ public class RemoteDaVConnection {
 			parameters.setDavCommunicationSubAddress(_connectionParameters.getPort());
 			parameters.setUserName(_connectionParameters.getUser());
 			parameters.setUserPassword(getUserPassword(_connectionParameters.getDavPid(), _connectionParameters.getUser(), _authenticationFile));
+			parameters.setConfigurationPath(_localConnection.getClientDavParameters().getConfigurationPath());
 			remoteConnection = new ClientDavConnection(parameters);
 			remoteConnection.setCloseHandler(
 					new ApplicationCloseActionHandler() {
@@ -138,6 +138,10 @@ public class RemoteDaVConnection {
 			_manager.addMessage(Message.newInfo("Konfigurationsobjekte geladen"));
 		}
 		catch(Exception e) {
+			if(remoteConnection != null) {
+				remoteConnection.setCloseHandler(null);
+				remoteConnection.disconnect(true, "Fehler beim Aufbau einer KExDaV-Remote-Verbindung");
+			}
 			_manager.addMessage(Message.newError("Kann nicht zum Remote-Datenverteiler verbinden: " + _connectionParameters.getDavPid(), e));
 			stop();
 			startReconnectTimer();
@@ -204,6 +208,7 @@ public class RemoteDaVConnection {
 
 	/** Beendet die Verbindung und stoppt die automatische Verbindungsaufnahme bis zu einem erneuten Aufruf von {@link #start()} */
 	public synchronized void stop() {
+		_manager.addMessage(Message.newInfo("Stoppe Verbindung mit " + _connectionParameters.getDavPid()));
 		if(_reconnectionTimer != null){
 			_reconnectionTimer.cancel();
 		}

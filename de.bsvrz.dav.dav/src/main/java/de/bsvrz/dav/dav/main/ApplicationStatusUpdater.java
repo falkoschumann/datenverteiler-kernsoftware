@@ -21,21 +21,8 @@
 package de.bsvrz.dav.dav.main;
 
 import de.bsvrz.dav.daf.communication.lowLevel.telegrams.BaseSubscriptionInfo;
-import de.bsvrz.dav.daf.main.ClientDavInterface;
-import de.bsvrz.dav.daf.main.ClientSenderInterface;
-import de.bsvrz.dav.daf.main.CommunicationError;
-import de.bsvrz.dav.daf.main.Data;
-import de.bsvrz.dav.daf.main.DataDescription;
-import de.bsvrz.dav.daf.main.OneSubscriptionPerSendData;
-import de.bsvrz.dav.daf.main.ResultData;
-import de.bsvrz.dav.daf.main.SendSubscriptionNotConfirmed;
-import de.bsvrz.dav.daf.main.SenderRole;
-import de.bsvrz.dav.daf.main.config.Aspect;
-import de.bsvrz.dav.daf.main.config.AttributeGroup;
-import de.bsvrz.dav.daf.main.config.AttributeGroupUsage;
-import de.bsvrz.dav.daf.main.config.ClientApplication;
-import de.bsvrz.dav.daf.main.config.DataModel;
-import de.bsvrz.dav.daf.main.config.SystemObject;
+import de.bsvrz.dav.daf.main.*;
+import de.bsvrz.dav.daf.main.config.*;
 import de.bsvrz.dav.dav.communication.appProtocol.T_A_HighLevelCommunication;
 import de.bsvrz.dav.dav.communication.appProtocol.T_A_HighLevelCommunicationInterface;
 import de.bsvrz.dav.dav.subscriptions.ApplicationCommunicationInterface;
@@ -44,14 +31,7 @@ import de.bsvrz.dav.dav.subscriptions.LocalSendingSubscription;
 import de.bsvrz.dav.dav.subscriptions.Subscription;
 import de.bsvrz.sys.funclib.debug.Debug;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 
 /**
  * Dieser Thread verschickt den Status(angemeldete Applikationen, Telegrammlaufzeiten, durch Applikationen angemeldete Datenidentifikationen) aller angemeldeten
@@ -355,7 +335,7 @@ public final class ApplicationStatusUpdater extends Thread {
 					final Data listEntry = subscribedApplications.getItem(dataIndex);
 					dataIndex++;
 
-					final String role;
+					String role = "?";
 					if(subscription instanceof LocalReceivingSubscription) {
 						LocalReceivingSubscription localReceivingSubscription = (LocalReceivingSubscription)subscription;
 
@@ -367,7 +347,6 @@ public final class ApplicationStatusUpdater extends Thread {
 							role = "Empfänger";
 						}
 
-						inscribeDataDescription(listEntry, localReceivingSubscription.getBaseSubscriptionInfo(), role);
 					}
 					else if(subscription instanceof LocalSendingSubscription) {
 						LocalSendingSubscription localSendingSubscription = (LocalSendingSubscription)subscription;
@@ -379,9 +358,29 @@ public final class ApplicationStatusUpdater extends Thread {
 							role = "Sender";
 						}
 
-						inscribeDataDescription(listEntry, localSendingSubscription.getBaseSubscriptionInfo(), role);
+					}
+					inscribeDataDescription(listEntry, subscription.getBaseSubscriptionInfo(), role);
+					
+					if(!listEntry.isDefined()) {
+						BaseSubscriptionInfo baseSubscriptionInfo = subscription.getBaseSubscriptionInfo();
+						long objectID = baseSubscriptionInfo.getObjectID();
+						long usageIdentification = baseSubscriptionInfo.getUsageIdentification();
+						short simulationVariant = baseSubscriptionInfo.getSimulationVariant();
+						_debug.warning(
+								"Fehler bei der Abfrage der angemeldeten Datenidentifikationen der Applikation " + application.toString()
+										+ ", Objekt:"
+										+ listEntry.getTextValue("objekt").getValueText() + " (" + objectID
+										+ "), Attributgruppenverwendung: "
+										+ listEntry.getTextValue("attributgruppenverwendung").getValueText()
+										+ " (" + usageIdentification + "), Rolle: " + role + ", Simulationsvariante: " + simulationVariant
+
+						);
+						dataIndex--;
 					}
 				}
+
+				// Datensatz ggf. verkürzen, falls einzelne Einträge aufgrund eines Fehlers nicht eingefügt werden konnten
+				subscribedApplications.setLength(dataIndex);
 
 				// Es sind alle Anmeldungen am Data vermerkt, der Datensatz kann verschickt werden.
 
@@ -649,7 +648,8 @@ public final class ApplicationStatusUpdater extends Thread {
 			};
 			_threadsForDataIdentificationUpdates.put(application, task);
 			// In 5 Sekunden den Task starten, findet eine weitere Änderung statt, wird dieser Task mit cancel gestoppt und ein neuer angelegt
-			_timer.schedule(task, 5000);
+//			_timer.schedule(task, 5000);
+			task.run();
 		}
 	}
 

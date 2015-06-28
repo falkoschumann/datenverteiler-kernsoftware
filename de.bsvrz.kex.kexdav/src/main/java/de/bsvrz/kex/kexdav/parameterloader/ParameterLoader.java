@@ -39,7 +39,7 @@ import java.util.*;
  * Diese Klasse liest die Parameter von dem KExDaV-Objekt ein und gibt die Parameter weiter
  *
  * @author Kappich Systemberatung
- * @version $Revision: 9270 $
+ * @version $Revision: 12677 $
  */
 public class ParameterLoader extends DataLoader implements ObjectCollectionParent, ObjectCollectionChangeListener, RegionManager {
 
@@ -52,6 +52,11 @@ public class ParameterLoader extends DataLoader implements ObjectCollectionParen
 	private final KExDaV _kExDaV;
 
 	private final Map<SystemObject, Region> _regionMap = new HashMap<SystemObject, Region>();
+	private final KExDaVSender _sender = new KExDaVSender() {
+		@Override
+		public void update(final byte state) {
+		}
+	};
 
 	private Set<RemoteDaVParameter> _parameters = null;
 
@@ -80,8 +85,9 @@ public class ParameterLoader extends DataLoader implements ObjectCollectionParen
 		_parameterPublisher = new KExDaVObject(new IdSpecification(systemObject.getId(), _manager), connection, manager);
 		try {
 			_parameterPublisher.registerSender(
-					Constants.Pids.AtgSpecificationKExDaV, Constants.Pids.AspectParameterActual, (short)-1, SenderRole.source(), this
+					Constants.Pids.AtgSpecificationKExDaV, Constants.Pids.AspectParameterActual, (short)-1, SenderRole.source(), _sender
 			);
+			_parameterPublisher.sendData(_sender, null, System.currentTimeMillis());
 			_parameterPublisher.registerReceiver(
 					Constants.Pids.AtgTriggerKExDaV,
 					Constants.Pids.AspectRequest,
@@ -186,7 +192,7 @@ public class ParameterLoader extends DataLoader implements ObjectCollectionParen
 	 * @param data Aktuelle Daten
 	 */
 	private void publishParameters(final Data data) {
-		_parameterPublisher.sendData(this, data, System.currentTimeMillis());
+		_parameterPublisher.sendData(_sender, data, System.currentTimeMillis());
 	}
 
 	private RemoteDaVParameter parseRemoteDaV(final Data item) {
@@ -431,7 +437,9 @@ public class ParameterLoader extends DataLoader implements ObjectCollectionParen
 
 	public void blockChanged() {
 		try {
-			_kExDaV.setNewParameters(_parameters);
+			if(_parameters != null) {
+				_kExDaV.setNewParameters(_parameters);
+			}
 		}
 		catch(MissingAreaException e) {
 			_manager.addMessage(Message.newError(e));

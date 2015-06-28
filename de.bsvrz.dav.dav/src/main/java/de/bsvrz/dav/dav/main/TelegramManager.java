@@ -217,10 +217,10 @@ public class TelegramManager implements TelegramManagerTransactionInterface {
 		}
 
 		if(subscriptionInfo.isCentralDistributor()) {
-			handleTelegramsAsCentralDistributor(telegrams, subscriptionInfo);
+			handleTelegramsAsCentralDistributor(telegrams, subscriptionInfo, communication);
 		}
 		else {
-			subscriptionInfo.distributeTelegrams(telegrams, toCentralDistributor);
+			subscriptionInfo.distributeTelegrams(telegrams, toCentralDistributor, communication);
 		}
 	}
 
@@ -238,9 +238,10 @@ public class TelegramManager implements TelegramManagerTransactionInterface {
 	 * Verarbeitet Datentelegramem als Zentraldatenverteiler
 	 * @param telegrams Aggregierte Liste mit zusammengehörigen Datentelegrammen
 	 * @param subscriptionInfo Objekt, das die dazugehörigen Anmeldungen verwaltet und an das die Daten gesendet werden.
+	 * @param communication Verbindung über die der Emfang erfolgt (zur Rechteprüfung)
 	 */
 	private void handleTelegramsAsCentralDistributor(
-			final List<ApplicationDataTelegram> telegrams, final SubscriptionInfo subscriptionInfo) {
+			final List<ApplicationDataTelegram> telegrams, final SubscriptionInfo subscriptionInfo, final CommunicationInterface communication) {
 
 		//dumpTelegrams(telegrams, communication.getId(), _selfClientDavConnection != null ? _selfClientDavConnection.getDataModel() : null);
 
@@ -254,13 +255,13 @@ public class TelegramManager implements TelegramManagerTransactionInterface {
 			// An Empfänger verschicken
 			if(_davTransactionManager != null) {
 				// Der _davTransactionManager ist erst != null wenn eine Verbindung zur Konfiguration besteht. Vorher können keine Transaktionen benutzt werden.
-				subscriptionInfo.distributeTelegrams(
-						_davTransactionManager.handleTelegrams(telegrams, subscriptionInfo.hasSource()),
-				                                     false
+				List<ApplicationDataTelegram> modifiedTransactionTelegram = _davTransactionManager.handleTelegrams(
+						telegrams, subscriptionInfo.hasSource()
 				);
+				subscriptionInfo.distributeTelegrams(modifiedTransactionTelegram, false, communication);
 			}
 			else {
-				subscriptionInfo.distributeTelegrams(telegrams, false);
+				subscriptionInfo.distributeTelegrams(telegrams, false, communication);
 			}
 		}
 	}
@@ -299,7 +300,7 @@ public class TelegramManager implements TelegramManagerTransactionInterface {
 			return;
 		}
 		/* Nicht #handleTelegramAsCentralDistributor aufrufen, damit der DatenIndex nicht noch einmal gesetzt wird */
-		subscriptionInfo.distributeTelegrams(Arrays.asList(dataTelegrams), false);
+		subscriptionInfo.distributeTelegrams(Arrays.asList(dataTelegrams), false, null);
 	}
 
 	/**

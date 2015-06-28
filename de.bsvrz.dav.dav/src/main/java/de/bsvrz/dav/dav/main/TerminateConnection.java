@@ -20,13 +20,7 @@
 
 package de.bsvrz.dav.dav.main;
 
-import de.bsvrz.dav.daf.main.ClientDavInterface;
-import de.bsvrz.dav.daf.main.ClientSenderInterface;
-import de.bsvrz.dav.daf.main.Data;
-import de.bsvrz.dav.daf.main.DataDescription;
-import de.bsvrz.dav.daf.main.OneSubscriptionPerSendData;
-import de.bsvrz.dav.daf.main.ResultData;
-import de.bsvrz.dav.daf.main.SenderRole;
+import de.bsvrz.dav.daf.main.*;
 import de.bsvrz.dav.daf.main.config.Aspect;
 import de.bsvrz.dav.daf.main.config.AttributeGroup;
 import de.bsvrz.dav.daf.main.config.DataModel;
@@ -37,6 +31,7 @@ import de.bsvrz.sys.funclib.commandLineArgs.ArgumentList;
 import de.bsvrz.sys.funclib.configObjectAcquisition.ConfigurationHelper;
 import de.bsvrz.sys.funclib.debug.Debug;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -45,37 +40,73 @@ import java.util.List;
  * Bsp : "-objekt=1466766103639706224 -benutzer=Tester -authentifizierung=passwd -debugLevelStdErrText=INFO"
  *
  * @author Kappich Systemberatung
- * @version $Revision: 11481 $
+ * @version $Revision: 13002 $
  */
 public class TerminateConnection implements StandardApplication {
 
-	private static Debug _debug;
+	private static Debug _debug = Debug.getLogger();
 	private String _objectSpec;
+	private String _appName;
 
 	public static void main(String[] args) {
 		StandardApplicationRunner.run(new TerminateConnection(), args);
-		disconnect();
 	}
 
 	@Override
 	public void parseArguments(ArgumentList argumentList) throws Exception {
 		_debug = Debug.getLogger();
-		_debug.fine("argumentList = " + argumentList);
-		_objectSpec = argumentList.fetchArgument("-objekt=").asNonEmptyString();
+		_objectSpec = argumentList.fetchArgument("-objekt=").asString();
+		_appName = argumentList.fetchArgument("-name=").asString();
 	}
 
 	@Override
 	public void initialize(ClientDavInterface connection) throws Exception {
-		List<SystemObject> systemObjectList = ConfigurationHelper.getObjects(_objectSpec, connection.getDataModel());
-		sendTerminationData(connection, systemObjectList);
+		List<SystemObject> objects = new ArrayList<SystemObject>();
+		if(_objectSpec.length() > 0) {
+			objects.addAll(ConfigurationHelper.getObjects(_objectSpec, connection.getDataModel()));
+		}
+		if(_appName.length() > 0){
+			for(String app : _appName.split(":")) {
+				DataModel dataModel = connection.getDataModel();
+				for(SystemObject systemObject : dataModel.getType("typ.datenverteiler").getElements()) {
+					if(matches(systemObject, app)){
+						objects.add(systemObject);
+					}
+				}
+				for(SystemObject systemObject : dataModel.getType("typ.applikation").getElements()) {
+					if(matches(systemObject, app)){
+						objects.add(systemObject);
+					}
+				}
+			}
+		}
+		if(objects.isEmpty()){
+			_debug.warning("Keine Objekte ausgewählt. Mit -objekt=... Pids und IDs auswählen, oder mit -name=... Applikationsnamen auswählen");
+		}
+		else{
+			for(SystemObject object : objects) {
+				_debug.info("Terminiere", object);
+			}
+		}
+		sendTerminationData(connection, objects);
+	}
+
+	private static boolean matches(final SystemObject systemObject, final String appName) {
+		if(systemObject.getName().startsWith(appName)){
+			if(systemObject.getName().length() == appName.length()){
+				return true;
+			}
+			if(systemObject.getName().startsWith(appName + ": ")){
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public static void sendTerminationData(final ClientDavInterface connection, final List<SystemObject> systemObjectList) throws InterruptedException {
 		if(_debug == null){
 			_debug = Debug.getLogger();
 		}
-//		System.out.println("systemObjectList = " + systemObjectList);
-
 		DataModel configuration = connection.getDataModel();
 		SystemObject object = connection.getLocalDav();
 
@@ -105,7 +136,7 @@ public class TerminateConnection implements StandardApplication {
 
 		for(SystemObject systemObject : systemObjectList) {
 			if(systemObject == null){
-				_debug.error("Die Übergebene Objekt-Spezifikation ist ungültig. Bitte überprüfen Sie die Übergabeparameter(-objekt=...).\nBeachten Sie das nach jedem Neustart der Kernsoftware die bisherigen Objekt-Spezifikation gelöscht werden.\n");
+				_debug.error("Die Übergebene Objekt-Spezifikation ist ungültig.");
 				continue;
 			}
 
@@ -116,8 +147,7 @@ public class TerminateConnection implements StandardApplication {
 				Data.ReferenceValue referenceValue = referenceArrayApplication.getReferenceValue(application++);
 				referenceValue.setSystemObject(systemObject);
 			}else{
-				_debug.error("Die Übergebene Objekt-Spezifikation ist ungültig, es sind nur Objekte für den Typ typ.datenverteiler und typ.applikation definiert. Bitte überprüfen Sie die Übergabeparameter(-objekt=...).\nBeachten Sie das nach jedem Neustart der Kernsoftware die bisherigen Objekt-Spezifikation gelöscht werden.\n");
-				continue;
+				_debug.error("Das Objekt " + systemObject + " wurde ignoriert, ein es keine Applikation oder Datenverteiler ist.");
 			}
 		}
 
@@ -127,42 +157,45 @@ public class TerminateConnection implements StandardApplication {
 		DataDescription dataDescription = new DataDescription(atg, aspect);
 		ResultData dataTel = new ResultData(object, dataDescription, System.currentTimeMillis(), data);
 
-		final Transmitter sender = new Transmitter();
+		final Sender sender = new Sender(connection, dataTel);
 		try {
 			connection.subscribeSender(sender, object, dataDescription, SenderRole.sender());
-			Thread.sleep(1000);
-//			System.out.println("Verbindung zum Datenverteiler wird angemeldet.");
-		}
-		catch(OneSubscriptionPerSendData e) {
-//			System.out.println("Datenidentifikation ist bereits angemeldet.");
-		}
-
-		try {
-//			System.out.println("Gewählte Applikation-/Datenverteilerverbindung wird terminiert...");
-			connection.sendData(dataTel);
 		}
 		catch(Exception e) {
 			System.out.println("Fehler: " + e.getMessage());
 		}
-		finally {
-			connection.unsubscribeSender(sender, object, dataDescription);
+	}
+
+	private static class Sender implements ClientSenderInterface {
+
+		private final ClientDavInterface _connection;
+		private final ResultData _data;
+
+		public Sender(final ClientDavInterface connection, final ResultData data) {
+			_connection = connection;
+			_data = data;
 		}
-	}
-
-	public static void disconnect() {
-//		System.out.println("Die Verbindung zum Datenverteiler wird nun getrennt.");
-	}
-
-	private static class Transmitter implements ClientSenderInterface {
 
 		@Override
 		public void dataRequest(SystemObject object, DataDescription dataDescription, byte state) {
-			//System.out.println("state = " + state);
+			try {
+				if(state == START_SENDING) {
+					_connection.sendData(_data);
+				}
+				else {
+					_debug.warning("Negative Sendesteuerung", state);
+				}
+			}
+			catch(SendSubscriptionNotConfirmed ignored) {
+				return;
+			}
+			_connection.unsubscribeSender(this, object, dataDescription);
+			_connection.disconnect(false, "");
 		}
 
 		@Override
 		public boolean isRequestSupported(SystemObject object, DataDescription dataDescription) {
-			return false;
+			return true;
 		}
 	}
 }

@@ -30,12 +30,6 @@
          xsi:schemaLocation="http://maven.apache.org/DECORATION/1.4.0 http://maven.apache.org/xsd/decoration-1.4.0.xsd">
     <body>
         <menu ref="parent"/>
-        <menu ref="modules"/>
         <menu ref="reports"/>
-        <links>
-            <item name="GitHub" href="https://github.com/falkoschumann/datenverteiler-kernsoftware"/>
-            <item name="NERZ e.V." href="http://www.nerz-ev.de"/>
-            <item name="Kappich Systemberatung" href="http://www.kappich.de"/>
-        </links>
     </body>
 </project>

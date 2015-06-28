@@ -41,7 +41,7 @@ import java.util.*;
  * Setter-Methoden gesetzt und können durch entsprechende Getter-Methoden gelesen werden.
  *
  * @author Kappich Systemberatung
- * @version $Revision: 11481 $
+ * @version $Revision: 12959 $
  */
 public class ServerDavParameters {
 
@@ -1638,7 +1638,7 @@ public class ServerDavParameters {
 		outputBufferSize = getAppCommunicationOutputBufferSize();
 		inputBufferSize = getAppCommunicationInputBufferSize();
 		communicationProtocolName = getLowLevelCommunicationName();
-		return new ClientDavParameters(
+		ClientDavParameters clientDavParameters = new ClientDavParameters(
 				configurationPid,
 				address,
 				subAddress,
@@ -1653,6 +1653,9 @@ public class ServerDavParameters {
 				inputBufferSize,
 				communicationProtocolName
 		);
+		// Interne Datenverteilerverbindung darf keine 2. Verbindung benutzen
+		clientDavParameters.setUseSecondConnection(false);
+		return clientDavParameters;
 	}
 
 	public String getLowLevelCommunicationParameters() {
@@ -1688,7 +1691,7 @@ public class ServerDavParameters {
 
 	/**
 	 * @author Kappich Systemberatung
-	 * @version $Revision: 11481 $
+	 * @version $Revision: 12959 $
 	 */
 	public static enum UserRightsChecking {
 		Disabled,

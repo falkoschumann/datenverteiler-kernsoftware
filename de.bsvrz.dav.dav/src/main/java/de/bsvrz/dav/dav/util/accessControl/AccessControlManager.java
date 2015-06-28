@@ -30,6 +30,7 @@ import de.bsvrz.sys.funclib.operatingMessage.MessageSender;
 import de.bsvrz.sys.funclib.operatingMessage.MessageState;
 import de.bsvrz.sys.funclib.operatingMessage.MessageType;
 
+import java.io.Closeable;
 import java.util.*;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -40,7 +41,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * @author Kappich Systemberatung
  * @version $Revision: 0000 $
  */
-public final class AccessControlManager implements RegionManager {
+public final class AccessControlManager implements RegionManager, Closeable {
 
 	/** Debug */
 	private static final Debug _debug = Debug.getLogger();
@@ -50,6 +51,12 @@ public final class AccessControlManager implements RegionManager {
 	 * Parameterdatensatz gemeldet wird. Bei der Anpassung der Zeit muss möglicherweise der Wortlaut der Betriebsmeldung geändert werden.
 	 */
 	public static final int MessageSenderInterval = 60 * 1000;
+
+	/**
+	 * Spezielles Long, dass das Töten des Threads bewirkt.
+	 */
+	@SuppressWarnings("UnnecessaryBoxing")
+	private static final Long POISON = new Long(0);
 
 	/** Map, die BenutzerIds den Benutzerobjekten zuordnet */
 	private final HashMap<Long, UserInfoInternal> _userInfoHashMap = new HashMap<Long, UserInfoInternal>();
@@ -82,6 +89,7 @@ public final class AccessControlManager implements RegionManager {
 	private HashBagMap<DataState, DataLoader> _oldObjectsWithMissingParameters;
 
 	private final LinkedBlockingQueue<Long> _notifyUserChangedQueue = new LinkedBlockingQueue<Long>();
+	private Timer _parameterTimer;
 
 	/**
 	 * Erstellt eine neue Instanz des AccessControlManagers mit impliziter Benutzerverwaltung
@@ -131,27 +139,29 @@ public final class AccessControlManager implements RegionManager {
 			createParameterTimer();
 		}
 
-		Thread thread = new Thread("Aktualisierung Benutzerrechte"){
+		final Thread refreshThread = new Thread("Aktualisierung Benutzerrechte") {
 			@Override
 			public void run() {
-				while(!interrupted()){
+				while(!interrupted()) {
 					try {
 						Long userId = _notifyUserChangedQueue.take();
+						//noinspection NumberEquality
+						if(userId == POISON) return;
 						_userRightsChangeHandler.handleUserRightsChanged(userId);
 					}
-					catch(Exception e){
+					catch(Exception e) {
 						_debug.error("Fehler beim Ändern von Benutzerrechten", e);
 					}
 				}
 			}
 		};
-		thread.setDaemon(true);
-		thread.start();
+		refreshThread.setDaemon(true);
+		refreshThread.start();
 	}
 
 	private void createParameterTimer() {
-		final Timer timer = new Timer("Warnung über fehlende Parameter", true);
-		timer.schedule(
+		_parameterTimer = new Timer("Warnung über fehlende Parameter", true);
+		_parameterTimer.schedule(
 				new TimerTask() {
 					@Override
 					public void run() {
@@ -159,6 +169,24 @@ public final class AccessControlManager implements RegionManager {
 					}
 				}, MessageSenderInterval, MessageSenderInterval
 		);
+	}
+
+	@Override
+	public void close() {
+		_notifyUserChangedQueue.add(POISON);
+		_parameterTimer.cancel();
+		for(Role role : _roleHashMap.values()) {
+			role.stopDataListener();
+		}
+		for(Region region : _regionHashMap.values()) {
+			region.stopDataListener();
+		}
+		for(AccessControlUnit accessControlUnit : _authenticationClassHashMap.values()) {
+			accessControlUnit.stopDataListener();
+		}
+		for(UserInfoInternal userInfoInternal : _userInfoHashMap.values()) {
+			userInfoInternal.stopDataListener();
+		}
 	}
 
 	private void sendMessagesAboutMissingParameters() {

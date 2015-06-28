@@ -73,4 +73,9 @@ public interface ObjectSelectionBlock {
 	 * @param object Listener
 	 */
 	void removeChangeListener(ObjectCollectionChangeListener object);
+
+	/**
+	 * Markiert das Objekt als unbenutzt, sodass angemeldete Listener etc. abgemeldet werden können
+	 */
+	void dispose();
 }

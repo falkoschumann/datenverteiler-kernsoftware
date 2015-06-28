@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 by Kappich Systemberatung Aachen
+ * Copyright 2014 by Kappich Systemberatung Aachen
  * 
  * This file is part of de.bsvrz.kex.kexdav.
  * 
@@ -38,47 +38,29 @@ import de.bsvrz.kex.kexdav.systemobjects.MissingObjectException;
  * gegebenenfalls anpasst, falls z.B. unterschiedliche Attributgruppen vorliegen.
  *
  * @author Kappich Systemberatung
- * @version $Revision: 9294 $
+ * @version $Revision: 12676 $
  */
-public class LowLevelDataPipe {
-
-	private final KExDaVObject _source;
-
-	private final KExDaVObject _target;
-
-	private final String _atgSource;
-
-	private final String _atgTarget;
-
-	private final String _aspSource;
-
-	private final String _aspTarget;
-
-	private final short _simulationVariantSource;
-
-	private final short _simulationVariantTarget;
-
-	private final ReceiveOptions _receiveOptions;
-
-	private final KExDaVDataPlugin _plugin;
-
-	private volatile boolean _hasSender = false;
-
-	private volatile boolean _hasReceiver = false;
-
-	private final KExDaVReceiver _receiver = new MyReceiver();
-
-	private final ReceiverRole _receiverRole;
-
-	private final SenderRole _senderRole;
-
-	private final ObjectManagerInterface _objectManagerInterface;
-
-	private final ManagerInterface _manager;
-
-	private volatile boolean _stopOnNextData = false;
-
-	private DataTransferPolicy _policy;
+public abstract class LowLevelDataPipe {
+	protected final KExDaVObject _source;
+	protected final KExDaVObject _target;
+	protected final String _atgSource;
+	protected final String _atgTarget;
+	protected final String _aspSource;
+	protected final String _aspTarget;
+	protected final short _simulationVariantSource;
+	protected final short _simulationVariantTarget;
+	protected final ReceiveOptions _receiveOptions;
+	protected final KExDaVDataPlugin _plugin;
+	protected final ReceiverRole _receiverRole;
+	protected final SenderRole _senderRole;
+	protected final ObjectManagerInterface _objectManagerInterface;
+	protected final ManagerInterface _manager;
+	protected final KExDaVReceiver _receiver = new MyReceiver();
+	protected final KExDaVSender _sender = new MySender();
+	protected DataTransferPolicy _policy;
+	protected volatile boolean _hasSender = false;
+	protected volatile boolean _hasReceiver = false;
+	protected volatile boolean _stopOnNextData = false;
 
 	/**
 	 * Erstellt eine Datenverbindungsklasse
@@ -99,7 +81,7 @@ public class LowLevelDataPipe {
 	 * @param objectManagerInterface  Verwaltung korrespondierender Objekte (optional)
 	 * @param manager                 Callback für Ereignisse und Warnungen
 	 */
-	public LowLevelDataPipe(
+	public static LowLevelDataPipe createLowLevelDataPipe(
 			final KExDaVObject source,
 			final KExDaVObject target,
 			final String atgSource,
@@ -114,29 +96,30 @@ public class LowLevelDataPipe {
 			final KExDaVDataPlugin plugin,
 			final ObjectManagerInterface objectManagerInterface,
 			final ManagerInterface manager) {
-		if(source == null) throw new IllegalArgumentException("source ist null");
-		if(target == null) throw new IllegalArgumentException("target ist null");
-		if(atgSource == null) throw new IllegalArgumentException("atgSource ist null");
-		if(atgTarget == null) throw new IllegalArgumentException("atgTarget ist null");
-		if(aspSource == null) throw new IllegalArgumentException("aspSource ist null");
-		if(aspTarget == null) throw new IllegalArgumentException("aspTarget ist null");
-		if(plugin == null) throw new IllegalArgumentException("plugin ist null");
-		if(manager == null) throw new IllegalArgumentException("manager ist null");
+		if(senderRole == SenderRole.source()) {
+			return new LowLevelDataPipeSource(source, target, atgSource, atgTarget, aspSource, aspTarget, simulationVariantSource, simulationVariantTarget, receiveOptions, receiverRole, senderRole, plugin, objectManagerInterface, manager);
+		}
+		else {
+			return new LowLevelDataPipeDrain(source, target, atgSource, atgTarget, aspSource, aspTarget, simulationVariantSource, simulationVariantTarget, receiveOptions, receiverRole, senderRole, plugin, objectManagerInterface, manager);
+		}
+	}
+
+	protected LowLevelDataPipe(final ManagerInterface manager, final String aspTarget, final ObjectManagerInterface objectManagerInterface, final String atgSource, final KExDaVObject target, final short simulationVariantTarget, final String atgTarget, final short simulationVariantSource, final String aspSource, final KExDaVDataPlugin plugin, final ReceiverRole receiverRole, final SenderRole senderRole, final ReceiveOptions receiveOptions, final KExDaVObject source) {
 		_manager = manager;
-		_source = source;
-		_target = target;
-		_atgSource = atgSource;
-		_atgTarget = atgTarget;
-		_aspSource = aspSource;
 		_aspTarget = aspTarget;
-		_simulationVariantSource = simulationVariantSource;
-		_simulationVariantTarget = simulationVariantTarget;
-		_receiveOptions = receiveOptions;
-		_receiverRole = receiverRole;
-		_senderRole = senderRole;
-		_plugin = plugin;
 		_objectManagerInterface = objectManagerInterface;
+		_atgSource = atgSource;
+		_target = target;
+		_simulationVariantTarget = simulationVariantTarget;
+		_atgTarget = atgTarget;
+		_simulationVariantSource = simulationVariantSource;
+		_aspSource = aspSource;
+		_plugin = plugin;
+		_receiverRole = receiverRole;
 		_policy = new BasicTransferPolicy(this);
+		_senderRole = senderRole;
+		_receiveOptions = receiveOptions;
+		_source = source;
 	}
 
 	/**
@@ -149,27 +132,7 @@ public class LowLevelDataPipe {
 	}
 
 	/** Startet den Datentransfer */
-	public void start() {
-		if(_hasReceiver) return;
-		_manager.addMessage(Message.newInfo("Starte Empfänger: " + this));
-		_hasReceiver = true;
-		try {
-			
-			try {
-				Thread.sleep(10);
-			}
-			catch(InterruptedException ignored) {
-			}
-			if(!_source.registerReceiver(_atgSource, _aspSource, _simulationVariantSource, _receiverRole, _receiveOptions, _receiver)){
-				_hasReceiver = false;
-			}
-		}
-		catch(MissingObjectException e) {
-			// Senderobjekt (oder atg/asp) existiert nicht
-			_manager.addMessage(Message.newError(e));
-			_hasReceiver = false;
-		}
-	}
+	public abstract void start();
 
 	/** Stoppt den Datentransfer */
 	public void stop() {
@@ -185,7 +148,7 @@ public class LowLevelDataPipe {
 			_hasReceiver = false;
 		}
 		if(_hasSender) {
-			_target.unsubscribeSender(this);
+			_target.unsubscribeSender(_sender);
 			_hasSender = false;
 		}
 	}
@@ -196,15 +159,6 @@ public class LowLevelDataPipe {
 		start();
 	}
 
-	private class MyReceiver implements KExDaVReceiver {
-
-		public void update(final KExDaVAttributeGroupData sourceData, final DataState dataState, final long dataTime) {
-			if(!_hasReceiver) return;
-
-			_policy.handleData(sourceData, dataState, dataTime);
-		}
-	}
-
 	/**
 	 * Sendet die Daten weiter an den Empfänger. Wird von der {@link #_policy} aufgerufen.
 	 *
@@ -212,65 +166,7 @@ public class LowLevelDataPipe {
 	 * @param dataState  Datenzustand
 	 * @param dataTime   Datenzeit
 	 */
-	void sendDataToReceiver(final KExDaVAttributeGroupData sourceData, final DataState dataState, final long dataTime) {
-		if(dataState != DataState.NO_SOURCE && !_hasSender) {
-			try {
-				_manager.addMessage(Message.newInfo("Starte Sender: " + this));
-				if(!_target.registerSender(_atgTarget, _aspTarget, _simulationVariantTarget, _senderRole, this)){
-					return;
-				}
-			}
-			catch(MissingObjectException e) {
-				// Empfängerobjekt (oder atg/asp) existiert nicht
-				_manager.addMessage(Message.newError(e));
-				return;
-			}
-			_hasSender = true;
-		}
-		else if(dataState == DataState.NO_SOURCE && _hasSender) {
-			_target.unsubscribeSender(this);
-			_hasSender = false;
-		}
-
-		if(!_hasSender) {
-			return;
-		}
-
-		KExDaVAttributeGroupData targetData = null;
-		if(sourceData != null) {
-			try {
-				targetData = new KExDaVAttributeGroupData(_target.getConnection(), _atgTarget, _manager);
-
-				_plugin.process(sourceData, targetData, _objectManagerInterface, _manager);
-			}
-			catch(MissingObjectException e) {
-				// Attributgruppe fehlt
-				_manager.addMessage(Message.newError(e));
-			}
-			catch(DataCopyException e) {
-				// Data konnte nicht kopiert werden. Kann z.B. von Plugins ausgelöst werden oder tritt auf wenn die Attributgruppen in grob
-				// unterschiedlichen, inkompatiblen Versionen vorlegen (z.B. ein Attribut ist einmal ein Array und einmal ein einfacher Wert)
-				// Falls einfach nur Werte fehlen wird weiter unten eine weniger schwerwiegende Meldung ausgelöst.
-				_manager.addMessage(Message.newMajor("Kann Daten nicht kopieren", e));
-			}
-		}
-		if(targetData == null || targetData.isDefined()) {
-			_target.sendData(this, targetData, dataTime);
-			if(targetData != null && _stopOnNextData) {
-				stop();
-				_stopOnNextData = false;
-			}
-		}
-		else {
-			_manager.addMessage(
-					Message.newMajor(
-							"Ein Datensatz konnte nicht übertragen werden, da für erforderliche Attribute keine Daten bereitstehen: \n"
-							+ LowLevelDataPipe.this.toString() + "\n" + targetData
-					)
-			);
-			_target.sendData(this, null, dataTime);
-		}
-	}
+	abstract void sendDataToReceiver(KExDaVAttributeGroupData sourceData, DataState dataState, long dataTime);
 
 	@Override
 	public boolean equals(final Object o) {
@@ -319,4 +215,23 @@ public class LowLevelDataPipe {
 		return _source + ":" + _atgSource + ":" + _aspSource + ":" + _simulationVariantSource + " => " + _target + ":" + _atgTarget + ":" + _aspTarget + ":"
 		       + _simulationVariantTarget;
 	}
+
+	private class MyReceiver implements KExDaVReceiver {
+
+		public void update(final KExDaVAttributeGroupData sourceData, final DataState dataState, final long dataTime) {
+			if(!_hasReceiver) return;
+
+			_policy.handleData(sourceData, dataState, dataTime);
+		}
+	}
+
+	private class MySender implements KExDaVSender {
+
+		@Override
+		public void update(final byte state) {
+			updateSendControl(state);
+		}
+	}
+
+	protected abstract void updateSendControl(final byte state);
 }

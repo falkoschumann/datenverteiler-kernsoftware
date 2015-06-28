@@ -33,7 +33,7 @@ import java.util.*;
  * DataViewPanels} - mitgeteilt.
  *
  * @author Kappich Systemberatung
- * @version $Revision: 8128 $
+ * @version $Revision: 12604 $
  */
 public class DataViewModel implements CellKeyServer {
 

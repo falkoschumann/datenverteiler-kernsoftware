@@ -25,7 +25,7 @@
     <parent>
         <groupId>kernsoftware</groupId>
         <artifactId>kernsoftware</artifactId>
-        <version>${kernsoftware.version}</version>
+        <version>3.6.5</version>
         <relativePath>..</relativePath>
     </parent>
 
@@ -33,66 +33,39 @@
         <dependency>
             <groupId>de.bsvrz.sys</groupId>
             <artifactId>de.bsvrz.sys.funclib.concurrent</artifactId>
-            <version>${kernsoftware.version}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>de.bsvrz.sys</groupId>
             <artifactId>de.bsvrz.sys.funclib.crypt</artifactId>
-            <version>${kernsoftware.version}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>de.bsvrz.sys</groupId>
             <artifactId>de.bsvrz.sys.funclib.debug</artifactId>
-            <version>${kernsoftware.version}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>de.bsvrz.sys</groupId>
             <artifactId>de.bsvrz.sys.funclib.filelock</artifactId>
-            <version>${kernsoftware.version}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>de.bsvrz.sys</groupId>
             <artifactId>de.bsvrz.sys.funclib.hexdump</artifactId>
-            <version>${kernsoftware.version}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>de.bsvrz.sys</groupId>
             <artifactId>de.bsvrz.sys.funclib.timeout</artifactId>
-            <version>${kernsoftware.version}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>de.bsvrz.sys</groupId>
             <artifactId>de.bsvrz.sys.funclib.commandLineArgs</artifactId>
-            <version>${kernsoftware.version}</version>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.1</version>
-                <configuration>
-                    <compilerArguments>
-                        <sourcepath>
-                            ${project.basedir}/../de.bsvrz.sys.funclib.communicationStreams/src/main/java${path.separator}${project.basedir}/../de.bsvrz.sys.funclib.dataSerializer/src/main/java
-                        </sourcepath>
-                    </compilerArguments>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>2.4</version>
-                <configuration>
-                    <includes>
-                        <include>de/bsvrz/dav/daf/**</include>
-                    </includes>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
 
     <reporting>
         <plugins>

@@ -24,6 +24,7 @@ import de.bsvrz.dav.daf.communication.lowLevel.telegrams.ApplicationDataTelegram
 import de.bsvrz.dav.daf.communication.lowLevel.telegrams.BaseSubscriptionInfo;
 import de.bsvrz.dav.dav.main.ConnectionState;
 import de.bsvrz.dav.dav.main.SubscriptionsManager;
+import de.bsvrz.sys.funclib.debug.Debug;
 
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
@@ -32,70 +33,64 @@ import java.io.IOException;
 import java.util.*;
 
 /**
- * Diese Klasse kapselt eine Anmeldungsinformation zu einer Objekt/Attributgruppe/Aspekt/Simulationsvariante-Kombination. Enthalten sind die eigentlichen
- * Anmeldungen von Applikationen und Datenverteilern auf diese BaseSubscriptionInfo. Diese Klasse kümmert sich darum,
- * die Anmeldungen zu verwalten und je nach Verfügbarkeit von Sendern, Empfängern, Quellen und Senken und je nach vorhandenen Rechten den einzelnen
- * Verbindungen per Sendesteuerung oder leeren Datensätzen den Zustand der Anmeldung zu übermitteln. Zusätzlich übernimmt diese Klasse das Verteilen von
- * Datensätzen als Zentraldatenverteiler.
+ * Diese Klasse kapselt eine Anmeldungsinformation zu einer Objekt/Attributgruppe/Aspekt/Simulationsvariante-Kombination. Enthalten sind die
+ * eigentlichen Anmeldungen von Applikationen und Datenverteilern auf diese BaseSubscriptionInfo. Diese Klasse kümmert sich darum, die
+ * Anmeldungen zu verwalten und je nach Verfügbarkeit von Sendern, Empfängern, Quellen und Senken und je nach vorhandenen Rechten den
+ * einzelnen Verbindungen per Sendesteuerung oder leeren Datensätzen den Zustand der Anmeldung zu übermitteln. Zusätzlich übernimmt diese
+ * Klasse das Verteilen von Datensätzen an interessierte und gültige Empfangsanmeldungen.
  *
  * @author Kappich Systemberatung
  * @version $Revision: 11476 $
  */
 public class SubscriptionInfo implements Closeable {
 
+	private static final Debug _debug = Debug.getLogger();
+
 	/**
 	 * Liste mit Anmeldungen
 	 */
 	private final SubscriptionList _subscriptionList = new SubscriptionList();
-
-	/**
-	 * Soll versucht werden, sich zu einem entfernten Datenverteiler zu verbinden? (True wenn keine lokale Quelle oder Senke vorhanden ist)
-	 */
-	private boolean _connectToRemoteCentralDistributor = false;
-
 	/**
 	 * Referenz auf die Anmeldungsverwaltung
 	 */
 	private final SubscriptionsManager _subscriptionsManager;
-
 	/**
 	 * Datenidentifikation
 	 */
 	private final BaseSubscriptionInfo _baseSubscriptionInfo;
-
+	/**
+	 * Laufende Anmeldeumleitungen, enthalt eine Map mit Zuordnung ZentralverteilerId->Neue Verbindung. In dieser Map sind die neuen
+	 * Verbindungen gespeichert, während sie noch aufgebaut werden. Nachdem die verbindung erfolgreich aufgebaut wurde, wird dann die
+	 * eigentliche Anmeldung in der {@link SubscriptionList} umgebogen und der eintrag aus dieser Map entfernt.
+	 */
+	private final HashMap<Long, PendingSubscription> _pendingSubscriptions = new HashMap<Long, PendingSubscription>();
+	/**
+	 * Soll versucht werden, sich zu einem entfernten Datenverteiler zu verbinden? (True wenn keine lokale Quelle oder Senke vorhanden ist)
+	 */
+	private boolean _connectToRemoteCentralDistributor = false;
 	/**
 	 * Zwischenspeicher für die zuletzt gesendeten Telegramme einer Quelle
 	 */
 	private List<ApplicationDataTelegram> _lastSendTelegrams = null;
-
 	/**
-	 * Letzter gesendeter/weitergeleiteter Datenindex (1 = kein oder nur ein künstlicher Datensatz vorher gesendet).
-	 * Die eigentliche Datenindexgenerierung im Zentraldatenverteiler findet in der {@link SubscriptionList}-Klasse statt.
+	 * Letzter gesendeter/weitergeleiteter Datenindex (1 = kein oder nur ein künstlicher Datensatz vorher gesendet). Die eigentliche
+	 * Datenindexgenerierung im Zentraldatenverteiler findet in der {@link SubscriptionList}-Klasse statt.
 	 */
 	private long _lastSendDataIndex = 1;
-
 	/**
 	 * Sind Anmeldungen gesperrt, weil es mehrere Remote-Datenverteiler mit positiven Rückmeldungen gibt?
 	 */
 	private boolean _multiRemoteLockActive = false;
-
 	/**
-	 * Ist true während die Remote-Anmeldungen aktualisiert werden. Verhindert, dass {@link #setConnectToRemoteCentralDistributor(boolean)} rekursiv aufgerufen wird,
-	 * wodurch störende Effekte entstehen können.
+	 * Ist true während die Remote-Anmeldungen aktualisiert werden. Verhindert, dass {@link #setConnectToRemoteCentralDistributor(boolean)}
+	 * rekursiv aufgerufen wird, wodurch störende Effekte entstehen können.
 	 */
 	private boolean _remoteUpdateLockActive = false;
-
-	/**
-	 * Laufende Anmeldeumleitungen, enthalt eine Map mit Zuordnung ZentralverteilerId->Neue Verbindung. In dieser Map sind die neuen Verbindungen gespeichert, während
-	 * sie noch aufgebaut werden. Nachdem die verbindung erfolgreich aufgebaut wurde, wird dann die eigentliche Anmeldung in der {@link SubscriptionList}
-	 * umgebogen und der eintrag aus dieser Map entfernt.
-	 */
-	private final HashMap<Long, PendingSubscription> _pendingSubscriptions = new HashMap<Long, PendingSubscription>();
-
 	private int _referenceCounter = 0;
 
 	/**
 	 * Erstellt eine neue SubscriptionInfo
+	 *
 	 * @param subscriptionsManager Anmeldungsverwaltung
 	 * @param baseSubscriptionInfo Datenidentifikation
 	 */
@@ -105,7 +100,40 @@ public class SubscriptionInfo implements Closeable {
 	}
 
 	/**
+	 * Prüft ob 2 Telegrammlisten im Sinne der Anmeldung auf Delta-Datensätze gleich sind.
+	 *
+	 * @param telegrams1 Daten-Telegramme 1
+	 * @param telegrams2 Daten-Telegramme 2
+	 * @return True wenn Daten vorhanden und identisch sind
+	 */
+	private static boolean telegramsAreEqual(final List<ApplicationDataTelegram> telegrams1, final List<ApplicationDataTelegram> telegrams2) {
+		if(telegrams1 == null || telegrams2 == null) return false;
+
+		if(telegrams1.size() != telegrams2.size()) return false;
+
+		if(telegrams1.get(0).getErrorFlag() != 0 || telegrams2.get(0).getErrorFlag() != 0) return false;
+
+		for(int i = 0, size = telegrams1.size(); i < size; i++) {
+			final ApplicationDataTelegram telegram1 = telegrams1.get(i);
+			final ApplicationDataTelegram telegram2 = telegrams2.get(i);
+			if(!Arrays.equals(telegram1.getData(), telegram2.getData())) return false;
+		}
+		return true;
+	}
+
+	/**
+	 * Prüft ob eine Anmeldung lokal ist
+	 *
+	 * @param subscription Anmeldung
+	 * @return true wenn lokal
+	 */
+	private static boolean isLocalSubscription(final Subscription subscription) {
+		return subscription != null && subscription instanceof LocalSubscription;
+	}
+
+	/**
 	 * Fügt eine sendende Anmeldung hinzu
+	 *
 	 * @param sendingSubscription neue sendende Anmeldung
 	 */
 	public synchronized void addSendingSubscription(final SendingSubscription sendingSubscription) {
@@ -115,6 +143,7 @@ public class SubscriptionInfo implements Closeable {
 
 	/**
 	 * Fügt eine empfangende Anmeldung hinzu
+	 *
 	 * @param receivingSubscription neue empfangende Anmeldung
 	 */
 	public synchronized void addReceivingSubscription(final ReceivingSubscription receivingSubscription) {
@@ -124,6 +153,7 @@ public class SubscriptionInfo implements Closeable {
 
 	/**
 	 * Aktualisiert die Anmeldungszustände wenn ein neuer Sender/eine neue Quelle angemeldet wird
+	 *
 	 * @param sendingSubscription neue sendende Anmeldung
 	 */
 	private void refreshSubscriptionsOnNewSender(final SendingSubscription sendingSubscription) {
@@ -150,9 +180,9 @@ public class SubscriptionInfo implements Closeable {
 		updateSenderReceiverStatus();
 	}
 
-
 	/**
 	 * Aktualisiert die Anmeldungszustände wenn eine neue Senke oder ein Empfänger angemeldet wird
+	 *
 	 * @param receivingSubscription neue empfangende Anmeldung
 	 */
 	private void refreshSubscriptionsOnNewReceiver(final ReceivingSubscription receivingSubscription) {
@@ -192,18 +222,17 @@ public class SubscriptionInfo implements Closeable {
 		long centralDistributorId = getCentralDistributorId();
 		final List<SendingSubscription> sendingSubscriptions = getValidSenderSubscriptions();
 		final List<ReceivingSubscription> receivingSubscriptions = getValidReceiverSubscriptions();
-		if(sendingSubscriptions.isEmpty()|| !_subscriptionList.hasDrainOrSource()) {
+		if(sendingSubscriptions.isEmpty() || !_subscriptionList.hasDrainOrSource()) {
 			// Es gibt keine Sender, oder es sind nur Sender und Empfänger vorhanden
 			// -> Statusmeldung "Keine Quelle" an Empfänger
 			for(ReceivingSubscription subscription : receivingSubscriptions) {
 				ReceiverState prevState = subscription.getState();
-				if(prevState != ReceiverState.NO_SENDERS){
+				if(prevState != ReceiverState.NO_SENDERS) {
 					subscription.setState(ReceiverState.NO_SENDERS, centralDistributorId);
-					// hier wird "keine Quelle" an Senke gesendet
-					// das ist nur notwendig, wenn vorher noch kein "keine Quelle" gesendet wurde
-					// Da "keine Quelle" auch im Status SENDERS_AVAILABLE gesendet wird (siehe weiter unten)
-					// ist hier die Prüfung notwendig um keine unnötigen Datensätze zu versenden.
-					if(prevState != ReceiverState.SENDERS_AVAILABLE) {
+
+					// Status-Datensatz "keine Quelle" nur an Senken senden, wenn die Senke vorher einen ungültigen Status hatte.
+					// Senken brauchen ansonsten nicht über das (nicht) vorhandensein von Sendern informiert zu werden.
+					if(!subscription.isDrain() || prevState != ReceiverState.SENDERS_AVAILABLE) {
 						subscription.sendStateTelegram(ReceiverState.NO_SENDERS);
 					}
 				}
@@ -213,7 +242,7 @@ public class SubscriptionInfo implements Closeable {
 				sendingSubscription.setState(SenderState.NO_RECEIVERS, centralDistributorId);
 			}
 		}
-		else if(receivingSubscriptions.isEmpty()){
+		else if(receivingSubscriptions.isEmpty()) {
 			// -> Sendesteuerung keine Empfänger an evtl. vorhandene Quellen/Sender
 			for(SendingSubscription sendingSubscription : sendingSubscriptions) {
 				sendingSubscription.setState(SenderState.NO_RECEIVERS, centralDistributorId);
@@ -225,12 +254,21 @@ public class SubscriptionInfo implements Closeable {
 			// Falls es eine Quelle gibt, den evtl. gespeicherten Datensatz an alle Empfänger weiterleiten.
 			if(hasSource()) {
 				for(ReceivingSubscription subscription : receivingSubscriptions) {
-					if(subscription.getState() != ReceiverState.SENDERS_AVAILABLE){
+					if(subscription.getState() != ReceiverState.SENDERS_AVAILABLE) {
 						subscription.setState(ReceiverState.SENDERS_AVAILABLE, centralDistributorId);
-						if(_lastSendTelegrams != null){
+						if(_lastSendTelegrams != null) {
 							for(final ApplicationDataTelegram telegram : _lastSendTelegrams) {
 								subscription.sendDataTelegram(telegram);
 							}
+						}
+						else if(_subscriptionList.isCentralDistributor()) {
+							// Es kann Situationen geben, in dem kein Datensatz gespeichert ist, z.B. falls die Quelle
+							// beim Versenden des initialen Datensatzes keine Rechte hatte und aufgrund fehlender
+							// Sendesteuerung beim wieder gültig werden keinen neuen Datensatz verschickt.
+							//
+							// Daher wird hier mangels besserer Alternativen an die Empfänger ein
+							// "Keine Quelle"-Datensatz geschickt
+							subscription.sendStateTelegram(ReceiverState.NO_SENDERS);
 						}
 					}
 				}
@@ -241,7 +279,7 @@ public class SubscriptionInfo implements Closeable {
 				// Wenn es weder eine Quelle oder Senke gibt, ebenfalls den Status auf NO_SENDERS setzen
 				for(ReceivingSubscription subscription : receivingSubscriptions) {
 					ReceiverState prevState = subscription.getState();
-					if(prevState != ReceiverState.SENDERS_AVAILABLE){
+					if(prevState != ReceiverState.SENDERS_AVAILABLE) {
 						subscription.setState(ReceiverState.SENDERS_AVAILABLE, centralDistributorId);
 						// hier wird "keine Quelle" an Senke gesendet, obwohl Sender vorhanden sind
 						// das ist notwendig, weil es kein "Es gibt Sender"-telegramm gibt bzw. eine Senke sich nicht
@@ -260,9 +298,11 @@ public class SubscriptionInfo implements Closeable {
 	}
 
 	/**
-	 * Gibt zurück, ob noch Anmeldungen bei anderen Datenverteilern laufen und daher derzeit keine Aktualisierungen von Anmeldungen erfolgen sollten.
-	 * Zum beispiel wein ein lokaler Empfänger angemeldet wird liefert diese Funktion true zurück, bis es entweder eine lokale Quelle gibt,
-	 * ein Datenverteiler die Anmeldung positiv quittiert hat, oder alle in Frage kommenden Datenverteiler eine negative Quittung gesendet haben.
+	 * Gibt zurück, ob noch Anmeldungen bei anderen Datenverteilern laufen und daher derzeit keine Aktualisierungen von Anmeldungen erfolgen
+	 * sollten. Zum beispiel wein ein lokaler Empfänger angemeldet wird liefert diese Funktion true zurück, bis es entweder eine lokale
+	 * Quelle gibt, ein Datenverteiler die Anmeldung positiv quittiert hat, oder alle in Frage kommenden Datenverteiler eine negative
+	 * Quittung gesendet haben.
+	 *
 	 * @return true wenn derzeit noch Anmeldungen im Gange sind und es keine positive Rückmeldung gibt.
 	 */
 	private boolean hasPendingRemoteSubscriptions() {
@@ -281,9 +321,9 @@ public class SubscriptionInfo implements Closeable {
 		return numPositive == 0 && numWaiting > 0;
 	}
 
-
 	/**
 	 * Aktualisiert den Anmeldestatus von allen Anmeldungen wenn sich ein Sender abmeldet
+	 *
 	 * @param toRemove Abmeldender Sender/Quelle
 	 */
 	private void refreshSubscriptionsOnSenderRemoval(final SendingSubscription toRemove) {
@@ -292,7 +332,7 @@ public class SubscriptionInfo implements Closeable {
 		if(validSenderSubscriptions.size() == 0) {
 			for(final ReceivingSubscription receivingSubscription : getValidReceiverSubscriptions()) {
 				receivingSubscription.setState(ReceiverState.NO_SENDERS, centralDistributorId);
-				if(!_subscriptionList.hasDrain()){
+				if(!_subscriptionList.hasDrain()) {
 					// Senken werden nicht informiert, wenn der letzte Sender sich abgemeldet hat, das gleiche trifft auf daneben angemeldete Empfänger zu.
 					receivingSubscription.sendStateTelegram(ReceiverState.NO_SENDERS);
 				}
@@ -310,6 +350,7 @@ public class SubscriptionInfo implements Closeable {
 
 	/**
 	 * Aktualisiert den Anmeldestatus von allen Anmeldungen wenn sich eine empfangende Anmeldung abmeldet
+	 *
 	 * @param toRemove Abmeldender Empfänger/Senke
 	 */
 	private void refreshSubscriptionsOnReceiverRemoval(final ReceivingSubscription toRemove) {
@@ -325,19 +366,20 @@ public class SubscriptionInfo implements Closeable {
 		if(toRemove == _subscriptionList.getDrain()) setDrain(null);
 		refreshSubscriptions(toRemove);
 
-		// updateReceiverStatus am Ende aufrufen, damit die Quelle dann schon entfernt ist und potentiell bei anderen Datenverteilern
-		// nach Quellen gesucht wird
+		// updateReceiverStatus am Ende aufrufen, damit die Senke dann schon entfernt ist und potentiell bei anderen Datenverteilern
+		// nach Senken gesucht wird
 		updateSenderReceiverStatus();
 	}
 
 	/**
-	 * Aktualisiert den Anmeldestatus von bisherigen Anmeldungen. Wenn z.B. eine Senke abgemeldet wird,
-	 * wird hier versucht, eventuelle andere Senken oder Quellen zu "aktivieren" (auf gültig zu setzen)
+	 * Aktualisiert den Anmeldestatus von bisherigen Anmeldungen. Wenn z.B. eine Senke abgemeldet wird, wird hier versucht, eventuelle
+	 * andere Senken oder Quellen zu "aktivieren" (auf gültig zu setzen)
+	 *
 	 * @param toIgnore Anmeldung die gerade abgemeldet wird und folglich eben nicht aktiviert werden soll
 	 */
 	private void refreshSubscriptions(final Subscription toIgnore) {
 		for(final SendingSubscription sendingSubscription : _subscriptionList.getSendingSubscriptions()) {
-			if(sendingSubscription != toIgnore && sendingSubscription.getState() == SenderState.INVALID_SUBSCRIPTION){
+			if(sendingSubscription != toIgnore && sendingSubscription.getState() == SenderState.INVALID_SUBSCRIPTION) {
 				refreshSubscriptionsOnNewSender(sendingSubscription);
 			}
 		}
@@ -349,8 +391,8 @@ public class SubscriptionInfo implements Closeable {
 	}
 
 	/**
-	 * Prüft ob mehrere Remote-Zentraldatenverteiler eine positive Rückmeldung auf eine Datenanmeldung gesendet haben. Falls ja,
-	 * entsteht ein ungültiger Zustand, welcher durch {@link #_multiRemoteLockActive} dargestellt wird.
+	 * Prüft ob mehrere Remote-Zentraldatenverteiler eine positive Rückmeldung auf eine Datenanmeldung gesendet haben. Falls ja, entsteht
+	 * ein ungültiger Zustand, welcher durch {@link #_multiRemoteLockActive} dargestellt wird.
 	 */
 	private void updateMultiRemoteConnectionsLock() {
 		setMultiRemoteLockActive(getMultipleRemoteConnectionsSubscribed());
@@ -358,26 +400,35 @@ public class SubscriptionInfo implements Closeable {
 
 	/**
 	 * Prüft ob mehrere Remote-Zentraldatenverteiler eine positive Rückmeldung auf eine Datenanmeldung gesendet haben.
+	 *
 	 * @return true fall es mehrere Positive Rückmeldungen gibt.
 	 */
 	private boolean getMultipleRemoteConnectionsSubscribed() {
 		int numRemoteSubscriptions = 0;
 		for(SendingSubscription sendingSubscription : _subscriptionList.getSendingSubscriptions()) {
 			if(sendingSubscription instanceof RemoteCentralSubscription) {
-				RemoteCentralSubscription subscription = (RemoteCentralSubscription)sendingSubscription;
+				RemoteCentralSubscription subscription = (RemoteCentralSubscription) sendingSubscription;
+				if(!subscription.isAllowed()) {
+					// Status von verbotenen Anmeldungen ignorieren
+					continue;
+				}
 				ConnectionState connectionState = subscription.getConnectionState();
 				if(connectionState == ConnectionState.TO_REMOTE_MULTIPLE) return true;
-				if(connectionState.isValid()){
+				if(connectionState.isValid()) {
 					numRemoteSubscriptions++;
 				}
 			}
 		}
 		for(ReceivingSubscription receivingSubscription : _subscriptionList.getReceivingSubscriptions()) {
 			if(receivingSubscription instanceof RemoteCentralSubscription) {
-				RemoteCentralSubscription subscription = (RemoteCentralSubscription)receivingSubscription;
+				RemoteCentralSubscription subscription = (RemoteCentralSubscription) receivingSubscription;
+				if(!subscription.isAllowed()) {
+					// Status von verbotenen Anmeldungen ignorieren
+					continue;
+				}
 				ConnectionState connectionState = subscription.getConnectionState();
 				if(connectionState == ConnectionState.TO_REMOTE_MULTIPLE) return true;
-				if(connectionState.isValid()){
+				if(connectionState.isValid()) {
 					numRemoteSubscriptions++;
 				}
 			}
@@ -386,8 +437,8 @@ public class SubscriptionInfo implements Closeable {
 	}
 
 	/**
-	 * Prüft, ob Anmeldungen zu anderen Zentraldatenverteilern versendet werden sollen und führt diese Anmeldungen durch. Das ist der Fall, wenn es lokale Sender oder
-	 * Empfänger-Anmeldungen gibt, aber der aktuelle Datenverteiler nicht der Zentraldatenverteiler ist.
+	 * Prüft, ob Anmeldungen zu anderen Zentraldatenverteilern versendet werden sollen und führt diese Anmeldungen durch. Das ist der Fall,
+	 * wenn es lokale Sender oder Empfänger-Anmeldungen gibt, aber der aktuelle Datenverteiler nicht der Zentraldatenverteiler ist.
 	 */
 	private void updateRemoteConnectionsNecessary() {
 		setConnectToRemoteCentralDistributor(needsToConnectToRemoteCentralDav());
@@ -395,13 +446,12 @@ public class SubscriptionInfo implements Closeable {
 	}
 
 	/**
-	 * Gibt zurück, ob versucht werden soll, sich an einem anderen ZentralDatenverteiler anzumelden.
-	 * <p>
-	 * Das ist der Fall, falls es sich lokal um keinen ZentralDatenverteiler handelt, also keine lokale Quelle oder Senke angemeldet ist,
-	 * und es aber gültige Sender oder Empfänger-Anmeldungen gibt.
-	 * </p>
+	 * Gibt zurück, ob versucht werden soll, sich an einem anderen ZentralDatenverteiler anzumelden. <p> Das ist der Fall, falls es sich
+	 * lokal um keinen ZentralDatenverteiler handelt, also keine lokale Quelle oder Senke angemeldet ist, und es aber gültige Sender oder
+	 * Empfänger-Anmeldungen gibt. </p>
 	 *
-	 * @return Ob versucht werden soll, sich an einem entfernten Zentraldatenverteiler anzumelden, bzw. ob solche Verbindung aufrecht erhalten werden
+	 * @return Ob versucht werden soll, sich an einem entfernten Zentraldatenverteiler anzumelden, bzw. ob solche Verbindung aufrecht
+	 * erhalten werden
 	 */
 	private boolean needsToConnectToRemoteCentralDav() {
 		if(isCentralDistributor()) return false;
@@ -426,6 +476,7 @@ public class SubscriptionInfo implements Closeable {
 
 	/**
 	 * Setzt, ob Anmeldungen bei entfernten Datenverteilern durhgeführt werden sollen und führt die An- bzw. Abmeldungen durch.
+	 *
 	 * @param newValue Soll zu anderen Zentraldatenverteilern verbunden werden?
 	 */
 	private void setConnectToRemoteCentralDistributor(final boolean newValue) {
@@ -467,7 +518,7 @@ public class SubscriptionInfo implements Closeable {
 		for(SendingSubscription sendingSubscription : validSenderSubscriptions) {
 			if(sendingSubscription instanceof RemoteSubscription) {
 				// Datenverteiler berücksichtigen, die bei eingehenden Anmeldungen angegeben wurden
-				RemoteSubscription remoteSubscription = (RemoteSubscription)sendingSubscription;
+				RemoteSubscription remoteSubscription = (RemoteSubscription) sendingSubscription;
 				Set<Long> transmitterList = remoteSubscription.getPotentialDistributors();
 				for(long l : transmitterList) {
 					distributorsToUse.add(l);
@@ -482,7 +533,7 @@ public class SubscriptionInfo implements Closeable {
 		for(ReceivingSubscription receivingSubscription : validReceiverSubscriptions) {
 			if(receivingSubscription instanceof RemoteSubscription) {
 				// Datenverteiler berücksichtigen, die bei eingehenden Anmeldungen angegeben wurden
-				RemoteSubscription remoteSubscription = (RemoteSubscription)receivingSubscription;
+				RemoteSubscription remoteSubscription = (RemoteSubscription) receivingSubscription;
 				Set<Long> transmitterList = remoteSubscription.getPotentialDistributors();
 				for(long l : transmitterList) {
 					distributorsToUse.add(l);
@@ -510,14 +561,14 @@ public class SubscriptionInfo implements Closeable {
 	private void removeRemoteSubscriptions() {
 		for(final SendingSubscription sendingSubscription : _subscriptionList.getSendingSubscriptions()) {
 			if(sendingSubscription instanceof RemoteCentralSubscription) {
-				final RemoteSubscription subscription = (RemoteSubscription)sendingSubscription;
+				final RemoteSubscription subscription = (RemoteSubscription) sendingSubscription;
 				subscription.unsubscribe();
 				removeSendingSubscription(sendingSubscription);
 			}
 		}
 		for(final ReceivingSubscription receivingSubscription : _subscriptionList.getReceivingSubscriptions()) {
 			if(receivingSubscription instanceof RemoteCentralSubscription) {
-				final RemoteSubscription subscription = (RemoteSubscription)receivingSubscription;
+				final RemoteSubscription subscription = (RemoteSubscription) receivingSubscription;
 				subscription.unsubscribe();
 				removeReceivingSubscription(receivingSubscription);
 			}
@@ -525,8 +576,8 @@ public class SubscriptionInfo implements Closeable {
 	}
 
 	/**
-	 * Meldet überflüssige Anmeldungen bei Remote-Datenverteilern ab. Anmeldungen sind überflüssig, wenn es genau eine andere Anmeldung mit positiver Rückmeldung
-	 * gibt und der Datenverteiler dieser Anmeldung signalisiert hat, dass er nicht zuständig ist.
+	 * Meldet überflüssige Anmeldungen bei Remote-Datenverteilern ab. Anmeldungen sind überflüssig, wenn es genau eine andere Anmeldung mit
+	 * positiver Rückmeldung gibt und der Datenverteiler dieser Anmeldung signalisiert hat, dass er nicht zuständig ist.
 	 */
 	private void removeNegativeRemoteSubscriptions() {
 		if(!_connectToRemoteCentralDistributor) return;
@@ -536,7 +587,8 @@ public class SubscriptionInfo implements Closeable {
 		int numNegativeResponses = 0;
 		for(final SendingSubscription sendingSubscription : _subscriptionList.getSendingSubscriptions()) {
 			if(sendingSubscription instanceof RemoteCentralSubscription) {
-				if(sendingSubscription.getConnectionState().isValid()) {
+				if(sendingSubscription.getConnectionState().isValid()
+						&& sendingSubscription.isAllowed()) {
 					numPositiveResponses++;
 				}
 				else {
@@ -546,7 +598,8 @@ public class SubscriptionInfo implements Closeable {
 		}
 		for(final ReceivingSubscription receivingSubscription : _subscriptionList.getReceivingSubscriptions()) {
 			if(receivingSubscription instanceof RemoteCentralSubscription) {
-				if(receivingSubscription.getConnectionState().isValid()){
+				if(receivingSubscription.getConnectionState().isValid()
+						&& receivingSubscription.isAllowed()) {
 					numPositiveResponses++;
 				}
 				else {
@@ -561,7 +614,7 @@ public class SubscriptionInfo implements Closeable {
 		for(final SendingSubscription sendingSubscription : _subscriptionList.getSendingSubscriptions()) {
 			if(sendingSubscription instanceof RemoteCentralSubscription) {
 				if(sendingSubscription.getConnectionState() == ConnectionState.TO_REMOTE_NOT_RESPONSIBLE) {
-					final RemoteSubscription subscription = (RemoteSubscription)sendingSubscription;
+					final RemoteSubscription subscription = (RemoteSubscription) sendingSubscription;
 					subscription.unsubscribe();
 					removeSendingSubscription(sendingSubscription);
 				}
@@ -569,8 +622,8 @@ public class SubscriptionInfo implements Closeable {
 		}
 		for(final ReceivingSubscription receivingSubscription : _subscriptionList.getReceivingSubscriptions()) {
 			if(receivingSubscription instanceof RemoteCentralSubscription) {
-				if(receivingSubscription.getConnectionState() == ConnectionState.TO_REMOTE_NOT_RESPONSIBLE){
-					final RemoteSubscription subscription = (RemoteSubscription)receivingSubscription;
+				if(receivingSubscription.getConnectionState() == ConnectionState.TO_REMOTE_NOT_RESPONSIBLE) {
+					final RemoteSubscription subscription = (RemoteSubscription) receivingSubscription;
 					subscription.unsubscribe();
 					removeReceivingSubscription(receivingSubscription);
 				}
@@ -580,6 +633,7 @@ public class SubscriptionInfo implements Closeable {
 
 	/**
 	 * Entfernt eine empfangende Anmeldung
+	 *
 	 * @param receivingSubscription empfangende Anmeldung
 	 */
 	public synchronized void removeReceivingSubscription(final ReceivingSubscription receivingSubscription) {
@@ -591,6 +645,7 @@ public class SubscriptionInfo implements Closeable {
 
 	/**
 	 * Entfernt eine sendende Anmeldung
+	 *
 	 * @param sendingSubscription sendende Anmeldung
 	 */
 	public synchronized void removeSendingSubscription(final SendingSubscription sendingSubscription) {
@@ -602,6 +657,7 @@ public class SubscriptionInfo implements Closeable {
 
 	/**
 	 * Entfernt alle sendende Anmedungen, die über die angegebene Verbindung angemeldet sind
+	 *
 	 * @param communication Verbindung
 	 * @return Liste mit entfernten Sendern und Quellen
 	 */
@@ -615,8 +671,10 @@ public class SubscriptionInfo implements Closeable {
 		}
 		return result;
 	}
+
 	/**
 	 * Entfernt alle empfangende Anmedungen, die über die angegebene Verbindung angemeldet sind
+	 *
 	 * @param communication Verbindung
 	 * @return Liste mit entfernten Empfängern und Senken
 	 */
@@ -631,9 +689,9 @@ public class SubscriptionInfo implements Closeable {
 		return result;
 	}
 
-
 	/**
 	 * Gibt alle gültigen sendenden Anmeldungen zurück
+	 *
 	 * @return alle gültigen sendenden Anmeldungen (Quellen und Sender)
 	 */
 	public synchronized List<SendingSubscription> getValidSenderSubscriptions() {
@@ -647,6 +705,7 @@ public class SubscriptionInfo implements Closeable {
 
 	/**
 	 * Gibt alle gültigen empfangenden Anmeldungen zurück
+	 *
 	 * @return alle gültigen empfangenden Anmeldungen (Senken und Empfänger)
 	 */
 	public synchronized List<ReceivingSubscription> getValidReceiverSubscriptions() {
@@ -660,6 +719,7 @@ public class SubscriptionInfo implements Closeable {
 
 	/**
 	 * Gibt <tt>true</tt> zurück, wenn es keine Anmeldungen gibt
+	 *
 	 * @return <tt>true</tt>, wenn es keine Anmeldungen gibt, sonst <tt>false</tt>
 	 */
 	public synchronized boolean isEmpty() {
@@ -667,8 +727,9 @@ public class SubscriptionInfo implements Closeable {
 	}
 
 	/**
-	 * Gibt <tt>true</tt> zurück, wenn dieser Datenverteiler Zentraldatenverteiler für diese Anmeldugn ist
-	 * @return <tt>true</tt>, wenn dieser Datenverteiler Zentraldatenverteiler für diese Anmeldugn ist, sonst <tt>false</tt>
+	 * Gibt <tt>true</tt> zurück, wenn dieser Datenverteiler Zentraldatenverteiler für diese Anmeldung ist
+	 *
+	 * @return <tt>true</tt>, wenn dieser Datenverteiler Zentraldatenverteiler für diese Anmeldung ist, sonst <tt>false</tt>
 	 */
 	public synchronized boolean isCentralDistributor() {
 		return _subscriptionList.isCentralDistributor();
@@ -676,8 +737,10 @@ public class SubscriptionInfo implements Closeable {
 
 	/**
 	 * Berechnet den nächsten Datenindex und gibt diesen zurück
+	 *
+	 * @param runningNumber Laufende Nummer, wird vom SubscriptionsManager bereitgestellt, da diese Objekte gelöscht werden sobas keine
+	 *                      Anmeldungen mehr vorhanden sind
 	 * @return nächsten Datenindex, "0" falls dieser Datenverteiler nicht der Zentraldatenverteiler ist.
-	 * @param runningNumber Laufende Nummer, wird vom SubscriptionsManager bereitgestellt, da diese Objekte gelöscht werden sobas keine Anmeldungen mehr vorhanden sind
 	 */
 	public synchronized long getNextDataIndex(final long runningNumber) {
 		return _subscriptionList.getDataIndex(runningNumber);
@@ -685,8 +748,10 @@ public class SubscriptionInfo implements Closeable {
 
 	/**
 	 * Gibt den zuletzt berechneten Datenindex zurück
+	 *
+	 * @param runningNumber Laufende Nummer, wird vom SubscriptionsManager bereitgestellt, da diese Objekte gelöscht werden sobas keine
+	 *                      Anmeldungen mehr vorhanden sind
 	 * @return zuletzt berechneten Datenindex, "0" falls dieser Datenverteiler nicht der Zentraldatenverteiler ist.
-	 * @param runningNumber Laufende Nummer, wird vom SubscriptionsManager bereitgestellt, da diese Objekte gelöscht werden sobas keine Anmeldungen mehr vorhanden sind
 	 */
 	public synchronized long getCurrentDataIndex(final long runningNumber) {
 		return _subscriptionList.getDataIndex(runningNumber);
@@ -694,26 +759,56 @@ public class SubscriptionInfo implements Closeable {
 
 	/**
 	 * Verschickt ein einzelnes Datentelegramm an alle interessierten und korrekt angemeldeten Empfänger
+	 *
 	 * @param applicationDataTelegram Datentelegramm
-	 * @param toCentralDistributor wenn das Telegramm noch nicht beim Zentraldatenverteiler behandelt wurde, also der Datenindex noch nicht vernünftig gesetzt wurde
+	 * @param toCentralDistributor    wenn das Telegramm noch nicht beim Zentraldatenverteiler behandelt wurde, also der Datenindex noch
+	 *                                nicht vernünftig gesetzt wurde
+	 * @param communication           Verbindung über die der Emfang erfolgt ist (zur Rechteprüfung), bei null findet keine Prüfung statt
 	 */
-	public void distributeTelegram(final ApplicationDataTelegram applicationDataTelegram, final boolean toCentralDistributor) {
-		distributeTelegrams(Collections.singletonList(applicationDataTelegram), toCentralDistributor);
+	public void distributeTelegram(final ApplicationDataTelegram applicationDataTelegram, final boolean toCentralDistributor, final CommunicationInterface communication) {
+		distributeTelegrams(Collections.singletonList(applicationDataTelegram), toCentralDistributor, communication);
 	}
 
 	/**
 	 * Verschickt eine Liste von zusammengehörigen Datentelegrammen an alle interessierten und korrekt angemeldeten Empfänger
+	 *
 	 * @param applicationDataTelegrams Datentelegramme
-	 * @param toCentralDistributor wenn das Telegramm noch nicht beim Zentraldatenverteiler behandelt wurde, also der Datenindex noch nicht vernünftig gesetzt wurde
+	 * @param toCentralDistributor     wenn das Telegramm noch nicht beim Zentraldatenverteiler behandelt wurde, also der Datenindex noch
+	 *                                 nicht vernünftig gesetzt wurde
+	 * @param communication            Verbindung über die der Emfang erfolgt ist (zur Rechteprüfung), bei null findet keine Prüfung statt
 	 */
-	public synchronized void distributeTelegrams(final List<ApplicationDataTelegram> applicationDataTelegrams, final boolean toCentralDistributor) {
+	public synchronized void distributeTelegrams(final List<ApplicationDataTelegram> applicationDataTelegrams, final boolean toCentralDistributor, final CommunicationInterface communication) {
 		final List<ReceivingSubscription> receivingSubscriptions = getValidReceiverSubscriptions();
 
 		long dataIndex = applicationDataTelegrams.get(0).getDataNumber();
 
-		if(!toCentralDistributor && _lastSendDataIndex > 1 && dataIndex <= _lastSendDataIndex){
+		if(!toCentralDistributor && _lastSendDataIndex > 1 && dataIndex <= _lastSendDataIndex) {
 			// Kein monoton steigender Datenindex
 			return;
+		}
+
+		// Die Anmeldung, die diese Daten sendet herausfinden
+		SendingSubscription sendingSubscription = null;
+
+		if(communication != null) {
+			// Wenn es sich um keinen künstlichen Transaktionsdatensatz handelt, absender prüfen
+			for(SendingSubscription tmp : _subscriptionList.getSendingSubscriptions()) {
+				if(tmp.getCommunication() == communication) {
+					sendingSubscription = tmp;
+				}
+			}
+
+			if(sendingSubscription == null) {
+				_debug.warning("Empfange Daten ohne bekannten Absender", applicationDataTelegrams.get(0).getBaseSubscriptionInfo());
+				// Kein Absender ermittelbar
+				return;
+			}
+
+
+			if(!sendingSubscription.getState().isValidSender()) {
+				// Absender hat keine Rechte zum senden
+				return;
+			}
 		}
 
 		for(final ReceivingSubscription receivingSubscription : receivingSubscriptions) {
@@ -723,6 +818,13 @@ public class SubscriptionInfo implements Closeable {
 			}
 			if(receivingSubscription.getReceiveOptions().withDelta() && telegramsAreEqual(applicationDataTelegrams, _lastSendTelegrams)) {
 				// Datensatz ist unverändert, der Empfänger will aber nur geänderte Daten
+				continue;
+			}
+			if(toCentralDistributor && !(receivingSubscription instanceof RemoteDrainSubscription)) {
+				// Datensätze, deren Datenindex noch nicht gesetzt wurde,
+				// dürfen nur an andere Zentraldatenverteiler gesendet werden, die die Senke sind.
+				// hierdurch wird z.B. verhindert, dass lokale Sender mit lokalen Empfängern kommunizieren
+				// ohne dass es eine lokale Quelle gibt
 				continue;
 			}
 			for(final ApplicationDataTelegram telegram : applicationDataTelegrams) {
@@ -739,40 +841,20 @@ public class SubscriptionInfo implements Closeable {
 	public synchronized void updatePendingSubscriptionDataIndex(final CommunicationInterface communication, final long dataIndex) {
 		for(Map.Entry<Long, PendingSubscription> entry : _pendingSubscriptions.entrySet()) {
 			PendingSubscription pendingSubscription = entry.getValue();
-			if(pendingSubscription.getNewSubscription().getCommunication() == communication){
+			if(pendingSubscription.getNewSubscription().getCommunication() == communication) {
 				pendingSubscription.setLastReceivedDataIndex(dataIndex);
-				handlePendingSubscriptions(entry.getKey(),
-				                           (TransmitterCommunicationInterface)communication,
-				                           pendingSubscription.getNewSubscription().getConnectionState());
+				handlePendingSubscriptions(
+						entry.getKey(),
+						(TransmitterCommunicationInterface) communication,
+						pendingSubscription.getNewSubscription().getConnectionState()
+				);
 			}
 		}
 	}
 
 	/**
-	 * Prüft ob 2 Telegrammlisten im Sinne der Anmeldung auf Delta-Datensätze gleich sind.
-	 *
-	 * @param telegrams1 Daten-Telegramme 1
-	 * @param telegrams2 Daten-Telegramme 2
-	 *
-	 * @return True wenn Daten vorhanden und identisch sind
-	 */
-	private boolean telegramsAreEqual(final List<ApplicationDataTelegram> telegrams1, final List<ApplicationDataTelegram> telegrams2) {
-		if(telegrams1 == null || telegrams2 == null) return false;
-
-		if(telegrams1.size() != telegrams2.size()) return false;
-
-		if(telegrams1.get(0).getErrorFlag() != 0 || telegrams2.get(0).getErrorFlag() != 0) return false;
-
-		for(int i = 0, size = telegrams1.size(); i < size; i++) {
-			final ApplicationDataTelegram telegram1 = telegrams1.get(i);
-			final ApplicationDataTelegram telegram2 = telegrams2.get(i);
-			if(!Arrays.equals(telegram1.getData(), telegram2.getData())) return false;
-		}
-		return true;
-	}
-
-	/**
 	 * Aktualisert die Rechte von Anmeldungen und macht diese dadurch gültig/ungültig
+	 *
 	 * @param userId geänderter Benutzer, dessen Anmeldungen zu aktualisieren sind
 	 */
 	public synchronized void handleUserRightsChanged(final long userId) {
@@ -788,6 +870,10 @@ public class SubscriptionInfo implements Closeable {
 				subscription.setState(ReceiverState.NOT_ALLOWED, getCentralDistributorId());
 				subscription.sendStateTelegram(ReceiverState.NOT_ALLOWED);
 				refreshSubscriptionsOnReceiverRemoval(subscription);
+				if(subscription instanceof RemoteCentralSubscription) {
+					// Anmeldungen bei anderen Zentraldatenverteilern ohne Rechte werden sofort abgemeldet
+					removeReceivingSubscription(subscription);
+				}
 			}
 		}
 
@@ -802,14 +888,29 @@ public class SubscriptionInfo implements Closeable {
 				// Anmeldung wird ungültig
 				subscription.setState(SenderState.NOT_ALLOWED, getCentralDistributorId());
 				refreshSubscriptionsOnSenderRemoval(subscription);
+				if(subscription instanceof RemoteCentralSubscription) {
+					// Anmeldungen bei anderen Zentraldatenverteilern ohne Rechte werden sofort abgemeldet
+					removeSendingSubscription(subscription);
+				}
 			}
 		}
+
+		// Die Sperre bei mehreren Remote-Zentraldatenverteilern ist von den Rechten der Anmeldungen ahängig
+		// (verbotene Anmeldungen werden ignoriert), also den Status ggf. aktualisieren
+		updateMultiRemoteConnectionsLock();
+
+		// Eventuell sind jetzt neue Anmeldungen bei Remote-Datenverteilern möglich.
+		// Solche Anmeldungen werden nur durchgeführt wenn entprechende Rechte vorhanden sind.
+		// Da sich die Rechte geändert haben können sich daher neue Anmeldungen ergeben haben
+		createRemoteCentralDistributorSubscriptions();
 	}
 
 	/**
-	 * Verarbeitet eine Anmeldungsquittung von einem anderen Datenverteiler, aktualisert den Status der entsprechenden ausgehenden Anmeldung
-	 * @param communication Kommunikation
-	 * @param state neuer Status
+	 * Verarbeitet eine Anmeldungsquittung von einem anderen Datenverteiler, aktualisert den Status der entsprechenden ausgehenden
+	 * Anmeldung
+	 *
+	 * @param communication     Kommunikation
+	 * @param state             neuer Status
 	 * @param mainTransmitterId Id des Zentraldatenverteilers
 	 */
 	public synchronized void setRemoteSourceSubscriptionStatus(
@@ -818,7 +919,7 @@ public class SubscriptionInfo implements Closeable {
 		RemoteSourceSubscription remoteSubscription = null;
 		for(final SendingSubscription subscription : _subscriptionList.getSendingSubscriptions()) {
 			if(subscription instanceof RemoteSourceSubscription) {
-				final RemoteSourceSubscription remoteSourceSubscription = (RemoteSourceSubscription)subscription;
+				final RemoteSourceSubscription remoteSourceSubscription = (RemoteSourceSubscription) subscription;
 				if(remoteSourceSubscription.getCommunication() == communication) {
 					remoteSubscription = remoteSourceSubscription;
 					break;
@@ -844,9 +945,11 @@ public class SubscriptionInfo implements Closeable {
 	}
 
 	/**
-	 * Verarbeitet eine Anmeldungsquittung von einem anderen Datenverteiler, aktualisert den Status der entsprechenden ausgehenden Anmeldung
-	 * @param communication Kommunikation
-	 * @param state neuer Status
+	 * Verarbeitet eine Anmeldungsquittung von einem anderen Datenverteiler, aktualisert den Status der entsprechenden ausgehenden
+	 * Anmeldung
+	 *
+	 * @param communication     Kommunikation
+	 * @param state             neuer Status
 	 * @param mainTransmitterId Id des Zentraldatenverteilers
 	 */
 	public synchronized void setRemoteDrainSubscriptionStatus(
@@ -855,7 +958,7 @@ public class SubscriptionInfo implements Closeable {
 		RemoteDrainSubscription remoteSubscription = null;
 		for(final ReceivingSubscription subscription : _subscriptionList.getReceivingSubscriptions()) {
 			if(subscription instanceof RemoteDrainSubscription) {
-				final RemoteDrainSubscription remoteDrainSubscription = (RemoteDrainSubscription)subscription;
+				final RemoteDrainSubscription remoteDrainSubscription = (RemoteDrainSubscription) subscription;
 				if(remoteDrainSubscription.getCommunication() == communication) {
 					remoteSubscription = remoteDrainSubscription;
 					break;
@@ -881,10 +984,12 @@ public class SubscriptionInfo implements Closeable {
 	}
 
 	/**
-	 * Aktualisiert Anmeldeumleitungen, ersetzt die alte Anmeldung falls Umleitung erfolgreich oder entfernt die neue Verbindung falls nicht erfolgreich.
-	 * @param mainTransmitterId Zentraldatenverteiler-Id
+	 * Aktualisiert Anmeldeumleitungen, ersetzt die alte Anmeldung falls Umleitung erfolgreich oder entfernt die neue Verbindung falls nicht
+	 * erfolgreich.
+	 *
+	 * @param mainTransmitterId                 Zentraldatenverteiler-Id
 	 * @param transmitterCommunicationInterface Kommunikation der neuen Anmeldung
-	 * @param state neuer Status der Anmeldung
+	 * @param state                             neuer Status der Anmeldung
 	 */
 	private void handlePendingSubscriptions(
 			final long mainTransmitterId, final TransmitterCommunicationInterface transmitterCommunicationInterface, final ConnectionState state) {
@@ -894,17 +999,17 @@ public class SubscriptionInfo implements Closeable {
 		if(pendingSubscriptionInfo == null) return;
 		RemoteCentralSubscription pendingSubscription = pendingSubscriptionInfo.getNewSubscription();
 
-		if(pendingSubscription.getCommunication() == transmitterCommunicationInterface){
+		if(pendingSubscription.getCommunication() == transmitterCommunicationInterface) {
 
 			// Neuen Status setzen
 			pendingSubscription.setRemoteState(mainTransmitterId, state);
 
-			if(pendingSubscription.getConnectionState().isValid()){
+			if(pendingSubscription.getConnectionState().isValid()) {
 
 				if(pendingSubscription instanceof SendingSubscription
-				   && pendingSubscriptionInfo.getLastReceivedDataIndex() != _lastSendDataIndex
-				   && pendingSubscriptionInfo.getLastReceivedDataIndex() - 1 != _lastSendDataIndex
-				   && _lastSendDataIndex != 1) {
+						&& pendingSubscriptionInfo.getLastReceivedDataIndex() != _lastSendDataIndex
+						&& pendingSubscriptionInfo.getLastReceivedDataIndex() - 1 != _lastSendDataIndex
+						&& _lastSendDataIndex != 1) {
 					// Datenindex noch nicht synchron, erstmal nichts tun
 					return;
 				}
@@ -914,26 +1019,27 @@ public class SubscriptionInfo implements Closeable {
 					RemoteDrainSubscription oldSubscription = null;
 					for(ReceivingSubscription receivingSubscription : _subscriptionList.getReceivingSubscriptions()) {
 						if(receivingSubscription instanceof RemoteDrainSubscription) {
-							RemoteDrainSubscription other = (RemoteDrainSubscription)receivingSubscription;
-							if(other.getCommunication() != pendingSubscription.getCommunication() && other.getCentralDistributorId() == mainTransmitterId){
+							RemoteDrainSubscription other = (RemoteDrainSubscription) receivingSubscription;
+							if(other.getCommunication() != pendingSubscription.getCommunication() && other.getCentralDistributorId() == mainTransmitterId) {
 								oldSubscription = other;
 								break;
 							}
 						}
 					}
-					replaceReceiver(oldSubscription, (RemoteDrainSubscription)pendingSubscription);
-				} else if(pendingSubscription instanceof RemoteSourceSubscription){
+					replaceReceiver(oldSubscription, (RemoteDrainSubscription) pendingSubscription);
+				}
+				else if(pendingSubscription instanceof RemoteSourceSubscription) {
 					RemoteSourceSubscription oldSubscription = null;
 					for(SendingSubscription sendingSubscription : _subscriptionList.getSendingSubscriptions()) {
 						if(sendingSubscription instanceof RemoteSourceSubscription) {
-							RemoteSourceSubscription other = (RemoteSourceSubscription)sendingSubscription;
-							if(other.getCommunication() != pendingSubscription.getCommunication() && other.getCentralDistributorId() == mainTransmitterId){
+							RemoteSourceSubscription other = (RemoteSourceSubscription) sendingSubscription;
+							if(other.getCommunication() != pendingSubscription.getCommunication() && other.getCentralDistributorId() == mainTransmitterId) {
 								oldSubscription = other;
 								break;
 							}
 						}
 					}
-					replaceSender(oldSubscription, (RemoteSourceSubscription)pendingSubscription);
+					replaceSender(oldSubscription, (RemoteSourceSubscription) pendingSubscription);
 				}
 			}
 			else {
@@ -948,13 +1054,14 @@ public class SubscriptionInfo implements Closeable {
 
 	/**
 	 * Ersetzt eine Anmeldung wegen einer Anmeldeumleitung
+	 *
 	 * @param oldSubscription alte Anmeldung
 	 * @param newSubscription neue Anmeldung
 	 */
 	private void replaceReceiver(final RemoteDrainSubscription oldSubscription, final RemoteDrainSubscription newSubscription) {
 		_subscriptionList.addReceiver(newSubscription);
-		if(oldSubscription != null){
-			if(_subscriptionList.getDrain() == oldSubscription){
+		if(oldSubscription != null) {
+			if(_subscriptionList.getDrain() == oldSubscription) {
 				_subscriptionList.setDrain(newSubscription);
 			}
 			_subscriptionList.removeReceiver(oldSubscription);
@@ -965,13 +1072,14 @@ public class SubscriptionInfo implements Closeable {
 
 	/**
 	 * Ersetzt eine Anmeldung wegen einer Anmeldeumleitung
+	 *
 	 * @param oldSubscription alte Anmeldung
 	 * @param newSubscription neue Anmeldung
 	 */
 	private void replaceSender(final RemoteSourceSubscription oldSubscription, final RemoteSourceSubscription newSubscription) {
 		_subscriptionList.addSender(newSubscription);
-		if(oldSubscription != null){
-			if(_subscriptionList.getSource() == oldSubscription){
+		if(oldSubscription != null) {
+			if(_subscriptionList.getSource() == oldSubscription) {
 				_subscriptionList.setSource(newSubscription);
 			}
 			_subscriptionList.removeSender(oldSubscription);
@@ -982,6 +1090,7 @@ public class SubscriptionInfo implements Closeable {
 
 	/**
 	 * Gibt die Zentraldatenverteiler-ID zurück
+	 *
 	 * @return die Zentraldatenverteiler-ID, sofern bekannt. Sonst -1
 	 */
 	private long getCentralDistributorId() {
@@ -990,6 +1099,7 @@ public class SubscriptionInfo implements Closeable {
 
 	/**
 	 * Setzt eine neue Senke
+	 *
 	 * @param drain neue Senke
 	 */
 	private void setDrain(final ReceivingSubscription drain) {
@@ -1008,6 +1118,7 @@ public class SubscriptionInfo implements Closeable {
 
 	/**
 	 * setzt eine neue Quelle
+	 *
 	 * @param source neue Quelle
 	 */
 	private void setSource(final SendingSubscription source) {
@@ -1025,23 +1136,18 @@ public class SubscriptionInfo implements Closeable {
 	}
 
 	/**
-	 * Prüft ob eine Anmeldung lokal ist
-	 * @param subscription Anmeldung
-	 * @return true wenn lokal
-	 */
-	private static boolean isLocalSubscription(final Subscription subscription) {
-		return subscription != null && subscription instanceof LocalSubscription;
-	}
-
-	/**
 	 * Gibt das BaseSubscriptionInfo zurück
+	 *
 	 * @return das BaseSubscriptionInfo
 	 */
 	public BaseSubscriptionInfo getBaseSubscriptionInfo() {
 		return _baseSubscriptionInfo;
 	}
 
-	/** Wird aufgerufen, wenn im ListsManager ein Update stattfand und so eventuell neue oder bessere Wege für die Remote-Anmeldungen existieren */
+	/**
+	 * Wird aufgerufen, wenn im ListsManager ein Update stattfand und so eventuell neue oder bessere Wege für die Remote-Anmeldungen
+	 * existieren
+	 */
 	public synchronized void updateRemoteConnections() {
 		// Falls kein Bedarf an entfernten Anmeldungen besteht, nichts tun
 		if(!_connectToRemoteCentralDistributor) return;
@@ -1049,14 +1155,14 @@ public class SubscriptionInfo implements Closeable {
 		
 		for(final SendingSubscription sendingSubscription : _subscriptionList.getSendingSubscriptions()) {
 			if(sendingSubscription instanceof RemoteCentralSubscription) {
-				final RemoteCentralSubscription remoteCentralSubscription = (RemoteCentralSubscription)sendingSubscription;
+				final RemoteCentralSubscription remoteCentralSubscription = (RemoteCentralSubscription) sendingSubscription;
 				long centralDistributorId = remoteCentralSubscription.getCentralDistributorId();
 				updateBestWay(centralDistributorId, remoteCentralSubscription.getCommunication(), _subscriptionsManager.getBestConnectionToRemoteDav(centralDistributorId));
 			}
 		}
 		for(final ReceivingSubscription receivingSubscription : _subscriptionList.getReceivingSubscriptions()) {
 			if(receivingSubscription instanceof RemoteCentralSubscription) {
-				final RemoteCentralSubscription remoteCentralSubscription = (RemoteCentralSubscription)receivingSubscription;
+				final RemoteCentralSubscription remoteCentralSubscription = (RemoteCentralSubscription) receivingSubscription;
 				long centralDistributorId = remoteCentralSubscription.getCentralDistributorId();
 				updateBestWay(
 						centralDistributorId,
@@ -1066,11 +1172,13 @@ public class SubscriptionInfo implements Closeable {
 			}
 		}
 
+		// Hier eventuelle neue Anmeldungen durchführen
 		createRemoteCentralDistributorSubscriptions();
 	}
 
 	/**
 	 * Gibt <tt>true</tt> zurück, wenn eine Quelle verbunden ist (entweder lokal oder über eine Transmitterverbindung)
+	 *
 	 * @return <tt>true</tt>, wenn eine Quelle verbunden ist, sonst <tt>false</tt>
 	 */
 	public synchronized boolean hasSource() {
@@ -1079,6 +1187,7 @@ public class SubscriptionInfo implements Closeable {
 
 	/**
 	 * Gibt <tt>true</tt> zurück, wenn eine Senke verbunden ist (entweder lokal oder über eine Transmitterverbindung)
+	 *
 	 * @return <tt>true</tt>, wenn eine Senke verbunden ist, sonst <tt>false</tt>
 	 */
 	public synchronized boolean hasDrain() {
@@ -1087,13 +1196,14 @@ public class SubscriptionInfo implements Closeable {
 
 	/**
 	 * Prüft, ob die angegebene Kommunikationsklasse senden darf (also als gültiger Sender angemeldet ist)
+	 *
 	 * @param communication Kommunikation
 	 * @return true wenn gültig
 	 */
 	public synchronized boolean isValidSender(final CommunicationInterface communication) {
 		// Normale Sendeanmeldungen prüfen
 		for(SendingSubscription sendingSubscription : _subscriptionList.getSendingSubscriptions()) {
-			if(sendingSubscription.getCommunication() == communication){
+			if(sendingSubscription.getCommunication() == communication) {
 				return sendingSubscription.getState().isValidSender();
 			}
 		}
@@ -1101,19 +1211,21 @@ public class SubscriptionInfo implements Closeable {
 	}
 
 	/**
-	 * Setzt, ob Anmeldung ungültig gemacht werden sollen, weil mehrere remot-zentraldatenverteiler positive Rückmeldungen verschickt haben
+	 * Setzt, ob Anmeldung ungültig gemacht werden sollen, weil mehrere remote-Zzentraldatenverteiler positive Rückmeldungen verschickt
+	 * haben
+	 *
 	 * @param multiRemoteLockActive ob die Sperre {@link #_multiRemoteLockActive} aktiv sein soll.
 	 */
 	public void setMultiRemoteLockActive(final boolean multiRemoteLockActive) {
 		if(multiRemoteLockActive == _multiRemoteLockActive) return;
 		_multiRemoteLockActive = multiRemoteLockActive;
-		if(multiRemoteLockActive){
+		if(multiRemoteLockActive) {
 			// Wenn aktiv alle Anmeldungen ungültig machen und entsprechend markieren
 			setDrain(null);
 			setSource(null);
 			for(SendingSubscription sendingSubscription : _subscriptionList.getSendingSubscriptions()) {
 				if(sendingSubscription.getState() == SenderState.NO_REMOTE_SOURCE) continue;
-				if(sendingSubscription instanceof RemoteCentralSubscription){
+				if(sendingSubscription instanceof RemoteCentralSubscription) {
 					sendingSubscription.setState(SenderState.MULTIPLE_REMOTE_LOCK, -1);
 				}
 				else {
@@ -1122,7 +1234,7 @@ public class SubscriptionInfo implements Closeable {
 			}
 			for(ReceivingSubscription receivingSubscription : _subscriptionList.getReceivingSubscriptions()) {
 				if(receivingSubscription.getState() == ReceiverState.NO_REMOTE_DRAIN) continue;
-				if(receivingSubscription instanceof RemoteCentralSubscription){
+				if(receivingSubscription instanceof RemoteCentralSubscription) {
 					receivingSubscription.setState(ReceiverState.MULTIPLE_REMOTE_LOCK, -1);
 				}
 				else {
@@ -1152,6 +1264,12 @@ public class SubscriptionInfo implements Closeable {
 	}
 
 
+	/**
+	 * Gibt alle Sende-Anmeldungen zu einer Verbindung zurück
+	 *
+	 * @param communicationInterface Verbindung
+	 * @return Alle Quellen und Sender hinter dieser Verbindung (evtl. eine leere Liste falls nicht vorhanden)
+	 */
 	public List<SendingSubscription> getSendingSubscriptions(final CommunicationInterface communicationInterface) {
 		final List<SendingSubscription> result = new ArrayList<SendingSubscription>();
 		for(SendingSubscription sendingSubscription : _subscriptionList.getSendingSubscriptions()) {
@@ -1160,6 +1278,12 @@ public class SubscriptionInfo implements Closeable {
 		return result;
 	}
 
+	/**
+	 * Gibt alle Empfangs-Anmeldungen zu einer Verbindung zurück
+	 *
+	 * @param communicationInterface Verbindung
+	 * @return Alle Senken und Empfänger hinter dieser Verbindung (evtl. eine leere Liste falls nicht vorhanden)
+	 */
 	public List<ReceivingSubscription> getReceivingSubscriptions(final CommunicationInterface communicationInterface) {
 		final List<ReceivingSubscription> result = new ArrayList<ReceivingSubscription>();
 		for(ReceivingSubscription receivingSubscription : _subscriptionList.getReceivingSubscriptions()) {
@@ -1168,35 +1292,58 @@ public class SubscriptionInfo implements Closeable {
 		return result;
 	}
 
+	/**
+	 * Gibt alle sendenden Anmeldungen zurück
+	 *
+	 * @return alle Sender und Quellen dieser Datenidentifikation
+	 */
 	public Collection<SendingSubscription> getSendingSubscriptions() {
 		return _subscriptionList.getSendingSubscriptions();
-
 	}
 
+	/**
+	 * Gibt alle Empfangs-Anmeldungen zurück
+	 *
+	 * @return alle Senken und Empfänger dieser Datenidentifikation
+	 */
 	public Collection<ReceivingSubscription> getReceivingSubscriptions() {
 		return _subscriptionList.getReceivingSubscriptions();
 	}
 
+	/**
+	 * Wird von bestWaymanager aufgerufen, wenn es eine neue beste lokale Verbindung zu einem Zentraldatenverteiler gibt
+	 *
+	 * @param transmitterId Zentraldatenverteiler-ID
+	 * @param oldConnection Alte Verbindung
+	 * @param newConnection Neue Verbindung
+	 */
 	public synchronized void updateBestWay(
 			final long transmitterId, final TransmitterCommunicationInterface oldConnection, final TransmitterCommunicationInterface newConnection) {
 		updateBestWaySource(transmitterId, oldConnection, newConnection);
 		updateBestWayDrain(transmitterId, oldConnection, newConnection);
 	}
 
+	/**
+	 * Sorgt für eine Anmeldungsumleitung bei Remote-Quell-Anmeldungen
+	 *
+	 * @param transmitterId Zentraldatenverteiler-ID
+	 * @param oldConnection Alte Verbidnung
+	 * @param newConnection Neue Verbindung
+	 */
 	private void updateBestWaySource(
 			final long transmitterId, final TransmitterCommunicationInterface oldConnection, final TransmitterCommunicationInterface newConnection) {
-		if(oldConnection == null || newConnection == null) return; 
+		if(oldConnection == null || newConnection == null) return;
 		if(oldConnection == newConnection) return;
 		RemoteSourceSubscription oldSub = null;
 		RemoteSourceSubscription newSub = null;
 		for(SendingSubscription sendingSubscription : _subscriptionList.getSendingSubscriptions()) {
 			if(sendingSubscription instanceof RemoteSourceSubscription) {
-				RemoteSourceSubscription subscription = (RemoteSourceSubscription)sendingSubscription;
-				if(subscription.getCentralDistributorId() == transmitterId){
-					if(subscription.getCommunication() == oldConnection){
+				RemoteSourceSubscription subscription = (RemoteSourceSubscription) sendingSubscription;
+				if(subscription.getCentralDistributorId() == transmitterId) {
+					if(subscription.getCommunication() == oldConnection) {
 						oldSub = subscription;
 					}
-					else if(subscription.getCommunication() == newConnection){
+					else if(subscription.getCommunication() == newConnection) {
 						newSub = subscription;
 					}
 				}
@@ -1214,26 +1361,38 @@ public class SubscriptionInfo implements Closeable {
 			// Wenn schon eine neue Verbindung besteht, passiert das gewöhnlich wenn noch kein Zentraldatenverteiler gefunden wurde.
 			// Hier einfach die (nicht erfolgreichen) Anmeldungen umbiegen.
 			oldSub.removePotentialDistributor(transmitterId);
-			oldSub.subscribe();
+			if(oldSub.getPotentialDistributors().isEmpty()) {
+				removeSendingSubscription(oldSub);
+			}
+			else {
+				oldSub.subscribe();
+			}
 			newSub.addPotentialDistributor(transmitterId);
 			newSub.subscribe();
 		}
 	}
 
+	/**
+	 * Sorgt für eine Anmeldungsumleitung bei Remote-Senken-Anmeldungen
+	 *
+	 * @param transmitterId Zentraldatenverteiler-ID
+	 * @param oldConnection Alte Verbidnung
+	 * @param newConnection Neue Verbindung
+	 */
 	private void updateBestWayDrain(
 			final long transmitterId, final TransmitterCommunicationInterface oldConnection, final TransmitterCommunicationInterface newConnection) {
-		if(oldConnection == null || newConnection == null) return;  
+		if(oldConnection == null || newConnection == null) return;
 		if(oldConnection == newConnection) return;
 		RemoteDrainSubscription oldSub = null;
 		RemoteDrainSubscription newSub = null;
 		for(ReceivingSubscription receivingSubscription : _subscriptionList.getReceivingSubscriptions()) {
 			if(receivingSubscription instanceof RemoteDrainSubscription) {
-				RemoteDrainSubscription subscription = (RemoteDrainSubscription)receivingSubscription;
-				if(subscription.getCentralDistributorId() == transmitterId){
-					if(subscription.getCommunication() == oldConnection){
+				RemoteDrainSubscription subscription = (RemoteDrainSubscription) receivingSubscription;
+				if(subscription.getCentralDistributorId() == transmitterId) {
+					if(subscription.getCommunication() == oldConnection) {
 						oldSub = subscription;
 					}
-					else if(subscription.getCommunication() == newConnection){
+					else if(subscription.getCommunication() == newConnection) {
 						newSub = subscription;
 					}
 				}
@@ -1246,21 +1405,41 @@ public class SubscriptionInfo implements Closeable {
 			newSub.setPotentialDistributors(Arrays.asList(transmitterId));
 			newSub.subscribe();
 		}
-		else {
-			addReplacementSubscription(transmitterId, newSub);
+		else if(!_subscriptionList.hasDrainOrSource()) {
+			// Wenn schon eine neue Verbindung besteht, passiert das gewöhnlich wenn noch kein Zentraldatenverteiler gefunden wurde.
+			// Hier einfach die (nicht erfolgreichen) Anmeldungen umbiegen.
+			oldSub.removePotentialDistributor(transmitterId);
+			if(oldSub.getPotentialDistributors().isEmpty()) {
+				removeReceivingSubscription(oldSub);
+			}
+			else {
+				oldSub.subscribe();
+			}
 			newSub.addPotentialDistributor(transmitterId);
 			newSub.subscribe();
 		}
 	}
 
+	/**
+	 * Erstellt eine (zuerst wartende) Umleitungsanmeldung
+	 *
+	 * @param transmitterId Zentraldatenverteiler-Id
+	 * @param newSub        Anmeldung beim Zentraldatenverteiler
+	 */
 	private void addReplacementSubscription(final long transmitterId, final RemoteCentralSubscription newSub) {
 		PendingSubscription old = _pendingSubscriptions.put(transmitterId, new PendingSubscription(newSub));
-		if(old != null){
+		if(old != null) {
 			// Alte Umleitung entfernen (wieder abmelden)
 			old.getNewSubscription().unsubscribe();
 		}
 	}
 
+	/**
+	 * Serialisiert die Anmelde-Informationen in Bytes um sie über den Datenverteiler zu Testzwecken abrufen zu können.
+	 *
+	 * @return Byte-Array
+	 * @throws IOException
+	 */
 	public synchronized byte[] serializeToBytes() throws IOException {
 		final ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 		final DataOutputStream dataOutputStream = new DataOutputStream(byteArrayOutputStream);
@@ -1314,11 +1493,17 @@ public class SubscriptionInfo implements Closeable {
 		return _subscriptionsManager.subscriptionToString(_baseSubscriptionInfo);
 	}
 
+	/**
+	 * Erstellt eine Remote-Senken-Anmeldung über eine angegebene Verbindung bzw. gibt diese zurück wenn sie schon besteht
+	 *
+	 * @param connection Verbindung
+	 * @return Senkenanmeldung
+	 */
 	public synchronized RemoteDrainSubscription getOrCreateRemoteDrainSubscription(final TransmitterCommunicationInterface connection) {
 		List<ReceivingSubscription> subscriptions = getReceivingSubscriptions(connection);
 		for(ReceivingSubscription subscription : subscriptions) {
 			if(subscription instanceof RemoteDrainSubscription) {
-				return (RemoteDrainSubscription)subscription;
+				return (RemoteDrainSubscription) subscription;
 			}
 		}
 		RemoteDrainSubscription subscription = new RemoteDrainSubscription(_subscriptionsManager, _baseSubscriptionInfo, connection);
@@ -1326,11 +1511,17 @@ public class SubscriptionInfo implements Closeable {
 		return subscription;
 	}
 
+	/**
+	 * Erstellt eine Remote-Quellen-Anmeldung über eine angegebene Verbindung bzw. gibt diese zurück wenn sie schon besteht
+	 *
+	 * @param connection Verbindung
+	 * @return Quellenanmeldung
+	 */
 	public synchronized RemoteSourceSubscription getOrCreateRemoteSourceSubscription(final TransmitterCommunicationInterface connection) {
 		List<SendingSubscription> subscriptions = getSendingSubscriptions(connection);
 		for(SendingSubscription subscription : subscriptions) {
 			if(subscription instanceof RemoteSourceSubscription) {
-				return (RemoteSourceSubscription)subscription;
+				return (RemoteSourceSubscription) subscription;
 			}
 		}
 		RemoteSourceSubscription subscription = new RemoteSourceSubscription(_subscriptionsManager, _baseSubscriptionInfo, connection);
@@ -1338,11 +1529,20 @@ public class SubscriptionInfo implements Closeable {
 		return subscription;
 	}
 
+	/**
+	 * Erstellt eine eingehende Anmeldung von einem anderen Datenverteiler als interessierter Empfänger (dieser Datenverteiler ist dann
+	 * typischerweise potentiell Quell-Datenverteiler bzw. agiert als Proxy zum eigentlichen Zentraldatenverteiler). Wenn es schon eine
+	 * bestehende Anmeldung gibt wird diese stattdessen um die potentiellen Zentraldatenverteiler erweitert.
+	 *
+	 * @param communication Verbindung
+	 * @param ids           Liste mit Zentaldatenverteiler-Ids, die berücksichtigt werden sollen
+	 * @return Anmeldung als entfernter Empfänger
+	 */
 	public synchronized void updateOrCreateRemoteReceiverSubscription(
-			final TransmitterCommunicationInterface communication, final Collection<Long> ids, final BaseSubscriptionInfo baseSubscriptionInfo) {
+			final TransmitterCommunicationInterface communication, final Collection<Long> ids) {
 		for(ReceivingSubscription receivingSubscription : _subscriptionList.getReceivingSubscriptions()) {
-			if(receivingSubscription.getCommunication() == communication && receivingSubscription instanceof RemoteReceiverSubscription){
-				((RemoteReceiverSubscription)receivingSubscription).setPotentialDistributors(ids);
+			if(receivingSubscription.getCommunication() == communication && receivingSubscription instanceof RemoteReceiverSubscription) {
+				((RemoteReceiverSubscription) receivingSubscription).setPotentialDistributors(ids);
 
 				// Status neu setzen, damit eine eventuelle Anmeldung beim anderen Datenverteiler aktualisiert wird
 				receivingSubscription.setState(receivingSubscription.getState(), getCentralDistributorId());
@@ -1352,17 +1552,26 @@ public class SubscriptionInfo implements Closeable {
 			}
 		}
 		final RemoteSubscription remoteSubscription;
-		remoteSubscription = new RemoteReceiverSubscription(_subscriptionsManager, communication, baseSubscriptionInfo, ids);
-		addReceivingSubscription((ReceivingSubscription)remoteSubscription);
+		remoteSubscription = new RemoteReceiverSubscription(_subscriptionsManager, communication, _baseSubscriptionInfo, ids);
+		addReceivingSubscription((ReceivingSubscription) remoteSubscription);
 	}
 
+	/**
+	 * Erstellt eine eingehende Anmeldung von einem anderen Datenverteiler als interessierter Sender (dieser Datenverteiler ist dann
+	 * typischerweise potentiell eine Senke bzw. agiert als Proxy zum eigentlichen Zentraldatenverteiler). Wenn es schon eine bestehende
+	 * Anmeldung gibt wird diese stattdessen um die potentiellen Zentraldatenverteiler erweitert.
+	 *
+	 * @param communication Verbindung
+	 * @param ids           Liste mit Zentaldatenverteiler-Ids, die berücksichtigt werden sollen
+	 * @return Anmeldung als entfernter Sender
+	 */
 	public synchronized void updateOrCreateRemoteSenderSubscription(
-			final TransmitterCommunicationInterface communication, final Collection<Long> ids, final BaseSubscriptionInfo baseSubscriptionInfo) {
+			final TransmitterCommunicationInterface communication, final Collection<Long> ids) {
 		for(SendingSubscription sendingSubscription : _subscriptionList.getSendingSubscriptions()) {
-			if(sendingSubscription.getCommunication() == communication && sendingSubscription instanceof RemoteSenderSubscription){
-				((RemoteSenderSubscription)sendingSubscription).setPotentialDistributors(ids);
+			if(sendingSubscription.getCommunication() == communication && sendingSubscription instanceof RemoteSenderSubscription) {
+				((RemoteSenderSubscription) sendingSubscription).setPotentialDistributors(ids);
 
-				// Status neu setzen, damit eine eventuelle Anmeldung beim anderen Datenverteielr aktualisiert wird
+				// Status neu setzen, damit eine eventuelle Anmeldung beim anderen Datenverteiler aktualisiert wird
 				sendingSubscription.setState(sendingSubscription.getState(), getCentralDistributorId());
 
 				updateRemoteConnections();
@@ -1370,13 +1579,13 @@ public class SubscriptionInfo implements Closeable {
 			}
 		}
 		final RemoteSubscription remoteSubscription;
-		remoteSubscription = new RemoteSenderSubscription(_subscriptionsManager, communication, baseSubscriptionInfo, ids);
-		addSendingSubscription((SendingSubscription)remoteSubscription);
+		remoteSubscription = new RemoteSenderSubscription(_subscriptionsManager, communication, _baseSubscriptionInfo, ids);
+		addSendingSubscription((SendingSubscription) remoteSubscription);
 	}
 
 	/**
 	 * Markiert das SubscriptionInfo als offen, sodass Änderungen an den Anmeldungen durchgeführt werden dürfen.
-	 *
+	 * <p/>
 	 * Wird auf den SubscriptionsManager synchronisiert ausgeführt
 	 */
 	public void open() {
@@ -1384,10 +1593,10 @@ public class SubscriptionInfo implements Closeable {
 	}
 
 	/**
-	 * Markiert das SubscriptionInfo als geschlossen, nachdem Änderungen an den Anmeldungen durchgeführt wurden.
-	 * Falls das Objekt leer ist und von keinem mehr offen ist, wird geprüft ob Anmeldungen vorhanden sind.
-	 * Falls nicht, wird das Objekt aus dem SubscriptionsManager entfernt.
-	 *
+	 * Markiert das SubscriptionInfo als geschlossen, nachdem Änderungen an den Anmeldungen durchgeführt wurden. Falls das Objekt leer ist
+	 * und von keinem mehr offen ist, wird geprüft ob Anmeldungen vorhanden sind. Falls nicht, wird das Objekt aus dem SubscriptionsManager
+	 * entfernt.
+	 * <p/>
 	 * Synchronisiert auf den _subscriptionsManager, daher keine Synchronisation von _referenceCounter notwendig.
 	 */
 	public void close() {
@@ -1399,8 +1608,19 @@ public class SubscriptionInfo implements Closeable {
 		}
 	}
 
-	private class PendingSubscription {
+	/**
+	 * Wrapper-Klasse für eine wartende Umleitungsanmeldung
+	 */
+	private static class PendingSubscription {
+
+		/**
+		 * Eigentliche Anmeldung, die wartet bis die Umleitung komplett ist und dann die bisherige Anmeldung ersetzt
+		 */
 		private final RemoteCentralSubscription _newSubscription;
+
+		/**
+		 * Der letzte empfangene Datenindex zur Synchronisation
+		 */
 		private long _lastReceivedDataIndex = 1;
 
 		private PendingSubscription(final RemoteCentralSubscription newSubscription) {
@@ -1417,6 +1637,14 @@ public class SubscriptionInfo implements Closeable {
 
 		public RemoteCentralSubscription getNewSubscription() {
 			return _newSubscription;
+		}
+
+		@Override
+		public String toString() {
+			return "PendingSubscription{" +
+					"_newSubscription=" + _newSubscription +
+					", _lastReceivedDataIndex=" + _lastReceivedDataIndex +
+					'}';
 		}
 	}
 }

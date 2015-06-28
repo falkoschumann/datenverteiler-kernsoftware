@@ -32,7 +32,7 @@ import de.bsvrz.kex.kexdav.systemobjects.PidSpecification;
  * Modul zum Austausch von Online-Daten (diese Klasse gibt es einmal pro Attributgruppe und Objekt)
  *
  * @author Kappich Systemberatung
- * @version $Revision: 9269 $
+ * @version $Revision: 12677 $
  */
 public class DataExchange {
 
@@ -84,7 +84,7 @@ public class DataExchange {
 			simulationVariantTarget = simLocal;
 		}
 
-		_lowLevelDataPipe = new LowLevelDataPipe(
+		_lowLevelDataPipe = LowLevelDataPipe.createLowLevelDataPipe(
 				source,
 				target,
 				atgSource,
@@ -94,10 +94,11 @@ public class DataExchange {
 				simulationVariantSource,
 				simulationVariantTarget,
 				description.isDelta() ? ReceiveOptions.delta() : description.isDelayed() ? ReceiveOptions.delayed() : ReceiveOptions.normal(),
-				direction == DataExchangeStrategy.SenderDrain || direction == DataExchangeStrategy.DrainSender ? ReceiverRole.drain() : ReceiverRole.receiver(),
+				direction == DataExchangeStrategy.SenderDrain || direction == DataExchangeStrategy.DrainSender ? ReceiverRole.drain() : ReceiverRole
+						.receiver(),
 				direction == DataExchangeStrategy.SourceReceiver || direction == DataExchangeStrategy.ReceiverSource
-				? SenderRole.source()
-				: SenderRole.sender(),
+						? SenderRole.source()
+						: SenderRole.sender(),
 				objectManagerInterface.getPlugIn(atgSource, atgTarget),
 				objectManagerInterface,
 				manager

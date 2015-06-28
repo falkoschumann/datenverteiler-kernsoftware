@@ -29,7 +29,7 @@ import de.bsvrz.sys.funclib.debug.Debug;
  * -pause=2s500ms.
  *
  * @author Kappich Systemberatung
- * @version $Revision: 5018 $
+ * @version $Revision: 13095 $
  */
 public class Sleep {
 
@@ -40,7 +40,14 @@ public class Sleep {
 		Debug.init("Sleep", argumentList);
 		_debug = Debug.getLogger();
 		try {
-			long pause = argumentList.fetchArgument("pause=2s500ms").asRelativeTime();
+			ArgumentList.Argument pauseArgument;
+			if(argumentList.hasArgument("pause")) {
+				pauseArgument = argumentList.fetchArgument("pause");
+			}
+			else {
+				pauseArgument = argumentList.fetchArgument("-pause=2s500ms");
+			}
+			long pause = pauseArgument.asRelativeTime();
 			System.out.print(pause + " Millisekunden Pause");
 			System.out.flush();
 			Thread.sleep(pause);
@@ -50,7 +57,7 @@ public class Sleep {
 			_debug.warning("Pause frühzeitig beendet");
 		}
 		catch(IllegalArgumentException e) {
-			_debug.error("Benutzung: java de.kappich.tools.sleep.main.Sleep [pause=<relativeZeitangabe>]");
+			_debug.error("Benutzung: java de.kappich.tools.sleep.main.Sleep [[-]pause=<relativeZeitangabe>]");
 		}
 	}
 }

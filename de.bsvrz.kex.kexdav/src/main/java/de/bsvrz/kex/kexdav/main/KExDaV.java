@@ -36,17 +36,13 @@ import de.bsvrz.kex.kexdav.parameterloader.RemoteDaVParameter;
 import de.bsvrz.sys.funclib.debug.Debug;
 
 import java.io.File;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Hauptklasse KExDaV
  *
  * @author Kappich Systemberatung
- * @version $Revision: 9277 $
+ * @version $Revision: 12677 $
  */
 public class KExDaV {
 
@@ -155,13 +151,14 @@ public class KExDaV {
 
 	/**
 	 * Entfernt Verbindungen, die nicht mehr bestehen sollen
-	 * @param remoteDaVs Datenverteiler-Verbindungs-Parameter der obsoleten Verbindungen
+	 * @param remoteDaVs Datenverteiler-Verbindungs-Parameter der Verbindungen, die stehen gelassen werden sollen
 	 */
 	private void removeOldConnections(final Collection<ConnectionParameter> remoteDaVs) {
-		for(final ConnectionParameter daVParameter : _connectionMap.keySet()) {
-			if(!remoteDaVs.contains(daVParameter)) {
-				final RemoteDaVConnection connection = _connectionMap.remove(daVParameter);
-				connection.stop();
+		for(Iterator<Map.Entry<ConnectionParameter, RemoteDaVConnection>> iterator = _connectionMap.entrySet().iterator(); iterator.hasNext(); ) {
+			final Map.Entry<ConnectionParameter, RemoteDaVConnection> entry = iterator.next();
+			if(!remoteDaVs.contains(entry.getKey())) {
+				entry.getValue().stop();
+				iterator.remove();
 			}
 		}
 	}
