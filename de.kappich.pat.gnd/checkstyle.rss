@@ -1,0 +1,1048 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+-->
+<rss version="0.91">
+  <channel>
+    <title>Kappich GND - Checkstyle report</title>
+    <link>https://github.com/falkoschumann/datenverteiler-kernsoftware/de.kappich.pat.gnd</link>
+    <description>Kappich GND - Checkstyle report</description>
+    <language>en-us</language>
+    <copyright>&#169;2015 Kappich Systemberatung</copyright>
+    <item>
+      <title>File: 71,
+             Errors: 0,
+             Warnings: 150,
+             Infos: 0
+      </title>
+            <link>https://github.com/falkoschumann/datenverteiler-kernsoftware/de.kappich.pat.gnd/checkstyle.html</link>
+      <description>
+        <p>Click <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.kappich.pat.gnd/checkstyle.html">here</a> for the full Checkstyle report.</p>
+
+        <table summary="Files" boder="1">
+          <thead>
+            <tr>
+              <th>Files</th>
+              <th style="width:30px;"><abbr title="Info">I</abbr></th>
+              <th style="width:30px;"><abbr title="Warning">W</abbr></th>
+              <th style="width:30px;"><abbr title="Error">E</abbr></th>
+            </tr>
+          </thead>
+          <tbody>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.kappich.pat.gnd/checkstyle.html#de.kappich.pat.gnd.pluginInterfaces.DefaultDisplayObjectType.java">de/kappich/pat/gnd/pluginInterfaces/DefaultDisplayObjectType.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  11
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.kappich.pat.gnd/checkstyle.html#de.kappich.pat.gnd.pointPlugin.DOTPoint.java">de/kappich/pat/gnd/pointPlugin/DOTPoint.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  5
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.kappich.pat.gnd/checkstyle.html#de.kappich.pat.gnd.viewManagement.View.java">de/kappich/pat/gnd/viewManagement/View.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.kappich.pat.gnd/checkstyle.html#de.kappich.pat.gnd.displayObjectToolkit.DOTItemManager.java">de/kappich/pat/gnd/displayObjectToolkit/DOTItemManager.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.kappich.pat.gnd/checkstyle.html#de.kappich.pat.gnd.linePlugin.DOTLineDialog.java">de/kappich/pat/gnd/linePlugin/DOTLineDialog.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  10
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.kappich.pat.gnd/checkstyle.html#de.kappich.pat.gnd.colorManagement.ColorDialog.java">de/kappich/pat/gnd/colorManagement/ColorDialog.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  4
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.kappich.pat.gnd/checkstyle.html#de.kappich.pat.gnd.displayObjectToolkit.PrimitiveFormPropertyPair.java">de/kappich/pat/gnd/displayObjectToolkit/PrimitiveFormPropertyPair.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.kappich.pat.gnd/checkstyle.html#de.kappich.pat.gnd.layerManagement.LayerManager.java">de/kappich/pat/gnd/layerManagement/LayerManager.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.kappich.pat.gnd/checkstyle.html#de.kappich.pat.gnd.coorTransform.WGS84Coordinate.java">de/kappich/pat/gnd/coorTransform/WGS84Coordinate.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.kappich.pat.gnd/checkstyle.html#de.kappich.pat.gnd.areaPlugin.DOTAreaPainter.java">de/kappich/pat/gnd/areaPlugin/DOTAreaPainter.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.kappich.pat.gnd/checkstyle.html#de.kappich.pat.gnd.displayObjectToolkit.DynamicDefinitionComponent.java">de/kappich/pat/gnd/displayObjectToolkit/DynamicDefinitionComponent.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  9
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.kappich.pat.gnd/checkstyle.html#de.kappich.pat.gnd.displayObjectToolkit.DOTSubscriptionData.java">de/kappich/pat/gnd/displayObjectToolkit/DOTSubscriptionData.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.kappich.pat.gnd/checkstyle.html#de.kappich.pat.gnd.PackageRuntimeInfo.java">de/kappich/pat/gnd/PackageRuntimeInfo.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.kappich.pat.gnd/checkstyle.html#de.kappich.pat.gnd.pointPlugin.DOTPointDialog.java">de/kappich/pat/gnd/pointPlugin/DOTPointDialog.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  13
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.kappich.pat.gnd/checkstyle.html#de.kappich.pat.gnd.pointPlugin.DOTPointPlugin.java">de/kappich/pat/gnd/pointPlugin/DOTPointPlugin.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  1
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.kappich.pat.gnd/checkstyle.html#de.kappich.pat.gnd.utils.Interval.java">de/kappich/pat/gnd/utils/Interval.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.kappich.pat.gnd/checkstyle.html#de.kappich.pat.gnd.needlePlugin.DOTNeedle.java">de/kappich/pat/gnd/needlePlugin/DOTNeedle.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.kappich.pat.gnd/checkstyle.html#de.kappich.pat.gnd.pluginInterfaces.DisplayObjectPainter.java">de/kappich/pat/gnd/pluginInterfaces/DisplayObjectPainter.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.kappich.pat.gnd/checkstyle.html#de.kappich.pat.gnd.areaPlugin.DOTAreaPlugin.java">de/kappich/pat/gnd/areaPlugin/DOTAreaPlugin.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.kappich.pat.gnd/checkstyle.html#de.kappich.pat.gnd.gnd.PreferenceTester.java">de/kappich/pat/gnd/gnd/PreferenceTester.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.kappich.pat.gnd/checkstyle.html#de.kappich.pat.gnd.displayObjectToolkit.DynamicDOTItem.java">de/kappich/pat/gnd/displayObjectToolkit/DynamicDOTItem.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.kappich.pat.gnd/checkstyle.html#de.kappich.pat.gnd.displayObjectToolkit.DOTManager.java">de/kappich/pat/gnd/displayObjectToolkit/DOTManager.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  1
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.kappich.pat.gnd/checkstyle.html#de.kappich.pat.gnd.linePlugin.DOTLinePlugin.java">de/kappich/pat/gnd/linePlugin/DOTLinePlugin.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.kappich.pat.gnd/checkstyle.html#de.kappich.pat.gnd.displayObjectToolkit.DynamicDOTItemManager.java">de/kappich/pat/gnd/displayObjectToolkit/DynamicDOTItemManager.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  1
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.kappich.pat.gnd/checkstyle.html#de.kappich.pat.gnd.gnd.DynamicListModel.java">de/kappich/pat/gnd/gnd/DynamicListModel.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.kappich.pat.gnd/checkstyle.html#de.kappich.pat.gnd.layerManagement.Layer.java">de/kappich/pat/gnd/layerManagement/Layer.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.kappich.pat.gnd/checkstyle.html#de.kappich.pat.gnd.complexPlugin.DOTComplexPlugin.java">de/kappich/pat/gnd/complexPlugin/DOTComplexPlugin.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.kappich.pat.gnd/checkstyle.html#de.kappich.pat.gnd.complexPlugin.DOTComplexDialog.java">de/kappich/pat/gnd/complexPlugin/DOTComplexDialog.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  8
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.kappich.pat.gnd/checkstyle.html#de.kappich.pat.gnd.displayObjectToolkit.DOTManagerDialog.java">de/kappich/pat/gnd/displayObjectToolkit/DOTManagerDialog.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  3
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.kappich.pat.gnd/checkstyle.html#de.kappich.pat.gnd.linePlugin.DOTLine.java">de/kappich/pat/gnd/linePlugin/DOTLine.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.kappich.pat.gnd/checkstyle.html#de.kappich.pat.gnd.needlePlugin.DOTNeedleDialog.java">de/kappich/pat/gnd/needlePlugin/DOTNeedleDialog.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.kappich.pat.gnd/checkstyle.html#de.kappich.pat.gnd.needlePlugin.DOTNeedlePlugin.java">de/kappich/pat/gnd/needlePlugin/DOTNeedlePlugin.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.kappich.pat.gnd/checkstyle.html#de.kappich.pat.gnd.pointPlugin.DOTPointPainter.java">de/kappich/pat/gnd/pointPlugin/DOTPointPainter.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  7
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.kappich.pat.gnd/checkstyle.html#de.kappich.pat.gnd.gnd.LegendTreeNodes.java">de/kappich/pat/gnd/gnd/LegendTreeNodes.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.kappich.pat.gnd/checkstyle.html#de.kappich.pat.gnd.pluginInterfaces.DisplayObjectTypePlugin.java">de/kappich/pat/gnd/pluginInterfaces/DisplayObjectTypePlugin.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.kappich.pat.gnd/checkstyle.html#de.kappich.pat.gnd.linePlugin.DOTLinePainter.java">de/kappich/pat/gnd/linePlugin/DOTLinePainter.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  6
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.kappich.pat.gnd/checkstyle.html#de.kappich.pat.gnd.complexPlugin.DOTComplex.java">de/kappich/pat/gnd/complexPlugin/DOTComplex.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.kappich.pat.gnd/checkstyle.html#de.kappich.pat.gnd.gnd.PluginManager.java">de/kappich/pat/gnd/gnd/PluginManager.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  2
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.kappich.pat.gnd/checkstyle.html#de.kappich.pat.gnd.displayObjectToolkit.DisplayObject.java">de/kappich/pat/gnd/displayObjectToolkit/DisplayObject.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.kappich.pat.gnd/checkstyle.html#de.kappich.pat.gnd.gnd.GenericNetDisplay.java">de/kappich/pat/gnd/gnd/GenericNetDisplay.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  8
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.kappich.pat.gnd/checkstyle.html#de.kappich.pat.gnd.viewManagement.NoticeViewEntry.java">de/kappich/pat/gnd/viewManagement/NoticeViewEntry.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.kappich.pat.gnd/checkstyle.html#de.kappich.pat.gnd.areaPlugin.DOTArea.java">de/kappich/pat/gnd/areaPlugin/DOTArea.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.kappich.pat.gnd/checkstyle.html#de.kappich.pat.gnd.gnd.PreferencesHandler.java">de/kappich/pat/gnd/gnd/PreferencesHandler.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.kappich.pat.gnd/checkstyle.html#de.kappich.pat.gnd.gnd.RunGND.java">de/kappich/pat/gnd/gnd/RunGND.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.kappich.pat.gnd/checkstyle.html#de.kappich.pat.gnd.gnd.MapPane.java">de/kappich/pat/gnd/gnd/MapPane.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  5
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.kappich.pat.gnd/checkstyle.html#de.kappich.pat.gnd.notice.Notice.java">de/kappich/pat/gnd/notice/Notice.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.kappich.pat.gnd/checkstyle.html#de.kappich.pat.gnd.viewManagement.ViewManagerDialog.java">de/kappich/pat/gnd/viewManagement/ViewManagerDialog.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  3
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.kappich.pat.gnd/checkstyle.html#de.kappich.pat.gnd.displayObjectToolkit.DisplayObjectManager.java">de/kappich/pat/gnd/displayObjectToolkit/DisplayObjectManager.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  7
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.kappich.pat.gnd/checkstyle.html#de.kappich.pat.gnd.utils.SpringUtilities.java">de/kappich/pat/gnd/utils/SpringUtilities.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.kappich.pat.gnd/checkstyle.html#de.kappich.pat.gnd.viewManagement.ViewManager.java">de/kappich/pat/gnd/viewManagement/ViewManager.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.kappich.pat.gnd/checkstyle.html#de.kappich.pat.gnd.coorTransform.UTMCoordinate.java">de/kappich/pat/gnd/coorTransform/UTMCoordinate.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.kappich.pat.gnd/checkstyle.html#de.kappich.pat.gnd.pluginInterfaces.DisplayObjectType.java">de/kappich/pat/gnd/pluginInterfaces/DisplayObjectType.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.kappich.pat.gnd/checkstyle.html#de.kappich.pat.gnd.layerManagement.AddLayerDialog.java">de/kappich/pat/gnd/layerManagement/AddLayerDialog.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  3
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.kappich.pat.gnd/checkstyle.html#de.kappich.pat.gnd.layerManagement.LayerManagerDialog.java">de/kappich/pat/gnd/layerManagement/LayerManagerDialog.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  3
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.kappich.pat.gnd/checkstyle.html#de.kappich.pat.gnd.gnd.GNDPlugin.java">de/kappich/pat/gnd/gnd/GNDPlugin.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  4
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.kappich.pat.gnd/checkstyle.html#de.kappich.pat.gnd.pluginInterfaces.DOTDefinitionDialog.java">de/kappich/pat/gnd/pluginInterfaces/DOTDefinitionDialog.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.kappich.pat.gnd/checkstyle.html#de.kappich.pat.gnd.displayObjectToolkit.DOTProperty.java">de/kappich/pat/gnd/displayObjectToolkit/DOTProperty.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  1
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.kappich.pat.gnd/checkstyle.html#de.kappich.pat.gnd.layerManagement.LayerDefinitionDialog.java">de/kappich/pat/gnd/layerManagement/LayerDefinitionDialog.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  8
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.kappich.pat.gnd/checkstyle.html#de.kappich.pat.gnd.needlePlugin.DOTNeedlePainter.java">de/kappich/pat/gnd/needlePlugin/DOTNeedlePainter.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  3
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.kappich.pat.gnd/checkstyle.html#de.kappich.pat.gnd.documentation.HelpPage.java">de/kappich/pat/gnd/documentation/HelpPage.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  3
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.kappich.pat.gnd/checkstyle.html#de.kappich.pat.gnd.viewManagement.ViewDialog.java">de/kappich/pat/gnd/viewManagement/ViewDialog.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  4
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.kappich.pat.gnd/checkstyle.html#de.kappich.pat.gnd.gnd.LegendPane.java">de/kappich/pat/gnd/gnd/LegendPane.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.kappich.pat.gnd/checkstyle.html#de.kappich.pat.gnd.viewManagement.ViewEntry.java">de/kappich/pat/gnd/viewManagement/ViewEntry.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.kappich.pat.gnd/checkstyle.html#de.kappich.pat.gnd.areaPlugin.DOTAreaDialog.java">de/kappich/pat/gnd/areaPlugin/DOTAreaDialog.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  8
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.kappich.pat.gnd/checkstyle.html#de.kappich.pat.gnd.colorManagement.ColorManager.java">de/kappich/pat/gnd/colorManagement/ColorManager.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.kappich.pat.gnd/checkstyle.html#de.kappich.pat.gnd.displayObjectToolkit.DOTDefinitionDialogFrame.java">de/kappich/pat/gnd/displayObjectToolkit/DOTDefinitionDialogFrame.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  8
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.kappich.pat.gnd/checkstyle.html#de.kappich.pat.gnd.coorTransform.GeoTransformation.java">de/kappich/pat/gnd/coorTransform/GeoTransformation.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.kappich.pat.gnd/checkstyle.html#de.kappich.pat.gnd.gnd.SelectionListener.java">de/kappich/pat/gnd/gnd/SelectionListener.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.kappich.pat.gnd/checkstyle.html#de.kappich.pat.gnd.notice.NoticeManager.java">de/kappich/pat/gnd/notice/NoticeManager.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.kappich.pat.gnd/checkstyle.html#de.kappich.pat.gnd.complexPlugin.DOTComplexPainter.java">de/kappich/pat/gnd/complexPlugin/DOTComplexPainter.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  1
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.kappich.pat.gnd/checkstyle.html#de.kappich.pat.gnd.displayObjectToolkit.DOTCollection.java">de/kappich/pat/gnd/displayObjectToolkit/DOTCollection.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                      </tbody>
+        </table>
+        
+      </description>
+    </item>
+  </channel>
+</rss>
+

@@ -1,0 +1,628 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+-->
+<rss version="0.91">
+  <channel>
+    <title>KEx TLS OSI2/OSI3 - Checkstyle report</title>
+    <link>https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.kex.tls.osi2osi3</link>
+    <description>KEx TLS OSI2/OSI3 - Checkstyle report</description>
+    <language>en-us</language>
+    <copyright>&#169;2015 NERZ e.V.</copyright>
+    <item>
+      <title>File: 41,
+             Errors: 0,
+             Warnings: 78,
+             Infos: 0
+      </title>
+            <link>https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.kex.tls.osi2osi3/checkstyle.html</link>
+      <description>
+        <p>Click <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.kex.tls.osi2osi3/checkstyle.html">here</a> for the full Checkstyle report.</p>
+
+        <table summary="Files" boder="1">
+          <thead>
+            <tr>
+              <th>Files</th>
+              <th style="width:30px;"><abbr title="Info">I</abbr></th>
+              <th style="width:30px;"><abbr title="Warning">W</abbr></th>
+              <th style="width:30px;"><abbr title="Error">E</abbr></th>
+            </tr>
+          </thead>
+          <tbody>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.kex.tls.osi2osi3/checkstyle.html#de.bsvrz.kex.tls.osi2osi3.osi2.tc57primary.SerialPortControl.java">de/bsvrz/kex/tls/osi2osi3/osi2/tc57primary/SerialPortControl.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  11
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.kex.tls.osi2osi3/checkstyle.html#de.bsvrz.kex.tls.osi2osi3.properties.PropertyConsultant.java">de/bsvrz/kex/tls/osi2osi3/properties/PropertyConsultant.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  1
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.kex.tls.osi2osi3/checkstyle.html#de.bsvrz.kex.tls.osi2osi3.osi2.wancom.Client.java">de/bsvrz/kex/tls/osi2osi3/osi2/wancom/Client.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  8
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.kex.tls.osi2osi3/checkstyle.html#de.bsvrz.kex.tls.osi2osi3.osi2.tc57primary.PrimaryFrame.java">de/bsvrz/kex/tls/osi2osi3/osi2/tc57primary/PrimaryFrame.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  4
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.kex.tls.osi2osi3/checkstyle.html#de.bsvrz.kex.tls.osi2osi3.osi3.TlsNetworkLayerSetting.java">de/bsvrz/kex/tls/osi2osi3/osi3/TlsNetworkLayerSetting.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  1
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.kex.tls.osi2osi3/checkstyle.html#de.bsvrz.kex.tls.osi2osi3.osi2.api.DataLinkLayer.java">de/bsvrz/kex/tls/osi2osi3/osi2/api/DataLinkLayer.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.kex.tls.osi2osi3/checkstyle.html#de.bsvrz.kex.tls.osi2osi3.osi2.api.LinkState.java">de/bsvrz/kex/tls/osi2osi3/osi2/api/LinkState.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.kex.tls.osi2osi3/checkstyle.html#de.bsvrz.kex.tls.osi2osi3.osi2.tc57primary.Primary.java">de/bsvrz/kex/tls/osi2osi3/osi2/tc57primary/Primary.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  8
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.kex.tls.osi2osi3/checkstyle.html#de.bsvrz.kex.tls.osi2osi3.osi3.DestinationUnreachableException.java">de/bsvrz/kex/tls/osi2osi3/osi3/DestinationUnreachableException.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.kex.tls.osi2osi3/checkstyle.html#de.bsvrz.kex.tls.osi2osi3.redirection.RedirectionInfo.java">de/bsvrz/kex/tls/osi2osi3/redirection/RedirectionInfo.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.kex.tls.osi2osi3/checkstyle.html#de.bsvrz.kex.tls.osi2osi3.osi2.wancom.WanCom.java">de/bsvrz/kex/tls/osi2osi3/osi2/wancom/WanCom.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.kex.tls.osi2osi3/checkstyle.html#de.bsvrz.kex.tls.osi2osi3.redirection.WildcardProcessor.java">de/bsvrz/kex/tls/osi2osi3/redirection/WildcardProcessor.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  3
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.kex.tls.osi2osi3/checkstyle.html#de.bsvrz.kex.tls.osi2osi3.redirection.TlsModel.java">de/bsvrz/kex/tls/osi2osi3/redirection/TlsModel.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  2
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.kex.tls.osi2osi3/checkstyle.html#de.bsvrz.kex.tls.osi2osi3.redirection.TlsNode.java">de/bsvrz/kex/tls/osi2osi3/redirection/TlsNode.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.kex.tls.osi2osi3/checkstyle.html#de.bsvrz.kex.tls.osi2osi3.osi3.NetworkLayerListener.java">de/bsvrz/kex/tls/osi2osi3/osi3/NetworkLayerListener.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.kex.tls.osi2osi3/checkstyle.html#de.bsvrz.kex.tls.osi2osi3.longtelegram.Osi7LongTelegramRecombine.java">de/bsvrz/kex/tls/osi2osi3/longtelegram/Osi7LongTelegramRecombine.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  2
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.kex.tls.osi2osi3/checkstyle.html#de.bsvrz.kex.tls.osi2osi3.osi3.NetworkLayer.java">de/bsvrz/kex/tls/osi2osi3/osi3/NetworkLayer.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.kex.tls.osi2osi3/checkstyle.html#de.bsvrz.kex.tls.osi2osi3.osi2.api.PrintingDataLinkLayerListener.java">de/bsvrz/kex/tls/osi2osi3/osi2/api/PrintingDataLinkLayerListener.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.kex.tls.osi2osi3/checkstyle.html#de.bsvrz.kex.tls.osi2osi3.osi2.tc57primary.AbstractTc57.java">de/bsvrz/kex/tls/osi2osi3/osi2/tc57primary/AbstractTc57.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.kex.tls.osi2osi3/checkstyle.html#de.bsvrz.kex.tls.osi2osi3.longtelegram.LongTelegramType.java">de/bsvrz/kex/tls/osi2osi3/longtelegram/LongTelegramType.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.kex.tls.osi2osi3/checkstyle.html#de.bsvrz.kex.tls.osi2osi3.redirection.TelegramStructure.java">de/bsvrz/kex/tls/osi2osi3/redirection/TelegramStructure.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  1
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.kex.tls.osi2osi3/checkstyle.html#de.bsvrz.kex.tls.osi2osi3.redirection.TelegramProcessor.java">de/bsvrz/kex/tls/osi2osi3/redirection/TelegramProcessor.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  3
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.kex.tls.osi2osi3/checkstyle.html#de.bsvrz.kex.tls.osi2osi3.osi2.api.DataLinkLayerEvent.java">de/bsvrz/kex/tls/osi2osi3/osi2/api/DataLinkLayerEvent.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  1
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.kex.tls.osi2osi3/checkstyle.html#de.bsvrz.kex.tls.osi2osi3.longtelegram.Osi7LongTelegramSegment.java">de/bsvrz/kex/tls/osi2osi3/longtelegram/Osi7LongTelegramSegment.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  3
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.kex.tls.osi2osi3/checkstyle.html#de.bsvrz.kex.tls.osi2osi3.osi2.tc57primary.Tc57Frame.java">de/bsvrz/kex/tls/osi2osi3/osi2/tc57primary/Tc57Frame.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.kex.tls.osi2osi3/checkstyle.html#de.bsvrz.kex.tls.osi2osi3.osi2.wancom.Server.java">de/bsvrz/kex/tls/osi2osi3/osi2/wancom/Server.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  7
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.kex.tls.osi2osi3/checkstyle.html#de.bsvrz.kex.tls.osi2osi3.redirection.Osi7SingleTelegramConverter.java">de/bsvrz/kex/tls/osi2osi3/redirection/Osi7SingleTelegramConverter.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.kex.tls.osi2osi3/checkstyle.html#de.bsvrz.kex.tls.osi2osi3.osi2.wancom.ProtocolState.java">de/bsvrz/kex/tls/osi2osi3/osi2/wancom/ProtocolState.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.kex.tls.osi2osi3/checkstyle.html#de.bsvrz.kex.tls.osi2osi3.osi3.TlsNetworkInitializer.java">de/bsvrz/kex/tls/osi2osi3/osi3/TlsNetworkInitializer.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  3
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.kex.tls.osi2osi3/checkstyle.html#de.bsvrz.kex.tls.osi2osi3.osi2.api.DataLinkLayerListener.java">de/bsvrz/kex/tls/osi2osi3/osi2/api/DataLinkLayerListener.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.kex.tls.osi2osi3/checkstyle.html#de.bsvrz.kex.tls.osi2osi3.redirection.NodeFgPair.java">de/bsvrz/kex/tls/osi2osi3/redirection/NodeFgPair.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.kex.tls.osi2osi3/checkstyle.html#de.bsvrz.kex.tls.osi2osi3.osi2.wancom.DefaultProperties.java">de/bsvrz/kex/tls/osi2osi3/osi2/wancom/DefaultProperties.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.kex.tls.osi2osi3/checkstyle.html#de.bsvrz.kex.tls.osi2osi3.osi2.tc57primary.SecondaryFrame.java">de/bsvrz/kex/tls/osi2osi3/osi2/tc57primary/SecondaryFrame.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  3
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.kex.tls.osi2osi3/checkstyle.html#de.bsvrz.kex.tls.osi2osi3.redirection.Coordinator.java">de/bsvrz/kex/tls/osi2osi3/redirection/Coordinator.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.kex.tls.osi2osi3/checkstyle.html#de.bsvrz.kex.tls.osi2osi3.osi2.tc57primary.DefaultProperties.java">de/bsvrz/kex/tls/osi2osi3/osi2/tc57primary/DefaultProperties.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  1
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.kex.tls.osi2osi3/checkstyle.html#de.bsvrz.kex.tls.osi2osi3.osi3.NetworkLayerSender.java">de/bsvrz/kex/tls/osi2osi3/osi3/NetworkLayerSender.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.kex.tls.osi2osi3/checkstyle.html#de.bsvrz.kex.tls.osi2osi3.PackageRuntimeInfo.java">de/bsvrz/kex/tls/osi2osi3/PackageRuntimeInfo.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.kex.tls.osi2osi3/checkstyle.html#de.bsvrz.kex.tls.osi2osi3.properties.PropertyQueryInterface.java">de/bsvrz/kex/tls/osi2osi3/properties/PropertyQueryInterface.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.kex.tls.osi2osi3/checkstyle.html#de.bsvrz.kex.tls.osi2osi3.osi3.TlsNetworkLayer.java">de/bsvrz/kex/tls/osi2osi3/osi3/TlsNetworkLayer.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  5
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.kex.tls.osi2osi3/checkstyle.html#de.bsvrz.kex.tls.osi2osi3.osi2.tc57listen.Wiretapper.java">de/bsvrz/kex/tls/osi2osi3/osi2/tc57listen/Wiretapper.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  11
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/falkoschumann/datenverteiler-kernsoftware/de.bsvrz.kex.tls.osi2osi3/checkstyle.html#de.bsvrz.kex.tls.osi2osi3.osi2.api.AbstractDataLinkLayer.java">de/bsvrz/kex/tls/osi2osi3/osi2/api/AbstractDataLinkLayer.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                      </tbody>
+        </table>
+        
+      </description>
+    </item>
+  </channel>
+</rss>
+
