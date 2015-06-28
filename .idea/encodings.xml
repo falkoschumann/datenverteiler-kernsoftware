@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="Encoding">
+    <file url="file://$PROJECT_DIR$" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/de.bsvrz.dav.daf" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/de.bsvrz.dav.dav" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/de.bsvrz.kex.kexdav" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/de.bsvrz.kex.tls.osi2osi3" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/de.bsvrz.pat.datgen" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/de.bsvrz.pat.onlprot" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/de.bsvrz.pat.sysbed" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/de.bsvrz.pat.sysprot" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/de.bsvrz.puk.config" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/de.bsvrz.sys.funclib.application" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/de.bsvrz.sys.funclib.asyncReceiver" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/de.bsvrz.sys.funclib.commandLineArgs" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/de.bsvrz.sys.funclib.communicationStreams" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/de.bsvrz.sys.funclib.concurrent" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/de.bsvrz.sys.funclib.configObjectAcquisition" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/de.bsvrz.sys.funclib.consoleProcessFrame" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/de.bsvrz.sys.funclib.crypt" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/de.bsvrz.sys.funclib.dataIdentificationSettings" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/de.bsvrz.sys.funclib.dataSerializer" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/de.bsvrz.sys.funclib.debug" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/de.bsvrz.sys.funclib.filelock" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/de.bsvrz.sys.funclib.hexdump" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/de.bsvrz.sys.funclib.kappich" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/de.bsvrz.sys.funclib.losb" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/de.bsvrz.sys.funclib.operatingMessage" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/de.bsvrz.sys.funclib.timeout" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/de.bsvrz.sys.funclib.xmlSupport" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/de.kappich.pat.configBrowser" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/de.kappich.pat.gnd" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/de.kappich.puk.param" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/de.kappich.samples.operatingMessage" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/de.kappich.sys.funclib.profile" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/de.kappich.tools.sleep" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/de.kappich.vew.bmvew" charset="ISO-8859-1" />
+  </component>
+</project>

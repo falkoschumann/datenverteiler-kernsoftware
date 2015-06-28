@@ -1,8 +1,0 @@
-de.bsvrz.dav.dav
-de.bsvrz.dav.dav.communication.accessControl
-de.bsvrz.dav.dav.communication.appProtocol
-de.bsvrz.dav.dav.communication.davProtocol
-de.bsvrz.dav.dav.communication.tcpCommunication
-de.bsvrz.dav.dav.main
-de.bsvrz.dav.dav.subscriptions
-de.bsvrz.dav.dav.util.accessControl
