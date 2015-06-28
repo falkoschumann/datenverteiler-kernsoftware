@@ -20,41 +20,15 @@
 
 package de.bsvrz.kex.kexdav.systemobjects;
 
-import de.bsvrz.dav.daf.main.ClientDavInterface;
-import de.bsvrz.dav.daf.main.ClientReceiverInterface;
-import de.bsvrz.dav.daf.main.ClientSenderInterface;
-import de.bsvrz.dav.daf.main.Data;
-import de.bsvrz.dav.daf.main.DataAndATGUsageInformation;
-import de.bsvrz.dav.daf.main.DataDescription;
-import de.bsvrz.dav.daf.main.OneSubscriptionPerSendData;
-import de.bsvrz.dav.daf.main.ReceiveOptions;
-import de.bsvrz.dav.daf.main.ReceiverRole;
-import de.bsvrz.dav.daf.main.ResultData;
-import de.bsvrz.dav.daf.main.SendSubscriptionNotConfirmed;
-import de.bsvrz.dav.daf.main.SenderRole;
-import de.bsvrz.dav.daf.main.config.Aspect;
-import de.bsvrz.dav.daf.main.config.AttributeGroup;
-import de.bsvrz.dav.daf.main.config.AttributeGroupUsage;
-import de.bsvrz.dav.daf.main.config.ConfigurationArea;
-import de.bsvrz.dav.daf.main.config.ConfigurationChangeException;
-import de.bsvrz.dav.daf.main.config.ConfigurationObject;
-import de.bsvrz.dav.daf.main.config.DynamicObject;
-import de.bsvrz.dav.daf.main.config.DynamicObjectType;
-import de.bsvrz.dav.daf.main.config.InvalidationListener;
-import de.bsvrz.dav.daf.main.config.SystemObject;
-import de.bsvrz.dav.daf.main.config.SystemObjectType;
+import de.bsvrz.dav.daf.main.*;
+import de.bsvrz.dav.daf.main.config.*;
 import de.bsvrz.kex.kexdav.dataexchange.KExDaVReceiver;
+import de.bsvrz.kex.kexdav.dataexchange.KExDaVSender;
 import de.bsvrz.kex.kexdav.main.Constants;
 import de.bsvrz.kex.kexdav.management.ManagerInterface;
 import de.bsvrz.kex.kexdav.management.Message;
-import de.bsvrz.sys.funclib.losb.exceptions.FailureException;
-import de.bsvrz.sys.funclib.losb.kernsoftware.ConnectionManager;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 /**
@@ -63,7 +37,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
  * existiert. Die wirkliche Anmeldung wird dann nachgetragen, sobald das Objekt erstellt wird.
  *
  * @author Kappich Systemberatung
- * @version $Revision: 9658 $
+ * @version $Revision: 12677 $
  */
 public class KExDaVObject {
 
@@ -71,7 +45,7 @@ public class KExDaVObject {
 
 	private final ClientDavInterface _connection;
 
-	private final Map<Object, InnerSender> _senders = new HashMap<Object, InnerSender>();
+	private final Map<KExDaVSender, InnerSender> _senders = new HashMap<KExDaVSender, InnerSender>();
 
 	private final Map<KExDaVReceiver, InnerReceiver> _receivers = new HashMap<KExDaVReceiver, InnerReceiver>();
 
@@ -165,20 +139,14 @@ public class KExDaVObject {
 	}
 
 	private void registerReceiver(
-			final InnerReceiver innerReceiver, final SystemObject systemObject) {
-		try {
-			ConnectionManager.subscribeReceiver(
-					_connection,
-					innerReceiver,
-					systemObject,
-					innerReceiver.getDataDescription(),
-					innerReceiver.getReceiveOptions(),
-					innerReceiver.getReceiverRole()
-			);
-		}
-		catch(FailureException e) {
-			_manager.addMessage(Message.newMajor("Kann nicht als Empfänger anmelden", e));
-		}
+		final InnerReceiver innerReceiver, final SystemObject systemObject) {
+		_connection.subscribeReceiver(
+				innerReceiver,
+				systemObject,
+				innerReceiver.getDataDescription(),
+				innerReceiver.getReceiveOptions(),
+				innerReceiver.getReceiverRole()
+		);
 	}
 
 	/**
@@ -196,7 +164,7 @@ public class KExDaVObject {
 	 * @return true wenn das Objekt angemeldet wurde, sonst false.
 	 */
 	public boolean registerSender(
-			final String atg, final String asp, final short simulationVariant, final SenderRole senderRole, final Object senderObject)
+			final String atg, final String asp, final short simulationVariant, final SenderRole senderRole, final KExDaVSender senderObject)
 			throws MissingObjectException {
 		if(atg == null) throw new IllegalArgumentException("atg ist null");
 		if(asp == null) throw new IllegalArgumentException("asp ist null");
@@ -224,9 +192,12 @@ public class KExDaVObject {
 
 	private void registerSender(final InnerSender innerSender, final SystemObject systemObject) {
 		try {
-			ConnectionManager.subscribeSender(
-					_connection, innerSender, systemObject, innerSender.getDataDescription(), innerSender.getSenderRole()
-			);
+			if(innerSender.getSenderRole() != SenderRole.source()) {
+				// Quellen werden verzögert beim ersten Datensatz angemeldet
+				_connection.subscribeSender(
+						innerSender, systemObject, innerSender.getDataDescription(), innerSender.getSenderRole()
+				);
+			}
 		}
 		catch(OneSubscriptionPerSendData oneSubscriptionPerSendData) {
 			_manager.addMessage(Message.newMajor("Kann nicht als Sender anmelden", oneSubscriptionPerSendData));
@@ -249,7 +220,7 @@ public class KExDaVObject {
 	 * @param data         Daten
 	 * @param dataTime     Zeit des Datensatzes
 	 */
-	public void sendData(final Object senderObject, final Data data, final long dataTime) {
+	public void sendData(final KExDaVSender senderObject, final Data data, final long dataTime) {
 		final SystemObject systemObject = getWrappedObject();
 		if(systemObject == null) return;
 		try {
@@ -268,11 +239,11 @@ public class KExDaVObject {
 	 * @param senderObject Sender-Objekt
 	 */
 	public void unsubscribeSender(
-			final Object senderObject) {
+			final KExDaVSender senderObject) {
 		final InnerSender sender = _senders.remove(senderObject);
 		final SystemObject systemObject = getWrappedObject();
 		if(systemObject == null) return;
-		ConnectionManager.unsubscribeSender(_connection, sender, systemObject, sender.getDataDescription());
+		_connection.unsubscribeSender(sender, systemObject, sender.getDataDescription());
 	}
 
 	/**
@@ -285,7 +256,7 @@ public class KExDaVObject {
 		final InnerReceiver receiver = _receivers.remove(receiverObject);
 		final SystemObject systemObject = getWrappedObject();
 		if(systemObject == null) return;
-		ConnectionManager.unsubscribeReceiver(_connection, receiver, systemObject, receiver.getDataDescription());
+		_connection.unsubscribeReceiver(receiver, systemObject, receiver.getDataDescription());
 	}
 
 	/**
@@ -624,7 +595,7 @@ public class KExDaVObject {
 
 	private class InnerSender implements ClientSenderInterface {
 
-		private final Object _object;
+		private final KExDaVSender _senderObject;
 
 		private final DataDescription _dataDescription;
 
@@ -634,17 +605,21 @@ public class KExDaVObject {
 
 		private final SenderRole _senderRole;
 
-		public InnerSender(final Object object, final DataDescription dataDescription, final SenderRole senderRole) {
-			_object = object;
+		private boolean _hasPendingSourceSubscription;
+
+		public InnerSender(final KExDaVSender senderObject, final DataDescription dataDescription, final SenderRole senderRole) {
+			_senderObject = senderObject;
 			_dataDescription = dataDescription;
 			_senderRole = senderRole;
-			_senders.put(object, this);
+			_hasPendingSourceSubscription = (senderRole == SenderRole.source());
+			_senders.put(senderObject, this);
 		}
 
 		public void dataRequest(final SystemObject object, final DataDescription dataDescription, final byte state) {
 			if(state == _state) return;
 			_state = state;
-			if(_state == 0 && _lastData != null) {
+			_senderObject.update(state);
+			if(_state == ClientSenderInterface.START_SENDING && _lastData != null &&  _senderRole != SenderRole.source()) {
 				try {
 					_connection.sendData(_lastData);
 					_lastData = null;
@@ -671,11 +646,35 @@ public class KExDaVObject {
 				resultData = new ResultData(systemObject, _dataDescription, dataTime, null);
 			}
 
-			if(_state == 0) {
-				_connection.sendData(resultData);
+			try {
+
+				if(_hasPendingSourceSubscription) {
+					try {
+						_connection.subscribeSource(this, resultData);
+						_hasPendingSourceSubscription = false;
+					}
+					catch(OneSubscriptionPerSendData ignored) {
+						_connection.sendData(resultData);
+					}
+				}
+				else if(_state == ClientSenderInterface.START_SENDING
+						|| (_state == ClientSenderInterface.STOP_SENDING && _senderRole == SenderRole.source())) {
+					_connection.sendData(resultData);
+				}
+				else {
+					_lastData = resultData;
+				}
 			}
-			else {
+			catch(DataNotSubscribedException ignored){
 				_lastData = resultData;
+			}
+
+
+			if(_state == ClientSenderInterface.STOP_SENDING_NO_RIGHTS){
+				_manager.addMessage(Message.newMajor("Keine Rechte zum Senden von Daten: " +  this));
+			}
+			else if(_state == ClientSenderInterface.STOP_SENDING_NOT_A_VALID_SUBSCRIPTION){
+				_manager.addMessage(Message.newMajor("Ungültige Anmeldung des Empfängers: " +  this));
 			}
 		}
 
@@ -689,8 +688,10 @@ public class KExDaVObject {
 
 		@Override
 		public String toString() {
-			return "InnerSender{" + "_object=" + _object + ", _dataDescription=" + _dataDescription + ", _state=" + _state + ", _lastData=" + _lastData
-			       + ", _senderRole=" + _senderRole + '}';
+			return KExDaVObject.this
+					+ ":" + _dataDescription.getAttributeGroup().getPidOrNameOrId()
+					+ ":" + _dataDescription.getAspect().getPidOrNameOrId()
+					+ ":" + _dataDescription.getSimulationVariant();
 		}
 	}
 

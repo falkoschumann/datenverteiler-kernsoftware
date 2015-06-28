@@ -22,7 +22,6 @@ package de.bsvrz.dav.dav.main;
 
 import de.bsvrz.dav.daf.communication.lowLevel.telegrams.ApplicationDataTelegram;
 import de.bsvrz.dav.daf.communication.lowLevel.telegrams.BaseSubscriptionInfo;
-import de.bsvrz.dav.daf.communication.lowLevel.telegrams.TransmitterDataTelegram;
 
 /**
  * Schnittstelle für die Transaktionen, die der Subscriptionsmanager implementieren sollte

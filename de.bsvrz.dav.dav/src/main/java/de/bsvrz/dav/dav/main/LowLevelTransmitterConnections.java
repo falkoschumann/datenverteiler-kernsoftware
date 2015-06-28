@@ -34,13 +34,7 @@ import de.bsvrz.dav.daf.main.impl.config.telegrams.TransmitterInfo;
 import de.bsvrz.dav.dav.communication.davProtocol.T_T_HighLevelCommunication;
 import de.bsvrz.sys.funclib.debug.Debug;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -337,7 +331,12 @@ public final class LowLevelTransmitterConnections {
 				return true;
 			}
 			catch(ConnectionException ex) {
-//				_debug.warning("Verbindung zum " + t_info + " konnte nicht aufgebaut werden", ex);
+				_debug.warning("Verbindung zum " + t_info + " konnte nicht aufgebaut werden", ex);
+				if(System.getProperty("agent.name") != null) {
+					// Wenn aus Testumgebung gestartet
+					System.out.println("Verbindung zum " + t_info + " konnte nicht aufgebaut werden: " + ex);
+					ex.printStackTrace();
+				}
 				try {
 					Thread.sleep(1000);
 				}
@@ -347,7 +346,12 @@ public final class LowLevelTransmitterConnections {
 				waitingTime -= (System.currentTimeMillis() - startTime);
 			}
 			catch(CommunicationError ex) {
-//				_debug.warning("Verbindung zum " + t_info + " konnte nicht aufgebaut werden", ex);
+				_debug.warning("Verbindung zum " + t_info + " konnte nicht aufgebaut werden", ex);
+				if(System.getProperty("agent.name") != null) {
+					// Wenn aus Testumgebung gestartet
+					System.out.println("Verbindung zum " + t_info + " konnte nicht aufgebaut werden: " + ex);
+					ex.printStackTrace();
+				}
 				try {
 					Thread.sleep(1000);
 				}

@@ -30,7 +30,7 @@ import java.util.*;
  * Kapselt einen Block zur Auswahl von Objekten, z.B. "Enthaltene Objekte" bzw. "Ausgeschlossene Objekte" im Zugriffsrechte-Datenmodell.
  *
  * @author Kappich Systemberatung
- * @version $Revision: 11714 $
+ * @version $Revision: 13323 $
  */
 public final class ObjectSet implements ObjectCollection {
 
@@ -269,6 +269,12 @@ public final class ObjectSet implements ObjectCollection {
 	public void removeChangeListener(final ObjectCollectionChangeListener listener) {
 		for(final ObjectSelectionBlock objectSelectionBlockArea : _selectionBlocks) {
 			objectSelectionBlockArea.removeChangeListener(listener);
+		}
+	}
+
+	public void dispose() {
+		for(final ObjectSelectionBlock objectSelectionBlock : _selectionBlocks) {
+			objectSelectionBlock.dispose();
 		}
 	}
 
@@ -713,7 +719,7 @@ public final class ObjectSet implements ObjectCollection {
 		private final ObjectCollectionChangeListener _innerChangeListener = new ObjectCollectionChangeListener() {
 			@Override
 			public void blockChanged() {
-				refreshObjectCache();
+				deinitialize();
 				notifyBlockChanged();
 			}
 		};
@@ -721,7 +727,7 @@ public final class ObjectSet implements ObjectCollection {
 		private final MutableSetChangeListener _mutableSetChangeListener = new MutableSetChangeListener() {
 			@Override
 			public void update(final MutableSet set, final SystemObject[] addedObjects, final SystemObject[] removedObjects) {
-				refreshObjectCache();
+				deinitialize();
 				notifyBlockChanged();
 			}
 		};
@@ -730,7 +736,7 @@ public final class ObjectSet implements ObjectCollection {
 
 		private final ObjectSelectionBlock _innerBlock;
 
-		private boolean isInitialized = false;
+		private boolean _isInitialized = false;
 
 		public ObjectSelectionBlockObjectSet(final String objectSetName, final ObjectSelectionBlock innerBlock) {
 			_objectSetName = objectSetName;
@@ -741,7 +747,12 @@ public final class ObjectSet implements ObjectCollection {
 			_relevantTypes = initializeRelevantObjectTypes(_objectSetName);
 			refreshObjectCache();
 			_innerBlock.addChangeListener(_innerChangeListener);
-			isInitialized = true;
+		}
+
+		@Override
+		public void dispose() {
+			super.dispose();
+			_innerBlock.removeChangeListener(_innerChangeListener);
 		}
 
 		private Collection<ConfigurationObjectType> initializeRelevantObjectTypes(final String objectSetName) {
@@ -768,10 +779,8 @@ public final class ObjectSet implements ObjectCollection {
 			}
 		}
 
-		private void refreshObjectCache() {
-			stopMutableSetChangeListeners();
-			_mutableSets.clear();
-			_objectCache.clear();
+		private synchronized void refreshObjectCache() {
+			deinitialize();
 			// Liste der Objekte, von denen die Mengen abgefragt werden
 			for(final SystemObject object : _innerBlock.getAllObjects(_relevantTypes)) {
 				if(object instanceof ConfigurationObject) {
@@ -787,6 +796,14 @@ public final class ObjectSet implements ObjectCollection {
 				}
 			}
 			startMutableSetChangeListeners();
+			_isInitialized = true;
+		}
+
+		private synchronized void deinitialize() {
+			_isInitialized = false;
+			stopMutableSetChangeListeners();
+			_mutableSets.clear();
+			_objectCache.clear();
 		}
 
 		private void stopMutableSetChangeListeners() {
@@ -808,20 +825,20 @@ public final class ObjectSet implements ObjectCollection {
 
 		@Override
 		public boolean contains(final SystemObject object) {
-			if(!isInitialized) initialize();
+			if(!_isInitialized) initialize();
 			return _objectCache.contains(object);
 		}
 
 		/** Wird derzeit nicht gebraucht, da Mengenabfragen nicht verschachtelt werden können. Implementierung schadet aber nicht und ist trivial. */
 		@Override
 		public Collection<SystemObjectType> getAllObjectTypes() {
-			if(!isInitialized) initialize();
+			if(!_isInitialized) initialize();
 			return _connection.getDataModel().getBaseTypes();
 		}
 
 		@Override
 		public Collection<SystemObject> getAllObjects(final Collection<? extends SystemObjectType> types) {
-			if(!isInitialized) initialize();
+			if(!_isInitialized) initialize();
 			return Collections.unmodifiableCollection(_objectCache);
 		}
 

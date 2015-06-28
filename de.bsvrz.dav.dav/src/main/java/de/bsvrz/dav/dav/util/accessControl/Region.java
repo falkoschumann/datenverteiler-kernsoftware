@@ -199,13 +199,14 @@ public class Region extends DataLoader implements ObjectCollectionParent {
 	}
 
 	/**
-	 * Entfernt einen nit {@link #addRegionChangeListener(RegionChangeListener)} hinzugefügten Listener wieder
+	 * Entfernt einen mit {@link #addRegionChangeListener(RegionChangeListener)} hinzugefügten Listener wieder
 	 *
 	 * @param object Callback-Interface das benachrichtigt wird
 	 */
 	protected void removeRegionChangeListener(final RegionChangeListener object) {
-		_regionChangeListeners.remove(object);
-		if(_regionChangeListeners.size() == 0) stopChangeListener();
+		if(_regionChangeListeners.remove(object)) {
+			if(_regionChangeListeners.size() == 0) stopChangeListener();
+		}
 	}
 
 	@Override
@@ -214,15 +215,15 @@ public class Region extends DataLoader implements ObjectCollectionParent {
 		_writeLock.lock();
 		try{
 			reactivateInvalidChildren();
+			if(_includedObjects != null) _includedObjects.dispose();
+			if(_excludedObjects != null) _excludedObjects.dispose();
 			_includedObjects = null;
 			_excludedObjects = null;
 			if(data != null) {
 				final Data.Array included = data.getArray("EnthalteneObjekte");
 				final Data.Array excluded = data.getArray("AusgeschlosseneObjekte");
-				_includedObjects = new ObjectSet(this, getConnection(), included, false
-				);
-				_excludedObjects = new ObjectSet(this, getConnection(), excluded, false
-				);
+				_includedObjects = new ObjectSet(this, getConnection(), included, false);
+				_excludedObjects = new ObjectSet(this, getConnection(), excluded, false);
 			}
 			_regionManager.objectChanged(this);
 		}

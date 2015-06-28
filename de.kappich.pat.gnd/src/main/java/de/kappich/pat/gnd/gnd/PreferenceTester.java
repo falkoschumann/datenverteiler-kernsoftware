@@ -20,6 +20,7 @@
 package de.kappich.pat.gnd.gnd;
 
 import de.kappich.pat.gnd.displayObjectToolkit.DOTManager;
+import de.kappich.pat.gnd.displayObjectToolkit.DynamicDOTItem;
 import de.kappich.pat.gnd.layerManagement.Layer;
 import de.kappich.pat.gnd.layerManagement.LayerManager;
 import de.kappich.pat.gnd.linePlugin.DOTLine;
@@ -37,7 +38,7 @@ import java.util.prefs.Preferences;
  * die Präferenzen löschen kann, wenn die GND bei der Initialisierung daraus scheitert.
  * 
  * @author Kappich Systemberatung
- * @version $Revision: 8058 $
+ * @version $Revision: 13046 $
  *
  */
 public class PreferenceTester {
@@ -49,7 +50,10 @@ public class PreferenceTester {
 	 */
 	public static void main(String[] args) throws ClassNotFoundException, BackingStoreException {
 		clearAll();
-//		getStatistics();
+//		DOTTest();
+//		LayerTest();
+		ViewTest();
+		getStatistics();
 		System.out.println("Fertig!");
 	}
 	
@@ -60,13 +64,7 @@ public class PreferenceTester {
 	
 	public static void clearAll() throws ClassNotFoundException, BackingStoreException {
 		Preferences gndPrefs;
-    	try {
-    		gndPrefs = Preferences.userNodeForPackage(Class.forName("de.kappich.pat.gnd.GenericNetDisplay"));
-    	}
-    	catch(ClassNotFoundException ex) {
-    		
-    		throw new UnsupportedOperationException("Catch-Block nicht implementiert - ClassNotFoundException", ex);
-    	}
+        gndPrefs = Preferences.userRoot().node("de/kappich/pat/gnd");
     	gndPrefs.clear();
     	clearChildren( gndPrefs);
 	}
@@ -153,32 +151,30 @@ public class PreferenceTester {
 	}
 	
 	public static void putTestDOTs ( boolean printInfo) {
-//		DOTManager dotManager = DOTManager.getInstance();
-//		
-//		dotManager.clearDisplayObjectTypes();
-//		
-//		DOTLine dot1 = new DOTLine( "Linie 1", "");
-//		DynamicDOTItem dynamicItem = new DynamicDOTItem("", "", "", "Beschreibung");
-//		dot1.add(dynamicItem, 4.5, 7.2);
-//		dotManager.saveDisplayObjectType(dot1);
-//		
-//		DOTLine dot2 = new DOTLine( "Linie 2", "");
-//		DynamicDOTItem defaultDOT2ForValue = new DynamicDOTItem( "", "", "", "Beschreibung");
-//		dot2.add(defaultDOT2ForValue, 2., 27.);
-//		dotManager.saveDisplayObjectType(dot2);
-//		
-//		if ( printInfo) {
-//			if ( dot1 != null) {
-//				System.out.println(dot1.toString());
-//			} else {
-//				System.out.println("dot1 ist null");
-//			}
-//			if ( dot2 != null) {
-//				System.out.println(dot2.toString());
-//			} else {
-//				System.out.println("dot2 ist null");
-//			}
-//		}
+		DOTManager dotManager = DOTManager.getInstance();
+
+		dotManager.clearDisplayObjectTypes();
+
+		DOTLine dot1 = new DOTLine( "Linie 1", "");
+		DynamicDOTItem dynamicItem = new DynamicDOTItem("", "", "", "Beschreibung", null);
+		dotManager.saveDisplayObjectType(dot1);
+
+		DOTLine dot2 = new DOTLine( "Linie 2", "");
+		DynamicDOTItem defaultDOT2ForValue = new DynamicDOTItem( "", "", "", "Beschreibung", null);
+		dotManager.saveDisplayObjectType(dot2);
+
+		if ( printInfo) {
+			if ( dot1 != null) {
+				System.out.println(dot1.toString());
+			} else {
+				System.out.println("dot1 ist null");
+			}
+			if ( dot2 != null) {
+				System.out.println(dot2.toString());
+			} else {
+				System.out.println("dot2 ist null");
+			}
+		}
 	}
 	
 	public static void getTestDots ( boolean printInfo) {

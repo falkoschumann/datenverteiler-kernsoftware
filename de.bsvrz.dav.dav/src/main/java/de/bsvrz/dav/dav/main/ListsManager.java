@@ -24,12 +24,7 @@
 
 package de.bsvrz.dav.dav.main;
 
-import de.bsvrz.dav.daf.communication.lowLevel.telegrams.AttributeGroupAspectCombination;
-import de.bsvrz.dav.daf.communication.lowLevel.telegrams.BaseSubscriptionInfo;
-import de.bsvrz.dav.daf.communication.lowLevel.telegrams.TransmitterListsDeliveryUnsubscription;
-import de.bsvrz.dav.daf.communication.lowLevel.telegrams.TransmitterListsSubscription;
-import de.bsvrz.dav.daf.communication.lowLevel.telegrams.TransmitterListsUnsubscription;
-import de.bsvrz.dav.daf.communication.lowLevel.telegrams.TransmitterListsUpdate;
+import de.bsvrz.dav.daf.communication.lowLevel.telegrams.*;
 import de.bsvrz.dav.dav.communication.davProtocol.T_T_HighLevelCommunicationInterface;
 import de.bsvrz.sys.funclib.concurrent.DelayedTrigger;
 import de.bsvrz.sys.funclib.concurrent.TriggerTarget;
@@ -49,7 +44,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * Datenverteiler verwaltet für jeden von ihm erreichbaren Datenverteiler eine Anmeldungsliste.
  *
  * @author Kappich Systemberatung
- * @version $Revision: 11561 $
+ * @version $Revision: 13195 $
  */
 public class ListsManager implements ListsManagerInterface {
 
@@ -881,12 +876,15 @@ public class ListsManager implements ListsManagerInterface {
 
 		final long[] potentialTransmitters = new long[_subscriptionInfos.size()];
 		int numberOfPotentialTransmitters = 0;
+		Collection<TransmitterSubscriptionInfos> values;
 		synchronized(_subscriptionInfos) {
-			for(final TransmitterSubscriptionInfos transmitterSubscriptionInfos : _subscriptionInfos.values()) {
-				if(transmitterSubscriptionInfos == _localTransmitterSubscriptionInfos) continue;
-				if(transmitterSubscriptionInfos.isPotentialCentralDav(requiredObjectId, requiredAtgUsageId)) {
-					potentialTransmitters[numberOfPotentialTransmitters++] = transmitterSubscriptionInfos._transmitterId;
-				}
+			values = new ArrayList<TransmitterSubscriptionInfos>(_subscriptionInfos.values());
+		}
+		// Nicht synchronisiert ausführen, Deadlock-Gefahr
+		for(final TransmitterSubscriptionInfos transmitterSubscriptionInfos : values) {
+			if(transmitterSubscriptionInfos == _localTransmitterSubscriptionInfos) continue;
+			if(transmitterSubscriptionInfos.isPotentialCentralDav(requiredObjectId, requiredAtgUsageId)) {
+				potentialTransmitters[numberOfPotentialTransmitters++] = transmitterSubscriptionInfos._transmitterId;
 			}
 		}
 		if(numberOfPotentialTransmitters == 0) {
@@ -894,7 +892,7 @@ public class ListsManager implements ListsManagerInterface {
 			return null;
 		}
 		final long[] result = new long[numberOfPotentialTransmitters];
-		System.arraycopy(potentialTransmitters,0,result, 0, numberOfPotentialTransmitters);
+		System.arraycopy(potentialTransmitters, 0, result, 0, numberOfPotentialTransmitters);
 //		System.out.println("potentialTransmitters " + _localTransmitterId + ": " + potentialTransmitters.length);
 		return result;
 

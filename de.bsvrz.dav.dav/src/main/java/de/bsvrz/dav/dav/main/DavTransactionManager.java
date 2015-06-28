@@ -27,46 +27,21 @@ import de.bsvrz.dav.daf.communication.lowLevel.TelegramUtility;
 import de.bsvrz.dav.daf.communication.lowLevel.telegrams.ApplicationDataTelegram;
 import de.bsvrz.dav.daf.communication.lowLevel.telegrams.BaseSubscriptionInfo;
 import de.bsvrz.dav.daf.communication.lowLevel.telegrams.TransmitterDataTelegram;
-import de.bsvrz.dav.daf.main.ClientDavConnection;
-import de.bsvrz.dav.daf.main.ClientReceiverInterface;
-import de.bsvrz.dav.daf.main.ClientSenderInterface;
-import de.bsvrz.dav.daf.main.Data;
-import de.bsvrz.dav.daf.main.DataDescription;
-import de.bsvrz.dav.daf.main.DataState;
-import de.bsvrz.dav.daf.main.InnerDataSubscription;
-import de.bsvrz.dav.daf.main.OneSubscriptionPerSendData;
-import de.bsvrz.dav.daf.main.ReceiveOptions;
-import de.bsvrz.dav.daf.main.ReceiverRole;
-import de.bsvrz.dav.daf.main.ResultData;
-import de.bsvrz.dav.daf.main.SendSubscriptionNotConfirmed;
-import de.bsvrz.dav.daf.main.SenderRole;
-import de.bsvrz.dav.daf.main.TransactionDataDescription;
-import de.bsvrz.dav.daf.main.TransactionResultData;
-import de.bsvrz.dav.daf.main.config.Aspect;
-import de.bsvrz.dav.daf.main.config.AttributeGroup;
-import de.bsvrz.dav.daf.main.config.AttributeGroupUsage;
-import de.bsvrz.dav.daf.main.config.DataModel;
-import de.bsvrz.dav.daf.main.config.SystemObject;
-import de.bsvrz.dav.daf.main.config.SystemObjectType;
+import de.bsvrz.dav.daf.main.*;
+import de.bsvrz.dav.daf.main.config.*;
 import de.bsvrz.sys.funclib.debug.Debug;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Klasse, die Transaktionen auf Dav-Seite verwaltet (Anmeldungen und Abmeldungen der inneren Datenidentifikationen, Einfügen von DataIndizes in innere
  * Datensätze)
  *
  * @author Kappich Systemberatung
- * @version $Revision: 11487 $
+ * @version $Revision: 12414 $
  */
 public class DavTransactionManager {
 

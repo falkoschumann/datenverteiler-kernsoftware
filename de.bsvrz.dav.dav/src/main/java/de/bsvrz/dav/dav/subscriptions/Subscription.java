@@ -61,6 +61,10 @@ public interface Subscription {
 	 */
 	public long getNodeId();
 
+	/**
+	 * Gibt den Verbindungsstatus zum Kommunikationspartner zurück
+	 * @return Verbindugnsstatus
+	 */
 	ConnectionState getConnectionState();
 
 	/**

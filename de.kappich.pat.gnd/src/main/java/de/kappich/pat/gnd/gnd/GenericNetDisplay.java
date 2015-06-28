@@ -26,13 +26,17 @@ import de.bsvrz.sys.funclib.debug.Debug;
 import de.kappich.pat.gnd.colorManagement.ColorDialog;
 import de.kappich.pat.gnd.colorManagement.ColorManager;
 import de.kappich.pat.gnd.coorTransform.GeoTransformation;
-import de.kappich.pat.gnd.displayObjectToolkit.*;
+import de.kappich.pat.gnd.displayObjectToolkit.DOTManager;
+import de.kappich.pat.gnd.displayObjectToolkit.DOTManagerDialog;
 import de.kappich.pat.gnd.documentation.HelpPage;
 import de.kappich.pat.gnd.gnd.MapPane.MapScaleListener;
 import de.kappich.pat.gnd.layerManagement.LayerManager;
 import de.kappich.pat.gnd.layerManagement.LayerManagerDialog;
 import de.kappich.pat.gnd.notice.NoticeManager;
-import de.kappich.pat.gnd.viewManagement.*;
+import de.kappich.pat.gnd.viewManagement.View;
+import de.kappich.pat.gnd.viewManagement.ViewDialog;
+import de.kappich.pat.gnd.viewManagement.ViewManager;
+import de.kappich.pat.gnd.viewManagement.ViewManagerDialog;
 
 import javax.imageio.ImageIO;
 import javax.print.attribute.HashPrintRequestAttributeSet;
@@ -40,7 +44,9 @@ import javax.print.attribute.PrintRequestAttributeSet;
 import javax.print.attribute.standard.PrinterResolution;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
-import javax.swing.event.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileFilter;
 import java.awt.*;
 import java.awt.event.*;
@@ -52,7 +58,9 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.*;
 import java.util.List;
-import java.util.prefs.*;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.InvalidPreferencesFormatException;
+import java.util.prefs.Preferences;
 
 
 /**
@@ -66,7 +74,7 @@ import java.util.prefs.*;
  * Koordinaten der übergebenen Systemobjekte ein diese Objekte umfassendes Rechteck berechnet und angezeigt.
  *
  * @author Kappich Systemberatung
- * @version $Revision: 12083 $
+ * @version $Revision: 13038 $
  */
 @SuppressWarnings("serial")
 public class GenericNetDisplay extends JFrame {
@@ -773,9 +781,7 @@ public class GenericNetDisplay extends JFrame {
 								return;
 							}
 						}
-
-//						Preferences gndPrefs = Preferences.userRoot().node("de/kappich/pat/gnd");
-						Preferences gndPrefs = getPreferenceStartPath(_connection);
+						Preferences gndPrefs = PreferencesHandler.getInstance().getPreferenceStartPath();
 						try {
 							gndPrefs.exportSubtree(new FileOutputStream(xmlFile));
 						}
@@ -888,8 +894,7 @@ public class GenericNetDisplay extends JFrame {
 
 					public void clearPreferences() {
 
-//						Preferences gndPrefs = Preferences.userRoot().node("de/kappich/pat/gnd");
-						Preferences gndPrefs = getPreferenceStartPath(_connection);
+						Preferences gndPrefs = PreferencesHandler.getInstance().getPreferenceStartPath();
 						try {
 							gndPrefs.clear();
 						}
@@ -959,8 +964,7 @@ public class GenericNetDisplay extends JFrame {
 								options[1]
 						);
 						if(n == 0) {
-//							Preferences gndPrefs = Preferences.userRoot().node("de/kappich/pat/gnd");
-							Preferences gndPrefs = getPreferenceStartPath(_connection);
+							Preferences gndPrefs = PreferencesHandler.getInstance().getPreferenceStartPath();
 							try {
 								gndPrefs.removeNode();
 								System.exit(0);
@@ -1578,7 +1582,7 @@ public class GenericNetDisplay extends JFrame {
 	 * Eine Listener-Interface für Objekte, die sich auf Änderungen der Bildschirmauflösung anmelden wollen.
 	 *
 	 * @author Kappich Systemberatung
-	 * @version $Revision: 12083 $
+	 * @version $Revision: 13038 $
 	 */
 	interface ResolutionListener {
 

@@ -72,9 +72,11 @@ class ChildrenTreeEnumerator {
 			trace.add(node);
 			_accessControlManager.notifyInfiniteRecursion(node, _alreadyVisitedList.get(_alreadyVisitedList.size() - 1), trace);
 		}
-		_alreadyVisitedList.add(node);
-		for(DataLoader dataLoader : node.getChildObjects()) {
-			enumerateChildrenInternal(dataLoader);
+		else {
+			_alreadyVisitedList.add(node);
+			for(DataLoader dataLoader : node.getChildObjects()) {
+				enumerateChildrenInternal(dataLoader);
+			}
 		}
 		_alreadyFinishedList.add(node);
 	}

@@ -6,8 +6,13 @@
 
     <groupId>kernsoftware</groupId>
     <artifactId>kernsoftware</artifactId>
-    <version>3.6.2</version>
+    <version>3.6.5</version>
     <packaging>pom</packaging>
+
+    <properties>
+        <project.build.sourceEncoding>ISO-8859-1</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>ISO-8859-1</project.reporting.outputEncoding>
+    </properties>
 
     <name>Kernsoftware</name>
     <url>https://github.com/falkoschumann/datenverteiler-kernsoftware</url>
@@ -61,13 +66,6 @@
         <url>https://travis-ci.org/falkoschumann/datenverteiler-kernsoftware</url>
     </ciManagement>
 
-    <repositories>
-        <repository>
-            <id>falkoschumann-releases</id>
-            <url>http://falkoschumann.github.io/maven-repository/releases/</url>
-        </repository>
-    </repositories>
-
     <modules>
         <module>de.bsvrz.dav.daf</module>
         <module>de.bsvrz.dav.dav</module>
@@ -91,6 +89,7 @@
         <module>de.bsvrz.sys.funclib.debug</module>
         <module>de.bsvrz.sys.funclib.filelock</module>
         <module>de.bsvrz.sys.funclib.hexdump</module>
+        <module>de.bsvrz.sys.funclib.kappich</module>
         <module>de.bsvrz.sys.funclib.losb</module>
         <module>de.bsvrz.sys.funclib.operatingMessage</module>
         <module>de.bsvrz.sys.funclib.timeout</module>
@@ -104,29 +103,22 @@
         <module>de.kappich.vew.bmvew</module>
     </modules>
 
-    <properties>
-        <project.build.sourceEncoding>ISO-8859-1</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>ISO-8859-1</project.reporting.outputEncoding>
-        <project.reporting.outputEncoding>ISO-8859-1</project.reporting.outputEncoding>
-        <source.version>6</source.version>
-    </properties>
-
     <build>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.1</version>
+                <version>3.2</version>
                 <configuration>
-                    <source>${source.version}</source>
-                    <target>${source.version}</target>
-                    <compilerVersion>${source.version}</compilerVersion>
+                    <source>8</source>
+                    <target>8</target>
+                    <compilerVersion>8</compilerVersion>
                 </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
-                <version>2.3</version>
+                <version>2.4</version>
                 <executions>
                     <execution>
                         <id>attach-sources</id>
@@ -140,7 +132,10 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.9</version>
+                <version>2.10.3</version>
+                <configuration>
+                    <additionalparam>-Xdoclint:none</additionalparam>
+                </configuration>
                 <executions>
                     <execution>
                         <id>attach-javadoc</id>
@@ -169,22 +164,32 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-project-info-reports-plugin</artifactId>
-                <version>2.7</version>
-                <configuration>
-                    <!--
-                        Ohne die folgende Option, wird beim Erstellen der Projektseite eine Warnung ausgegeben, dass die
-                        URL http://falkoschumann.github.io/maven-repository/releases/ als Repository ungültig sei.
-                      -->
-                    <dependencyLocationsEnabled>false</dependencyLocationsEnabled>
-                </configuration>
+                <version>2.8</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.9</version>
+                <version>2.10.3</version>
                 <configuration>
-                    <aggregate>true</aggregate>
+                    <additionalparam>-Xdoclint:none</additionalparam>
                 </configuration>
+                <reportSets>
+                    <reportSet>
+                        <id>default</id>
+                        <reports>
+                            <report>javadoc</report>
+                            <report>test-javadoc</report>
+                        </reports>
+                    </reportSet>
+                    <reportSet>
+                        <id>aggregate</id>
+                        <reports>
+                            <report>aggregate</report>
+                            <report>test-aggregate</report>
+                        </reports>
+                        <inherited>false</inherited>
+                    </reportSet>
+                </reportSets>
             </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
@@ -228,7 +233,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
-                <version>2.12.1</version>
+                <version>2.15</version>
                 <configuration>
                     <configLocation>src/main/config/checkstyle.xml</configLocation>
                 </configuration>
